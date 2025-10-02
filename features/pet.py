@@ -1,7 +1,6 @@
 from random import randrange
 from typing import Dict, List
 
-
 class VirtualPet:
     list_food: Dict[str, List[int]] = {
         "Kentucky Fried Chicken": [1, 15, 5],
@@ -36,6 +35,7 @@ class VirtualPet:
         self.health: int = randrange(1, 50)
         self.fat: int = 0
         self.energy: int = randrange(0, 50)
+        self.generosity = 0
         self.limit_stat()
 
 
@@ -103,6 +103,7 @@ class VirtualPet:
             return
 
         _, hunger_change, happiness_change = VirtualPet.list_food[food]
+
         print(f"\n{self.name} has been fed with '{food}' 🍽️.\n")
         self.hunger += int(hunger_change)
         self.happiness += int(happiness_change)
