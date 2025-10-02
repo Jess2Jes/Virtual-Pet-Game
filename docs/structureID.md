@@ -51,4 +51,4 @@ Dokumen ini menjelaskan struktur internal dan logika dari Virtual Pet Game.
 - 🎲 Keacakan diterapkan pada statistik awal dan event jalan-jalan  
 - 🛠️ Dirancang agar mudah diperluas untuk GUI, penyimpanan data, dan hewan tambahan  
 
-Untuk instruksi bermain, lihat [README](../README.md)  
+Untuk instruksi bermain, lihat [README](../READMEID.md)  
