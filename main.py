@@ -162,7 +162,6 @@ class Main:
                         if pet:
                             if getattr(pet, "health", 1) > 0:
                                 self.interact_with_pet(pet)
-                                self.time_spend()
                                 pet.time_past()
                             else:
                                 print("\nYour pet has deceased... 🪦")
@@ -203,6 +202,7 @@ class Main:
                     else:
                         print("Please type again...")
 
+                    self.time_spend()
 
 if __name__ == "__main__":
     pet_game = Main()
