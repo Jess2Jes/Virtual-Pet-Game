@@ -1,60 +1,62 @@
-def truncate(text, max_len=55):  # maksimal panjang teks
-    ''' Membuat fungsi truncate untuk memotong teks agar tidak terlalu panjang
-        sehingga tidak merusak tampilan baris dalam box'''
-    if len(text) <= max_len:
-        return text
-    else:
-        return text[:max_len - 3] + "..."
+# Formatter : untuk tabel pet stats
+class Formatter:
 
-def format_status_box(stats):
-    lines = [
-        truncate(f"{stats['name']}, the {stats['type']}"),
-        truncate(f"Age        : {stats['age']}"),
-        truncate(f"Hunger     : {stats['hunger']}"),
-        truncate(f"Fat        : {stats['fat']}"),      # NEW LINE
-        truncate(f"Sanity     : {stats['sanity']}"),
-        truncate(f"Happy      : {stats['happiness']}"),
-        truncate(f"Energy     : {stats['energy']}"),
-        truncate(f"Health     : {stats['health']}"),
-        truncate(f"Mood       : {stats['mood']}"),
-        truncate(f"Status     : {stats['summary']}"),
-        truncate(f"Age Status : {stats['age_summary']}")
-    ]
-    ''' Cari panjang teks terpanjang di dalam list lines.
-        max_length akan menyimpan nilai panjang terbesar.
+    def __init__(self):
+        self.max_length = 0
+        self.max_len = 55
 
-        Contoh:
+    def truncate(self, text):  # maksimal panjang teks
+        ''' Membuat fungsi truncate untuk memotong teks agar tidak terlalu panjang
+            sehingga tidak merusak tampilan baris dalam box'''
+        if len(text) <= self.max_len:
+            return text
+        else:
+            return text[:self.max_len - 3] + "..."
+
+    def format_status_box(self, stats):
+
         lines = [
-            "Mochi the Cat",     # length = 13
-            "Age     : 2",       # length = 10
-            "Hunger  : 90",      # length = 12
-            "Happy   : 50",      # length = 12
-            "Energy  : 10",      # length = 12
-            "Health  : 100",     # length = 13
-            "Mood    : Hungry"   # length = 17  <-- ini paling panjang
+            self.truncate(f"{stats['name']}, the {stats['type']}"),
+            self.truncate(f"Age        : {stats['age']}"),
+            self.truncate(f"Hunger     : {stats['hunger']}"),
+            self.truncate(f"Fat        : {stats['fat']}"),      # NEW LINE
+            self.truncate(f"Sanity     : {stats['sanity']}"),
+            self.truncate(f"Happy      : {stats['happiness']}"),
+            self.truncate(f"Energy     : {stats['energy']}"),
+            self.truncate(f"Health     : {stats['health']}"),
+            self.truncate(f"Mood       : {stats['mood']}"),
+            self.truncate(f"Status     : {stats['summary']}"),
+            self.truncate(f"Age Status : {stats['age_summary']}")
         ]
+        ''' Cari panjang teks terpanjang di dalam list lines.
+            max_length akan menyimpan nilai panjang terbesar.
 
-        Hasil:
-        max_length = 17
-        (semua baris box akan disesuaikan dengan lebar 17) 
-    '''
+            Contoh:
+            lines = [
+                "Mochi the Cat",     # length = 13
+                "Age     : 2",       # length = 10
+                "Hunger  : 90",      # length = 12
+                "Happy   : 50",      # length = 12
+                "Energy  : 10",      # length = 12
+                "Health  : 100",     # length = 13
+                "Mood    : Hungry"   # length = 17  <-- ini paling panjang
+            ]
 
-    
-    max_length = 0
-    for line in lines:
-        max_length = max(max_length, len(line))
+            Hasil:
+            max_length = 17
+            (semua baris box akan disesuaikan dengan lebar 17) 
+        '''
 
-    box = "\n"
-    box += f"┌{'─' * max_length}┐\n"
-    box += f"│{lines[0].center(max_length)}│\n"
-    box += f"├{'─' * max_length}┤\n"
+        for line in lines:
+            self.max_length = max(self.max_length, len(line))
 
-    for line in lines[1:]:
-        box += f"│{line.ljust(max_length)}│\n"
+        box = "\n"
+        box += f"┌{'─' * self.max_length}┐\n"
+        box += f"│{lines[0].center(self.max_length)}│\n"
+        box += f"├{'─' * self.max_length}┤\n"
 
-    box += f"└{'─' * max_length}┘\n"
-    return box
-    
-    
-    
-    
+        for line in lines[1:]:
+            box += f"│{line.ljust(self.max_length)}│\n"
+
+        box += f"└{'─' * self.max_length}┘\n"
+        return box
