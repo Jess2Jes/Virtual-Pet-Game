@@ -45,7 +45,7 @@ class User:
         total_symbol = sum(1 for ch in password if ch in string.punctuation)
         total_letter = sum(ch.isalpha() for ch in password)
 
-         if username.strip().lower() in password.strip().lower():
+        if username.strip().lower() in password.strip().lower():
             print("Password cannot be the same as username!\n")
             return
         
