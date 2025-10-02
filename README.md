@@ -1,4 +1,4 @@
-English | [Indonesian](READMEID.md)
+English | [Indonesian](READMEID.md) | [Chinese](READMECN.md)
 # 🐾 Virtual Pet Game
 
 A console-based virtual pet game built with OOP.  
