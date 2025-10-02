@@ -122,10 +122,14 @@ class Main:
                 
                 elif choice == 3:
                     username = input("Username: ").strip()
-                    new_password = input("Your new password: ").strip()
+                    password = input("Password: ").strip()
+                    new_password = input("Your New Password: ").strip()
                     if (username in User.users):
                         user = User.users[username]
-                        user.password = new_password
+                        if (password != user.password):
+                            print("\nWrong Previous Password! Change Password Operation Unsuccessful!")
+                        else:
+                            user.password = new_password
                     else:
                         print("\nPlease create your own username/password first!")
                     
