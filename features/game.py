@@ -1,7 +1,7 @@
 import datetime
 from random import randrange, choice as ch
 from animal import *
-from formatter import format_status_box
+from formatter import Formatter
 from user import User
 
 class Game:
@@ -9,6 +9,7 @@ class Game:
 
     def __init__(self):
         self.clock = datetime.datetime.now().hour
+        self.format = Formatter()
         self.spend = 0
         self.day = 0
         self.give_money = 0
@@ -97,7 +98,7 @@ class Game:
             "summary": pet.get_summary(),
             "age_summary": pet.get_age_summary()
         }
-        print(format_status_box(stats))
+        print(self.format.format_status_box(stats))
 
 
     def get_health(self, pet) -> int:
