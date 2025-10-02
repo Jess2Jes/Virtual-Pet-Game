@@ -44,7 +44,7 @@ class VirtualPet:
             return "Happy"
         elif self.happiness < 30 or self.energy < 20:
             return "Sad"
-        elif self.sanity < 30:
+        elif self.happiness < 20:
             return "Stressed"
         else:
             return "Neutral"
@@ -56,8 +56,10 @@ class VirtualPet:
             return "Okay"
         elif self.health > 20:
             return "Weak"
-        else:
+        elif self.health > 0:
             return "Critical"
+        else: 
+            return "Dead"
 
     def get_age_summary(self) -> str:
         if self.age < 1:
