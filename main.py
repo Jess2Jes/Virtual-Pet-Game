@@ -87,18 +87,20 @@ class Main:
         self.game.spend += 1
 
     def run(self) -> None:
+
         print()
-        print("─" * 39 + " " + "VIRTUAL PET GAME" + " " + "─" * 44)
 
         while True:
             if not User.current_user:
+                print("─" * 39 + " " + "VIRTUAL PET GAME" + " " + "─" * 44)
                 print("1. Register")
                 print("2. Login")
-                print("3. Exit")
+                print("3. Change Password")
+                print("4. Exit")
                 print("─" * 101)
 
                 try:
-                    choice = int(input("Choose (1-3): ").strip())
+                    choice = int(input("Choose (1-4): ").strip())
                 except ValueError:
                     print("\nPlease insert digit at choice input!")
                     continue
@@ -117,16 +119,27 @@ class Main:
                     password = input("Password: ").strip()
                     User.login(username, password)
                     self.current_user = User.current_user
-
+                
                 elif choice == 3:
+                    username = input("Username: ").strip()
+                    new_password = input("Your new password: ").strip()
+                    if (username in User.users):
+                        user = User.users[username]
+                        user.password = new_password
+                    else:
+                        print("\nPlease create your own username/password first!")
+                    
+                    print("\n")
+                    
+                elif choice == 4:
                     print("─" * 101)
-                    sys.exit("Thank you for playing!")
+                    sys.exit("Thank you for playing!\n")
                 else:
-                    print("Please type again...")
+                    print("Please type again...\n")
 
             else:
                 while True:
-                    print("\n" + "─" * 43 + " " + "PET ZONE" + " " + "─" * 48)
+                    print("─" * 43 + " " + "PET ZONE" + " " + "─" * 48)
                     print("1. Check time")
                     print("2. Create a new pet")
                     print("3. Interact with pet")
@@ -152,7 +165,7 @@ class Main:
                         print("Day Spent Playing Virtual Pet Game".center(101))
                         print("─"*101)
                         print(f"Days: {self.days()} days")
-                        print("─"*101)
+                        print("─"*101 + "\n")
 
                     elif choice == 2:
                         self.create_pet()
@@ -164,7 +177,7 @@ class Main:
                                 self.interact_with_pet(pet)
                                 pet.time_past()
                             else:
-                                print("\nYour pet has deceased... 🪦")
+                                print("\nYour pet has deceased... 🪦\n")
 
                     elif choice == 4:
                         pet = self.select_pet() 
@@ -186,7 +199,7 @@ class Main:
                                 else:
                                     pet.elder()
                             else:
-                                print("\nYour pet has deceased... 🪦")
+                                print("\nYour pet has deceased... 🪦\n")
                         
                         
                     elif choice == 6:
@@ -200,9 +213,10 @@ class Main:
                         break
 
                     else:
-                        print("Please type again...")
-
+                        print("\nPlease type again...\n")
+                    
                     self.time_spend()
+
 
 if __name__ == "__main__":
     pet_game = Main()
