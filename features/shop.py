@@ -85,11 +85,11 @@ class Shop:
         if (not ((item in self.food.keys()) or (item in self.soap.keys()) 
             or (item in self.potion.keys()))):
 
-            print(f"There's currently no {item} in this shop.\n")
+            print(f"\nThere's currently no {item} in this shop.\n")
             return
 
         if (self.money == 0):
-            print("You cannot buy anything anymore!\n")
+            print("\nYou cannot buy anything anymore!\n")
             return
         
         print(f"\nYou bought {amount} {item}!\n")
@@ -173,12 +173,10 @@ class Shop:
                     self.show_currency()
                 
                 elif (choice == 6):
-                    print("Thank you for shopping.")
+                    print("Thank you for shopping.\n")
                     break
                     
                 else:
                     print("\nPlease choose from (1-6).")
                     
                 print("─"*101)
-            
-            
