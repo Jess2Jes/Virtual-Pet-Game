@@ -28,7 +28,7 @@ Game hewan peliharaan virtual berbasis konsol yang dibangun dengan konsep OOP.
 - `shop.py` – katalog item, logika pembelian  
 - `user.py` – registrasi pengguna, autentikasi, mata uang  
 
-Dokumentasi detail: [docs/structure.md](docs/structure.md)
+Dokumentasi detail: [docs/struktur.md](docs/structureID.md)
 
 ## 🎮 Cara Menjalankan Game
 
