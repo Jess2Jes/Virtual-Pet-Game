@@ -1,4 +1,4 @@
-[英文](README.md) | 中文  
+[Indonesian](READMEID.md) | [En](README.md) | 中文  
 # 🐾 虚拟宠物游戏  
 
 一个基于控制台的虚拟宠物游戏，采用面向对象编程 (OOP) 构建。  
