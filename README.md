@@ -27,7 +27,7 @@ A console-based virtual pet game built with OOP.
 - `shop.py` – item catalog, purchase logic.  
 - `user.py` – user registry, authentication, currency.  
 
-For detailed docs, see [docs/structure.md](docs/structure.md).  
+For detailed docs, see [docs/structure.md](docs/structure.md)
 
 ## 🎮 Run the game
 
