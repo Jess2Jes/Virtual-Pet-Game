@@ -12,7 +12,6 @@ class Game:
         self.format = Formatter()
         self.spend = 0
         self.day = 0
-        self.give_money = 0
     
     def get_currency(self) -> int:
         return User.current_user.currency
@@ -78,10 +77,12 @@ class Game:
 
         for pet in cls.animal_list:
             if pet.name == choice:
+                print("\n")
                 return pet
 
-        print("Wrong Selection!")
+        print("Wrong Selection!\n")
         return None
+    
     
     def view(self, pet) -> None:
         stats = {
@@ -152,6 +153,10 @@ class Game:
 
                     if (pet.energy < 10):
                         print(f"{pet.name} is too tired to play..")
+                    elif (pet.hunger < 30):
+                        print(f"{pet.name} is too hungry to play..")
+                    elif (pet.health < 20):
+                        print(f"{pet.name} is too sick to play..")
                     else:
                         if (pet.type.lower() == "cat"):
                             print(f"You play laser with {pet.name} 💥!")
@@ -169,6 +174,7 @@ class Game:
                         print("You earned Rp. 25,000!")
 
                         pet.happiness += 10
+                        pet.hunger -= 5
                         pet.energy -= 5
                         User.current_user.currency += 25000
 
@@ -176,6 +182,7 @@ class Game:
                         
                         print("\n" + "="*101)
                         print(f"Happiness : {pet.happiness}")
+                        print(f"Hunger: {pet.hunger}")
                         print(f"Energy: {pet.energy}")
                         print("─"*101)
 
@@ -232,45 +239,51 @@ class Game:
                     
                     if (pet.energy < 10):
                         print(f"{pet.name} is too tired to take a walk..")
+                    elif (pet.hunger < 30):
+                        print(f"{pet.name} is too hungry to take a walk..")
+                    elif (pet.health < 20):
+                        print(f"{pet.name} is too sick to take a walk..")
                     else:
                         random_event = randrange(0,50)
                         print(f"You take {pet.name} for a walk!")
 
                         if (random_event == 10):
-                            print("You found a wallet in your way home!")
+                            print("\nYou found a wallet in your way home!")
                             print("You brought back home Rp. 25,000...")
                             User.current_user.currency += 25000
 
                         elif (random_event == 30):
-                            print("Your pet stepped on mud!")
-                            print(f"{pet.name}' sanity decreased...")
+                            print("\nYour pet stepped on mud!")
+                            print(f"{pet.name}' sanity decreased (-10)...")
                             pet.sanity -= 10
                         
                         elif (random_event == 20):
-                            print("Your pet ate rotten apple!")
-                            print(f"{pet.name}'s health decreased...")
+                            print("\nYour pet ate rotten apple!")
+                            print(f"{pet.name}'s health decreased (-15)...")
                             pet.health -= 15
                         
                         elif (random_event == 4):
-                            print("Your pet got run over by car!")
+                            print("\nYour pet got run over by car!")
                             print(f"{pet.name} deceased... 💀")
                             pet.health -= 100
                             pet.limit_stat()
                             break
 
                         elif (random_event == 50):
-                            print("You got robbed on your way home!")
+                            print("\nYou got robbed on your way home!")
                             print("You lose Rp. 100,000!")
                             User.current_user.currency -= 100000
                             User.limit_currency()
                         
                         pet.happiness += 25
+                        pet.hunger -= 5
                         pet.energy -= 15
                         
                         pet.limit_stat()
                         
                         print("\n" + "="*101)
                         print(f"Happiness : {pet.happiness}")
+                        print(f"Hunger: {pet.hunger}")
                         print(f"Energy: {pet.energy}")
                         print("─"*101)
                     
@@ -306,10 +319,10 @@ class Game:
                                     pet.sanity, pet.happiness, pet.health])):
                                     print(f"\n{pet.name}: I will consider it if you take care of me properly!")
                                 else:
-                                    if (self.give_money < 2):
+                                    if (pet.generosity < 2):
                                         print(f"\n{pet.name}: Here, I'll give you Rp. 100,000.")
                                         User.current_user.currency += 100000
-                                        self.give_money += 1
+                                        pet.generosity += 1
                                     else:
                                         print(f"\n{pet.name}: Sorry, can't give you anymore... 😔")
                             
@@ -318,15 +331,25 @@ class Game:
                                     "Why can't a nose be 12 inches long? Because then it would be a foot!",
                                     "How much do rainbows weigh? Not much. They're actually pretty light!",
                                     "I had a joke about paper today, but it was tearable!",
-                                    "What's the difference between a $20 steak and a $55 steak? February 14th!",
+                                    "What do you call an ant who fights crime? A vigilANTe!",
                                     "How do you make holy water? You boil the hell out of it!",
                                     "Some people pick their nose, but I was born with mine.",
                                     "Justice is a dish best served cold. Otherwise, it's just water.",
                                     "Why don't programmers like nature? Too many \"bugs\".",
                                     "Why don't robots panic? \"Nerves of steel\"."
                                 ]
-                                rand_jokes = ch(jokes)
-                                print(f"\n{pet.name}: {rand_jokes} Haha 🤭, funny right?")
+
+                                if (pet.hunger < 30):
+                                    print(f"\n{pet.name} is too hungry to joke right now..")
+                                elif (pet.health < 20):
+                                    print(f"\n{pet.name} is too sick to joke right now..")
+                                elif (pet.energy < 10):
+                                    print(f"\n{pet.name} is too tired to joke right now..")
+                                elif (pet.happiness < 20):
+                                    print(f"\n{pet.name} is too stressed to joke right now..")
+                                else:
+                                    rand_jokes = ch(jokes)
+                                    print(f"\n{pet.name}: {rand_jokes} Haha 🤭, funny right?")
                             
                             elif (topic == 5):
                                 print(f"\n{pet.name}: Okay, goodbye!")
