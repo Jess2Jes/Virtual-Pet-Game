@@ -5,7 +5,7 @@ import string
 from random import randrange
 
 class User:
-    users = {}          
+    users = {}      
     current_user = None  
 
     def __init__(self, username: str, password: str):
@@ -27,8 +27,22 @@ class User:
             val = int(getattr(self, attr))
             setattr(self, attr, max(0, min(math.inf, val)))
     
-    def get_password(self) -> str:
+    @property
+    def password(self) -> str:
         return self.__password
+
+    @password.setter
+    def password(self, new_password) -> None:
+
+        total_digit = sum(ch.isdigit() for ch in new_password)
+        total_symbol = sum(1 for ch in new_password if ch in string.punctuation)
+        total_letter = sum(ch.isalpha() for ch in new_password)
+
+        if (total_digit < 1 or total_letter < 8 or total_symbol < 2):
+            print("\nChange password operation unsuccessful!")
+            print("(Password must contain at least 1 digit, 8 letters, and 2 symbols)")
+        else:
+            self.__password = new_password
 
     def add_pet(self, pet: VirtualPet) -> None:
         self.pets.append(pet)
@@ -40,17 +54,23 @@ class User:
         if username in cls.users:
             print("This username has already signed in!\n")
             return
+        
+        if username.strip().lower() in password.strip().lower():
+            print("Password cannot be the same as username!\n")
+            return
+        
+        for user in cls.users.values(): # mengecek apakah user mendaftar menggunakan password yang sama 
+                                        # dengan user sebelumnya
+            if (password == user.password):
+                print("This password is already in used!\n")
+                return
 
         total_digit = sum(ch.isdigit() for ch in password)
         total_symbol = sum(1 for ch in password if ch in string.punctuation)
         total_letter = sum(ch.isalpha() for ch in password)
 
-        if username.strip().lower() in password.strip().lower():
-            print("Password cannot be the same as username!\n")
-            return
-        
         if total_digit < 1:
-            print("Password must contain at least one digit!\n")
+            print("Password must contain at least 1 digit!\n")
             print("─────────────────────────────────────────────────────────────────────────────────────────────────────")
             return
 
@@ -66,6 +86,7 @@ class User:
 
         new_user = cls(username, password)
         cls.users[username] = new_user
+
         cls.current_user = new_user
         print(f"User {username} registered successfully.\n")
 
@@ -76,10 +97,9 @@ class User:
             print("User not found!\n")
             return
 
-        if cls.users[username].get_password() != password:
+        if cls.users[username].password != password:
             print("Wrong password!\n")
             return
 
         cls.current_user = cls.users[username]
         print(f"Welcome back, {username}!\n")
-
