@@ -1,7 +1,9 @@
 from pet import VirtualPet
+from typing import Dict
 
 class Shop:
-    food = {
+
+    food: Dict[str, int] = {
         "Kentucky Fried Chicken": 20000,
         "Ice Cream": 5000,
         "Fried Rice": 1000,
@@ -12,16 +14,16 @@ class Shop:
 
     }
 
-    soap = {
+    soap: Dict[str, int] = {
         "Rainbow Bubble Soap": 55000,
         "Pink Bubble Soap": 35000,
         "White Silk Soap": 10000
     }
 
-    potion = {
+    potion: Dict[str, int] = {
         "Fat Burner": 110000,
         "Health Potion": 200000,
-        "Energizer": 150000,
+        "Energizer": 800000,
         "Adult Potion": 1000000
     }
 
@@ -29,7 +31,7 @@ class Shop:
         self.user = user
         self.money = user.current_user.currency
 
-    def show_currency(self):
+    def show_currency(self) -> None:
         print("─"*101)
 
         if (self.money >= 1000):
@@ -43,7 +45,7 @@ class Shop:
             print("You still have lots... 💰")
         print("─"*101 + "\n")
     
-    def catalog_food(self):
+    def catalog_food(self) -> None:
         print("─"*101)
         for key, value in self.food.items():
             print(f"-> {key} : {"{:,}".format(value)}")
@@ -55,7 +57,7 @@ class Shop:
             print(f"-> {key} : {value[0]}")
         print("─"*101 + "\n")
 
-    def catalog_soap(self):
+    def catalog_soap(self) -> None:
         print("─"*101)
         for key, value in self.soap.items():
             print(f"-> {key} : {"{:,}".format(value)}")
@@ -67,7 +69,7 @@ class Shop:
             print(f"-> {key} : {value[0]}")
         print("─"*101 + "\n")
     
-    def catalog_potion(self):
+    def catalog_potion(self) -> None:
         print("─"*101)
         for key, value in self.potion.items():
             print(f"-> {key} : Rp. {"{:,}".format(value)}")
@@ -79,7 +81,7 @@ class Shop:
             print(f"-> {key} : {value[0]}")
         print("─"*101 + "\n")
     
-    def buy(self, item, amount):
+    def buy(self, item, amount) -> None:
         if (not ((item in self.food.keys()) or (item in self.soap.keys()) 
             or (item in self.potion.keys()))):
 
@@ -128,7 +130,7 @@ class Shop:
             print(f"Total money left: Rp. {self.money}\n")
 
 
-    def interact(self):
+    def interact(self) -> None:
         print("\n" + "="*40 + " " + "Welcome to Pet Shop" + " " + "="*40)  
         while True: 
             print("1. See Food Catalog")
