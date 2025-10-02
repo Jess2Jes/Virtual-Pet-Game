@@ -45,6 +45,10 @@ class User:
         total_symbol = sum(1 for ch in password if ch in string.punctuation)
         total_letter = sum(ch.isalpha() for ch in password)
 
+         if username.strip().lower() in password.strip().lower():
+            print("Password cannot be the same as username!\n")
+            return
+        
         if total_digit < 1:
             print("Password must contain at least one digit!\n")
             print("─────────────────────────────────────────────────────────────────────────────────────────────────────")
@@ -78,3 +82,4 @@ class User:
 
         cls.current_user = cls.users[username]
         print(f"Welcome back, {username}!\n")
+
