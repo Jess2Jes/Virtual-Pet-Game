@@ -10,7 +10,7 @@ class Main:
         self.game = Game()           
         self.current_user = None
 
-    def create_pet(self):
+    def create_pet(self) -> None:
         if not self.current_user:
             print("\nPlease login or register first.\n")
             return
@@ -24,7 +24,7 @@ class Main:
         else:
             print("Pet creation failed.")
 
-    def select_pet(self):
+    def select_pet(self) -> None:
         if not self.current_user:
             print("\nPlease login first.\n")
             return None
@@ -50,28 +50,28 @@ class Main:
         print("Invalid selection.")
         return None
 
-    def show_pet_stats(self, pet):
+    def show_pet_stats(self, pet) -> None:
         if not pet:
             print("No pet selected.")
             return
 
         self.game.view(pet)
 
-    def interact_with_pet(self, pet):
+    def interact_with_pet(self, pet) -> None:
         if not pet:
             print("No pet selected.")
             return
 
         self.game.interact(pet)
 
-    def days(self):
+    def days(self) -> int:
 
         if (self.game.spend == 24):
             self.game.day += 1
         
         return self.game.day
 
-    def time(self):
+    def time(self) -> str:
         clock = 0
         if (self.game.clock > 12):
             clock = self.game.clock - 12
@@ -83,10 +83,10 @@ class Main:
         else:
             return f"{clock} P.M."
     
-    def time_spend(self):
+    def time_spend(self) -> None:
         self.game.spend += 1
 
-    def run(self):
+    def run(self) -> None:
         print()
         print("─" * 39 + " " + "VIRTUAL PET GAME" + " " + "─" * 44)
 
