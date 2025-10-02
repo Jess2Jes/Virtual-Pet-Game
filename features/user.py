@@ -1,5 +1,6 @@
 # user.py
 from pet import VirtualPet
+import math
 import string
 from random import randrange
 
@@ -11,7 +12,20 @@ class User:
         self.username = username
         self.__password = password
         self.pets = []        
-        self.currency = randrange(0,25000)
+        self._currency = randrange(0,25000)
+    
+    @property
+    def currency(self) -> int:
+        return self._currency
+
+    @currency.setter
+    def currency(self, value) -> None:
+        self._currency = value
+    
+    def limit_currency(self) -> None:
+        for attr in ("currency"):
+            val = int(getattr(self, attr))
+            setattr(self, attr, max(0, min(math.inf, val)))
     
     def get_password(self) -> str:
         return self.__password
