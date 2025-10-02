@@ -1,4 +1,4 @@
-[English](README.md) | Indonesian
+[English](README.md) | Indonesian | [中文](READMECN.md)
 # 🐾 Virtual Pet Game
 
 Game hewan peliharaan virtual berbasis konsol yang dibangun dengan konsep OOP.  
