@@ -5,7 +5,8 @@ class Cat(VirtualPet):
         super().__init__(name, age, "Cat")
         self.fav_food = "Chicken"
     
-    def baby(self) -> None:
+    @staticmethod
+    def baby() -> None:
 
         print('='*98)
 
@@ -19,7 +20,8 @@ class Cat(VirtualPet):
 
               """)
     
-    def teen(self) -> None:
+    @staticmethod
+    def teen() -> None:
 
         print('='*98)
 
@@ -37,7 +39,8 @@ class Cat(VirtualPet):
 
               """)
     
-    def elder(self) -> None:
+    @staticmethod
+    def elder() -> None:
 
         print('='*98)
 
@@ -51,7 +54,8 @@ class Cat(VirtualPet):
               
               """)
     
-    def adult(self) -> None:
+    @staticmethod
+    def adult() -> None:
 
         print('='*98)
 
@@ -94,7 +98,8 @@ class Rabbit(VirtualPet):
         super().__init__(name, age, "Rabbit")
         self.fav_food = "Ice Cream"
     
-    def baby(self) -> None:
+    @staticmethod
+    def baby() -> None:
 
         print("─"*98)
 
@@ -111,7 +116,8 @@ class Rabbit(VirtualPet):
 
               """)
     
-    def teen(self) -> None:
+    @staticmethod
+    def teen() -> None:
          
         print("─"*98)
 
@@ -136,7 +142,8 @@ class Rabbit(VirtualPet):
               
               """)
     
-    def elder(self) -> None:
+    @staticmethod
+    def elder() -> None:
 
         print("─"*98)
 
@@ -166,8 +173,8 @@ class Rabbit(VirtualPet):
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠉⠁⠀⠀⠀⠈⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
               """)
     
-    
-    def adult(self) -> None:
+    @staticmethod
+    def adult() -> None:
 
         print('='*98)
 
@@ -204,7 +211,8 @@ class Dino(VirtualPet):
         super().__init__(name, age, "Dinosaur")
         self.fav_food = "French Fries"
     
-    def baby(self) -> None:
+    @staticmethod
+    def baby() -> None:
 
         print("─"*98)
 
@@ -221,7 +229,8 @@ class Dino(VirtualPet):
                                         
               """)
     
-    def teen(self) -> None:
+    @staticmethod
+    def teen() -> None:
 
         print("─"*98)
 
@@ -246,7 +255,8 @@ class Dino(VirtualPet):
                                         
               """)
     
-    def adult(self) -> None:
+    @staticmethod
+    def adult() -> None:
 
         print("─"*98)
 
@@ -277,8 +287,8 @@ class Dino(VirtualPet):
             
               """)
 
-
-    def elder(self) -> None:
+    @staticmethod
+    def elder() -> None:
 
         print('='*98)
 
@@ -314,7 +324,8 @@ class Dragon(VirtualPet):
         super().__init__(name, age, "Dragon")
         self.fav_food = "Nugget"
     
-    def baby(self) -> None:
+    @staticmethod
+    def baby() -> None:
 
         print("─"*98)
 
@@ -340,7 +351,8 @@ class Dragon(VirtualPet):
               
               """)
     
-    def teen(self) -> None:
+    @staticmethod
+    def teen() -> None:
 
         print("─"*98)
 
@@ -377,7 +389,8 @@ class Dragon(VirtualPet):
                 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
                 """)
     
-    def adult(self) -> None:
+    @staticmethod
+    def adult() -> None:
 
         print("─"*98)
 
@@ -400,7 +413,8 @@ class Dragon(VirtualPet):
          ~ - - - - ^}_ _ _ _ _ _ _.-\\\
               """)
 
-    def elder(self) -> None:
+    @staticmethod
+    def elder() -> None:
         
         print("─"*98)
         print(r"""
@@ -432,7 +446,8 @@ class Pou(VirtualPet):
         super().__init__(name, age, "Pou")
         self.fav_food = "Chicken"
     
-    def baby(self) -> None:
+    @staticmethod
+    def baby() -> None:
 
         print("─"*98)
 
@@ -450,7 +465,8 @@ class Pou(VirtualPet):
 
               """)
     
-    def teen(self) -> None:
+    @staticmethod
+    def teen() -> None:
 
         print("─"*98)
 
@@ -468,8 +484,8 @@ class Pou(VirtualPet):
 
               """)
         
-    
-    def adult(self) -> None:
+    @staticmethod
+    def adult() -> None:
 
         print("─"*98)
         print(r"""
@@ -496,8 +512,9 @@ class Pou(VirtualPet):
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠛⠒⠲⠶⠶⠦⠴⠤⠦⠴⠦⠴⠤⠶⠴⠦⠾⠖⠛⠚⠋⠉⠁⠀⠀⠀⠀
 
               """)
-        
-    def elder(self) -> None:
+    
+    @staticmethod
+    def elder() -> None:
 
         print("─"*98)
         print(r"""
