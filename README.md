@@ -49,4 +49,31 @@ For detailed docs, see [docs/structure.md](docs/structure.md)
 - Multiplayer/social interactions.
 - Unit testing and refactoring into services/models.
 
+## 👥 Author & Contributors
 
+<table border="0" cellspacing="10" cellpadding="5">
+  <tr>
+    <td align="center" style="border: 1px solid #555; padding: 10px;">
+      <a href="https://github.com/Jess2Jes">
+        <img src="https://github.com/Jess2Jes.png" width="100" height="100" alt="Jess2Jes" style="border-radius: 50%;"/>
+      </a>
+      <br/>
+      <a href="https://github.com/Jess2Jes">Jess2Jes</a>
+    </td>
+ <td align="center" style="border: 1px solid #555; padding: 10px;">
+   <a href="https://github.com/Dendroculus">
+     <img src="https://github.com/Dendroculus.png" width="100" height="100" alt="Hans" style="border-radius: 50%;"/>
+   </a>
+   <br/>
+   <a href="https://github.com/Dendroculus">Hans</a>
+ </td>
+
+ <td align="center" style="border: 1px solid #555; padding: 10px;">
+   <a href="https://github.com/StevNard">
+     <img src="https://github.com/StevNard.png" width="100" height="100" alt="StevNard"/>
+   </a>
+   <br/>
+   <a href="https://github.com/StevNard">StevNard</a>
+ </td>
+  </tr>
+</table>
