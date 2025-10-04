@@ -64,26 +64,6 @@ class Game:
         print(f"{name}, a {species}, has born!")
         print("─"*101)
     
-    @classmethod
-    def select(cls) -> None:
-        if not cls.animal_list:
-            print("\nCreate a pet first!")
-            return None
-        
-        print("\nList of pets: ")
-        for pet in cls.animal_list:
-            print(f"-> {pet.name} ({pet.type})")
-        
-        choice = input("\nChoose (input the name of your pet): ").title()
-
-        for pet in cls.animal_list:
-            if pet.name == choice:
-                print("\n")
-                return pet
-
-        print("Wrong Selection!\n")
-        return None
-    
     
     def view(self, pet) -> None:
         stats = {
