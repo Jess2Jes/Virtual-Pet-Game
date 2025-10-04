@@ -1,5 +1,5 @@
 # user.py
-from pet import VirtualPet
+from .pet import VirtualPet
 import math
 import string
 from random import randrange
