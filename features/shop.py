@@ -131,8 +131,8 @@ class Shop:
 
 
     def interact(self) -> None:
-        print("\n" + "="*40 + " " + "Welcome to Pet Shop" + " " + "="*40)  
         while True: 
+            print("\n" + "="*40 + " " + "Welcome to Pet Shop" + " " + "="*40)  
             print("1. See Food Catalog")
             print("2. See Soap Catalog")
             print("3. See Potion Catalog")
@@ -144,7 +144,7 @@ class Shop:
             try:
                 choice = int(input("Choose (1-6): "))
             except ValueError:
-                print("\nPlease insert digit at choice input!\n")
+                print("\nPlease insert digit at choice input!")
             else:
                 print()
                 
@@ -177,6 +177,5 @@ class Shop:
                     break
                     
                 else:
-                    print("\nPlease choose from (1-6).\n")
+                    print("\nPlease choose from (1-6).")
                     
-                print("─"*101)
