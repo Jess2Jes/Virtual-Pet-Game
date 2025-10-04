@@ -1,6 +1,6 @@
-from shop import Shop
-from game import Game
-from user import User
+from features.shop import Shop
+from features.game import Game
+from features.user import User
 
 
 import sys
