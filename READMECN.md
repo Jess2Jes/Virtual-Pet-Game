@@ -50,9 +50,30 @@
 
 ## 👥 作者与贡献者
 
-- [Jess2Jes](https://github.com/Jess2Jes) — 项目负责人 & 主开发者  
-- [Hans](https://github.com/Dendroculus) — 贡献者  
-- [StevNard](https://github.com/StevNard) — 贡献者  
+<table border="0" cellspacing="10" cellpadding="5">
+  <tr>
+    <td align="center" style="border: 1px solid #555; padding: 10px;">
+      <a href="https://github.com/Jess2Jes">
+        <img src="https://github.com/Jess2Jes.png" width="100" height="100" alt="Jess2Jes" style="border-radius: 50%;"/>
+      </a>
+      <br/>
+      <a href="https://github.com/Jess2Jes">Jess2Jes</a>
+    </td>
+ <td align="center" style="border: 1px solid #555; padding: 10px;">
+   <a href="https://github.com/Dendroculus">
+     <img src="https://github.com/Dendroculus.png" width="100" height="100" alt="Hans" style="border-radius: 50%;"/>
+   </a>
+   <br/>
+   <a href="https://github.com/Dendroculus">Hans</a>
+ </td>
 
+ <td align="center" style="border: 1px solid #555; padding: 10px;">
+   <a href="https://github.com/StevNard">
+     <img src="https://github.com/StevNard.png" width="100" height="100" alt="StevNard"/>
+   </a>
+   <br/>
+   <a href="https://github.com/StevNard">StevNard</a>
+ </td>
+  </tr>
+</table>
 
-apakah bisa dipahami
