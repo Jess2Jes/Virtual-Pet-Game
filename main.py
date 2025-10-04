@@ -102,7 +102,7 @@ class Main:
                 try:
                     choice = int(input("Choose (1-4): ").strip())
                 except ValueError:
-                    print("\nPlease insert digit at choice input!")
+                    print("\nPlease insert digit at choice input!\n")
                     continue
 
                 print()
@@ -156,7 +156,7 @@ class Main:
                     try:
                         choice = int(input("Choose (1-7): ").strip())
                     except ValueError:
-                        print("\nPlease insert digit at choice input!")
+                        print("\nPlease insert digit at choice input!\n")
                         continue
 
                     if choice == 1:
