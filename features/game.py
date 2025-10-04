@@ -13,7 +13,8 @@ class Game:
         self.spend = 0
         self.day = 0
     
-    def get_currency(self) -> int:
+    @staticmethod
+    def get_currency() -> int:
         return User.current_user.currency
     
     @classmethod
@@ -101,11 +102,12 @@ class Game:
         }
         print(self.format.format_status_box(stats))
 
-
-    def get_health(self, pet) -> int:
+    @staticmethod
+    def get_health(pet) -> int:
         return pet.health
     
-    def interact(self, pet) -> None:
+    @staticmethod
+    def interact(pet) -> None:
         print("\n" + "="*101)
         print(f"Playing with {pet.name}, the {pet.type}:")
 
@@ -125,7 +127,7 @@ class Game:
             try:
                 choice = int(input("Choose (1-8): "))
             except ValueError:
-                print("\nPlease insert digit at choice input!")
+                print("\nPlease insert digit at choice input!\n")
             else:
                 print()
 
@@ -170,6 +172,7 @@ class Game:
                             print(f"You brought {pet.name} to swimming pool 🏄‍♂️!")
                         
                         print(f"\n{pet.name}'s happiness increased by 10.")
+                        print(f"{pet.name}'s hunger decreased by 5.")
                         print(f"{pet.name}'s energy decreased by 5.")
                         print("You earned Rp. 25,000!")
 
@@ -264,7 +267,7 @@ class Game:
                         
                         elif (random_event == 4):
                             print("\nYour pet got run over by car!")
-                            print(f"{pet.name} deceased... 💀")
+                            print(f"{pet.name} deceased... 💀\n")
                             pet.health -= 100
                             pet.limit_stat()
                             break
