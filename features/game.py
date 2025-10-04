@@ -1,8 +1,8 @@
 import datetime
 from random import randrange, choice as ch
-from animal import *
-from formatter import Formatter
-from user import User
+from .animal import *
+from .formatter import Formatter
+from .user import User
 
 class Game:
     animal_list = []
