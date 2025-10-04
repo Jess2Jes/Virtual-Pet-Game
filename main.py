@@ -41,27 +41,19 @@ class Main:
         try:
             idx = int(input("\nSelect pet number: ").strip())
         except ValueError:
-            print("\nInvalid selection.")
+            print("\nInvalid selection.\n")
             return None
 
         if 1 <= idx <= len(pets):
             return pets[idx - 1]
 
-        print("Invalid selection.")
+        print("\nInvalid selection.\n")
         return None
 
     def show_pet_stats(self, pet) -> None:
-        if not pet:
-            print("No pet selected.")
-            return
-
         self.game.view(pet)
 
     def interact_with_pet(self, pet) -> None:
-        if not pet:
-            print("No pet selected.")
-            return
-
         self.game.interact(pet)
 
     def days(self) -> int:
