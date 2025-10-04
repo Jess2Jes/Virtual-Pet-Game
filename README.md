@@ -49,10 +49,4 @@ For detailed docs, see [docs/structure.md](docs/structure.md)
 - Multiplayer/social interactions.
 - Unit testing and refactoring into services/models.
 
-## 👥 Author & Contributors
-
-- [Jess2Jes](https://github.com/Jess2Jes) — Project Lead & Main Developer  
-- [Hans](https://github.com/Dendroculus) — Contributor  
-- [StevNard](https://github.com/StevNard) — Contributor  
-
 
