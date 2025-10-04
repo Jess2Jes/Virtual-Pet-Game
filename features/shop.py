@@ -144,7 +144,7 @@ class Shop:
             try:
                 choice = int(input("Choose (1-6): "))
             except ValueError:
-                print("Please insert digit at choice input!\n")
+                print("\nPlease insert digit at choice input!\n")
             else:
                 print()
                 
@@ -177,6 +177,6 @@ class Shop:
                     break
                     
                 else:
-                    print("\nPlease choose from (1-6).")
+                    print("\nPlease choose from (1-6).\n")
                     
                 print("─"*101)
