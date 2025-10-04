@@ -1,4 +1,4 @@
-from pet import VirtualPet
+from .pet import VirtualPet
 from typing import Dict
 
 class Shop:
