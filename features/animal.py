@@ -1,4 +1,4 @@
-from pet import VirtualPet
+from .pet import VirtualPet
 
 class Cat(VirtualPet):
     def __init__(self, name, age):
