@@ -218,21 +218,21 @@ Tidak ada *library* khusus yang diperlukan untuk menjalankan game ini, hanya ins
         <img src="https://github.com/Jess2Jes.png" width="100" height="100" alt="Jess2Jes" style="border-radius: 50%;"/>
       </a>
       <br/>
-      <a href="https://github.com/Jess2Jes">Jess2Jes</a>
+      <a href="https://github.com/Jess2Jes">Jessica Gunawan</a>
     </td>
     <td align="center" style="border: 1px solid #555; padding: 10px;">
       <a href="https://github.com/Dendroculus">
         <img src="https://github.com/Dendroculus.png" width="100" height="100" alt="Hans" style="border-radius: 50%;"/>
       </a>
       <br/>
-      <a href="https://github.com/Dendroculus">Hans</a>
+      <a href="https://github.com/Dendroculus">Hans Valerie</a>
     </td>
     <td align="center" style="border: 1px solid #555; padding: 10px;">
       <a href="https://github.com/StevNard">
         <img src="https://github.com/StevNard.png" width="100" height="100" alt="StevNard"/>
       </a>
       <br/>
-      <a href="https://github.com/StevNard">StevNard</a>
+      <a href="https://github.com/StevNard">Steven Lienardi</a>
     </td>
   </tr>
 </table>
