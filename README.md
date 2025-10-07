@@ -84,54 +84,54 @@ The game's architecture is centered around the `VirtualPet` base class, with spe
 ```mermaid
 classDiagram
     class Main {
-        +run()
+        +run() void
         -current_user: str
-        +create_pet(): void
-        +select_pet(): void
-        +show_pet_stats(pet): void
-        +interact_with_pet(pet): void
-        +days(): int
-        +time(): str
-        +time_spend(): void
+        +create_pet() void
+        +select_pet() void
+        +show_pet_stats(pet) void
+        +interact_with_pet(pet) void
+        +days() int
+        +time() str
+        +time_spend() void
     }
     class User {
-        +register(username, password): void
-        +login(username, password): void
+        +register(username, password) void
+        +login(username, password) void
         -username: str
         -password: str
         -currency: int
         -pets: list~VirtualPet~
-        +add_pet(pet): void
-        +limit_currency(): void
+        +add_pet(pet) void
+        +limit_currency() void
     }
     class Game {
         -clock: datetime
         -format: str
         -spend: int
         -day: int
-        +create(): void
-        +get_currency(): int
-        +get_health(pet): int
-        +view(pet): void
-        +interact(pet): void
+        +create() void
+        +get_currency() int
+        +get_health(pet) int
+        +view(pet) void
+        +interact(pet) void
     }
     class Shop {
         -food: dict
         -soap: dict
         -potion: dict
-        -self.user: str
-        -self.money: int
-        +buy(item, amount): void
-        +show_currency(): void
-        +catalog_food(): void
-        +catalog_soap(): void
-        +catalog_potion(): void
-        +interact(): void
+        -user: str
+        -money: int
+        +buy(item, amount) void
+        +show_currency() void
+        +catalog_food() void
+        +catalog_soap() void
+        +catalog_potion() void
+        +interact() void
     }
     class Formatter {
-        -self.max_length: int
-        -self.max_len: int
-        +format_status_box(stats)
+        -max_length: int
+        -max_len: int
+        +format_status_box(stats) str
     }
     class VirtualPet {
         <<Abstract>>
@@ -148,51 +148,51 @@ classDiagram
         -list_food: dict
         -list_soap: dict
         -list_potion: dict
-        +feed(food): void
-        +bath(soap): void
-        +sleep(hours): void
-        +health_care(): void
-        +get_mood(): str
-        +get_summary(): str
-        +get_age_summary(): str
-        +limit_stats(): void
-        +time_past(): void
-        +get_age(): float
+        +feed(food) void
+        +bath(soap) void
+        +sleep(hours) void
+        +health_care() void
+        +get_mood() str
+        +get_summary() str
+        +get_age_summary() str
+        +limit_stats() void
+        +time_past() void
+        +get_age() float
     }
     class Cat {
         -fav_food: str
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
     class Rabbit {
         -fav_food: str
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
     class Dino {
         -fav_food: str
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
     class Dragon {
         -fav_food: str
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
     class Pou {
         -fav_food: str
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
 
     Main o-- Game
