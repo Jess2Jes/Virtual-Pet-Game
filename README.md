@@ -98,8 +98,8 @@ classDiagram
         +register(username, password): void
         +login(username, password): void
         -username: str
-        -<<property>> password: str
-        -<<property>> currency: int
+        -password: str
+        -currency: int
         -pets: list~VirtualPet~
         +add_pet(pet): void
         +limit_currency(): void
