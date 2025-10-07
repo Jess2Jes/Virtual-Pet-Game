@@ -83,76 +83,115 @@ Mochi, a cat, has born!
 ```mermaid
 classDiagram
     class Main {
-        +run()
-        +create_pet()
-        +select_pet()
+        +run() void
+        -current_user: str
+        +create_pet() void
+        +select_pet() void
+        +show_pet_stats(pet) void
+        +interact_with_pet(pet) void
+        +days() int
+        +time() str
+        +time_spend() void
     }
     class User {
-        <<class>>
-        +register(username, password)
-        +login(username, password)
+        +register(username, password) void
+        +login(username, password) void
         -username: str
-        -__password: str
-        -_currency: int
+        -password: str
+        -currency: int
         -pets: list~VirtualPet~
-        +add_pet(pet)
+        +add_pet(pet) void
+        +limit_currency() void
     }
     class Game {
-        +create()
-        +view(pet)
-        +interact(pet)
+        -clock: datetime
+        -format: str
+        -spend: int
+        -day: int
+        +create() void
+        +get_currency() int
+        +get_health(pet) int
+        +view(pet) void
+        +interact(pet) void
     }
     class Shop {
         -food: dict
         -soap: dict
         -potion: dict
-        +buy(item, amount)
-        +interact()
+        -user: str
+        -money: int
+        +buy(item, amount) void
+        +show_currency() void
+        +catalog_food() void
+        +catalog_soap() void
+        +catalog_potion() void
+        +interact() void
     }
     class Formatter {
-        +format_status_box(stats)
+        -max_length: int
+        -max_len: int
+        +format_status_box(stats) str
     }
     class VirtualPet {
         <<Abstract>>
         -name: str
         -age: float
+        -type: str
         -happiness: int
         -hunger: int
         -health: int
-        +feed(food)
-        +bath(soap)
-        +sleep(hours)
-        +get_mood()
+        -sanity: int
+        -fat: int
+        -energy: int
+        -generosity: int
+        -list_food: dict
+        -list_soap: dict
+        -list_potion: dict
+        +feed(food) void
+        +bath(soap) void
+        +sleep(hours) void
+        +health_care() void
+        +get_mood() str
+        +get_summary() str
+        +get_age_summary() str
+        +limit_stats() void
+        +time_past() void
+        +get_age() float
     }
     class Cat {
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        -fav_food: str
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
     class Rabbit {
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        -fav_food: str
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
     class Dino {
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        -fav_food: str
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
     class Dragon {
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        -fav_food: str
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
     class Pou {
-        +baby()
-        +teen()
-        +adult()
-        +elder()
+        -fav_food: str
+        +baby() void
+        +teen() void
+        +adult() void
+        +elder() void
     }
 
     Main o-- Game
@@ -167,7 +206,6 @@ classDiagram
     VirtualPet <|-- Dragon
     VirtualPet <|-- Pou
 ```
-
 ---
 
 ## 🚀 开始使用
