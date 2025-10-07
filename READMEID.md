@@ -150,7 +150,7 @@ classDiagram
         +feed(food) void
         +bath(soap) void
         +sleep(hours) void
-        +health_care() void
+        +health_care(potion) void
         +get_mood() str
         +get_summary() str
         +get_age_summary() str
