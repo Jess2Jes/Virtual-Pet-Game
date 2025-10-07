@@ -85,71 +85,110 @@ The game's architecture is centered around the `VirtualPet` base class, with spe
 classDiagram
     class Main {
         +run()
-        +create_pet()
-        +select_pet()
+        -current_user: str
+        +create_pet(): void
+        +select_pet(): void
+        +show_pet_stats(pet): void
+        +interact_with_pet(pet): void
+        +days(): int
+        +time(): str
+        +time_spend(): void
     }
     class User {
-        <<class>>
-        +register(username, password)
-        +login(username, password)
+        +register(username, password): void
+        +login(username, password): void
         -username: str
-        -__password: str
-        -_currency: int
+        -<<property>> password: str
+        -<<property>> currency: int
         -pets: list~VirtualPet~
-        +add_pet(pet)
+        +add_pet(pet): void
+        +limit_currency(): void
     }
     class Game {
-        +create()
-        +view(pet)
-        +interact(pet)
+        -clock: datetime
+        -format: str
+        -spend: int
+        -day: int
+        +create(): void
+        +get_currency(): int
+        +get_health(pet): int
+        +view(pet): void
+        +interact(pet): void
     }
     class Shop {
         -food: dict
         -soap: dict
         -potion: dict
-        +buy(item, amount)
-        +interact()
+        -self.user: str
+        -self.money: int
+        +buy(item, amount): void
+        +show_currency(): void
+        +catalog_food(): void
+        +catalog_soap(): void
+        +catalog_potion(): void
+        +interact(): void
     }
     class Formatter {
+        -self.max_length: int
+        -self.max_len: int
         +format_status_box(stats)
     }
     class VirtualPet {
         <<Abstract>>
         -name: str
         -age: float
+        -type: str
         -happiness: int
         -hunger: int
         -health: int
-        +feed(food)
-        +bath(soap)
-        +sleep(hours)
-        +get_mood()
+        -sanity: int
+        -fat: int
+        -energy: int
+        -generosity: int
+        -list_food: dict
+        -list_soap: dict
+        -list_potion: dict
+        +feed(food): void
+        +bath(soap): void
+        +sleep(hours): void
+        +health_care(): void
+        +get_mood(): str
+        +get_summary(): str
+        +get_age_summary(): str
+        +limit_stats(): void
+        +time_past(): void
+        +get_age(): float
     }
     class Cat {
+        -fav_food: str
         +baby()
         +teen()
         +adult()
         +elder()
     }
     class Rabbit {
+        -fav_food: str
         +baby()
         +teen()
         +adult()
         +elder()
     }
     class Dino {
+        -fav_food: str
         +baby()
         +teen()
         +adult()
         +elder()
     }
     class Dragon {
+        -fav_food: str
         +baby()
         +teen()
         +adult()
         +elder()
     }
     class Pou {
+        -fav_food: str
         +baby()
         +teen()
         +adult()
