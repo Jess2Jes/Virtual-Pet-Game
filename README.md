@@ -83,7 +83,6 @@ The game's architecture is centered around the `VirtualPet` base class, with spe
 
 <img src="docs/Class-Diagram.png">
 
----
 
 ## 🚀 Getting Started
 
