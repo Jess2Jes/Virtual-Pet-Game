@@ -153,27 +153,23 @@ class VirtualPet:
 
         _, value = VirtualPet.list_potion[potion]
 
-        if potion == "Fat Burner":
-            if self.fat > 50:
-                self.fat = max(0, self.fat - 50)
-                print(f"\n{self.name}'s fat has been reduced!\n")
-            else:
-                print(f"\n{self.name}'s fat hasn't reached 50!\n")
+        if potion == "Fat Burner" and self.fat > 50:
+            self.fat = max(0, self.fat - 50)
+            print(f"\n{self.name}'s fat has been reduced!\n")
+        elif potion == "Fat Burner":
+            print(f"\n{self.name}'s fat hasn't reached 50!\n")
 
-        if potion == "Health Potion":
-            if self.health < 100:
-                self.health += int(value)
-                print(f"\n{self.name} has been healed 💊!\n")
+        elif potion == "Health Potion" and self.health < 100:
+            self.health += int(value)
+            print(f"\n{self.name} has been healed 💊!\n")
 
-        if potion == "Energizer":
-            if self.energy < 100:
-                self.energy += int(value)
-                print(f"\n{self.name}'s energy has been recharged 😆!\n")
+        elif potion == "Energizer" and self.energy < 100:
+            self.energy += int(value)
+            print(f"\n{self.name}'s energy has been recharged 😆!\n")
 
-        if potion == "Adult Potion":
-            if self.age < 20:
-                self.age += int(value)
-                print(f"\n{self.name} has leveled up to adult!\n")
+        elif potion == "Adult Potion" and self.age < 20:
+            self.age += int(value)
+            print(f"\n{self.name} has leveled up to adult!\n")
 
         self.limit_stat()
 

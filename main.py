@@ -1,8 +1,6 @@
 from features.shop import Shop
 from features.game import Game
 from features.user import User
-
-
 import sys
 
 INPUT_USERNAME = "Username: "
@@ -66,154 +64,154 @@ class Main:
         return self.game.day
 
     def time(self) -> str:
-        clock = 0
-        if (self.game.clock > 12):
-            clock = self.game.clock - 12
-        else:
-            clock = self.game.clock
-        
-        if (self.game.clock < 12):
-            return f"{clock} A.M."
-        else:
-            return f"{clock} P.M."
+        clock = self.game.clock - 12 if self.game.clock > 12 else self.game.clock
+        return f"{clock} A.M." if self.game.clock < 12 else f"{clock} P.M."
     
     def time_spend(self) -> None:
         self.game.spend += 1
 
-    def run(self) -> None:
+    def _auth_menu(self) -> int | None:
+        print("─" * 39 + " " + "VIRTUAL PET GAME" + " " + "─" * 44)
+        print("1. Register")
+        print("2. Login")
+        print("3. Change Password")
+        print("4. Exit")
+        print("─" * 101)
+        try:
+            return int(input("Choose (1-4): ").strip())
+        except ValueError:
+            print("\nPlease insert digit at choice input!\n")
+            return None
 
+    def _handle_auth_choice(self, choice: int) -> bool:
+        if choice == 1:
+            username = input(INPUT_USERNAME).strip()
+            password = input(
+                "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
+            ).strip()
+            User.register(username, password)
+            self.current_user = User.current_user
+        elif choice == 2:
+            username = input(INPUT_USERNAME).strip()
+            password = input(INPUT_PASSWORD).strip()
+            User.login(username, password)
+            self.current_user = User.current_user
+        elif choice == 3:
+            username = input(INPUT_USERNAME).strip()
+            password = input(INPUT_PASSWORD).strip()
+            new_password = input("Your New Password: ").strip()
+            if (username in User.users):
+                user = User.users[username]
+                if (password != user.password):
+                    print("\nWrong Previous Password! Change Password Operation Unsuccessful!")
+                else:
+                    user.password = new_password
+            else:
+                print("\nPlease create your own username/password first!")
+            print("\n")
+        elif choice == 4:
+            print("─" * 101)
+            sys.exit("Thank you for playing!\n")
+        else:
+            print("Please type again...\n")
+        return True
+
+    def _pet_zone_menu(self) -> int | None:
+        print("─" * 43 + " " + "PET ZONE" + " " + "─" * 48)
+        print("1. Check time")
+        print("2. Create a new pet")
+        print("3. Interact with pet")
+        print("4. Pet stats")
+        print("5. Show Pets")
+        print("6. Go to shop")
+        print("7. Logout")
+        print("─" * 101)
+        try:
+            return int(input("Choose (1-7): ").strip())
+        except ValueError:
+            print("\nPlease insert digit at choice input!\n")
+            return None
+
+    def _handle_pet_zone_choice(self, choice: int) -> bool:
+        if choice == 1:
+            print("\n" + "─"*101)
+            print("Time".center(101))
+            print("─"*101)
+            print(f"Time: {self.time()}")
+            print("─"*101)
+            print("\n" + "─"*101)
+            print("Day Spent Playing Virtual Pet Game".center(101))
+            print("─"*101)
+            print(f"Days: {self.days()} days")
+            print("─"*101 + "\n")
+
+        elif choice == 2:
+            self.create_pet()
+
+        elif choice == 3:
+            pet = self.select_pet()
+            if pet:
+                if getattr(pet, "health", 1) > 0:
+                    self.interact_with_pet(pet)
+                    pet.time_past()
+                else:
+                    print("\nYour pet has deceased... 🧦\n")
+
+        elif choice == 4:
+            pet = self.select_pet() 
+            if pet: 
+                self.show_pet_stats(pet)
+
+        elif choice == 5:
+            pet = self.select_pet()
+            if pet:
+                if getattr(pet, "health", 1) > 0:
+                    age = pet.get_age()
+
+                    if age < 1:
+                        pet.baby()
+                    elif 1 <= age < 3:
+                        pet.teen()
+                    elif 3 <= age < 10:
+                        pet.adult()
+                    else:
+                        pet.elder()
+                else:
+                    print("\nYour pet has deceased... 🧦\n")
+
+        elif choice == 6:
+            shopping = Shop(User.current_user)
+            shopping.interact()
+
+        elif choice == 7:
+            User.current_user = None
+            self.current_user = None
+            print()
+            return False
+
+        else:
+            print("\nPlease type again...\n")
+
+        self.time_spend()
+        return True
+
+    def run(self) -> None:
         print()
 
         while True:
             if not User.current_user:
-                print("─" * 39 + " " + "VIRTUAL PET GAME" + " " + "─" * 44)
-                print("1. Register")
-                print("2. Login")
-                print("3. Change Password")
-                print("4. Exit")
-                print("─" * 101)
-
-                try:
-                    choice = int(input("Choose (1-4): ").strip())
-                except ValueError:
-                    print("\nPlease insert digit at choice input!\n")
+                choice = self._auth_menu()
+                if choice is None:
                     continue
-
                 print()
-                if choice == 1:
-                    username = input(INPUT_USERNAME).strip()
-                    password = input(
-                        "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
-                    ).strip()
-                    User.register(username, password)
-                    self.current_user = User.current_user
-
-                elif choice == 2:
-                    username = input(INPUT_USERNAME).strip()
-                    password = input(INPUT_PASSWORD).strip()
-                    User.login(username, password)
-                    self.current_user = User.current_user
-                
-                elif choice == 3:
-                    username = input(INPUT_USERNAME).strip()
-                    password = input(INPUT_PASSWORD).strip()
-                    new_password = input("Your New Password: ").strip()
-                    if (username in User.users):
-                        user = User.users[username]
-                        if (password != user.password):
-                            print("\nWrong Previous Password! Change Password Operation Unsuccessful!")
-                        else:
-                            user.password = new_password
-                    else:
-                        print("\nPlease create your own username/password first!")
-                    
-                    print("\n")
-                    
-                elif choice == 4:
-                    print("─" * 101)
-                    sys.exit("Thank you for playing!\n")
-                else:
-                    print("Please type again...\n")
-
+                self._handle_auth_choice(choice)
             else:
                 while True:
-                    print("─" * 43 + " " + "PET ZONE" + " " + "─" * 48)
-                    print("1. Check time")
-                    print("2. Create a new pet")
-                    print("3. Interact with pet")
-                    print("4. Pet stats")
-                    print("5. Show Pets")
-                    print("6. Go to shop")
-                    print("7. Logout")
-                    print("─" * 101)
-
-                    try:
-                        choice = int(input("Choose (1-7): ").strip())
-                    except ValueError:
-                        print("\nPlease insert digit at choice input!\n")
+                    choice = self._pet_zone_menu()
+                    if choice is None:
                         continue
-
-                    if choice == 1:
-                        print("\n" + "─"*101)
-                        print("Time".center(101))
-                        print("─"*101)
-                        print(f"Time: {self.time()}")
-                        print("─"*101)
-                        print("\n" + "─"*101)
-                        print("Day Spent Playing Virtual Pet Game".center(101))
-                        print("─"*101)
-                        print(f"Days: {self.days()} days")
-                        print("─"*101 + "\n")
-
-                    elif choice == 2:
-                        self.create_pet()
-
-                    elif choice == 3:
-                        pet = self.select_pet()
-                        if pet:
-                            if getattr(pet, "health", 1) > 0:
-                                self.interact_with_pet(pet)
-                                pet.time_past()
-                            else:
-                                print("\nYour pet has deceased... 🪦\n")
-
-                    elif choice == 4:
-                        pet = self.select_pet() 
-                        if pet: 
-                            self.show_pet_stats(pet)
-
-                    elif choice == 5:
-                        pet = self.select_pet()
-                        if pet:
-                            if getattr(pet, "health", 1) > 0:
-                                age = pet.get_age()
-
-                                if age < 1:
-                                    pet.baby()
-                                elif 1 <= age < 3:
-                                    pet.teen()
-                                elif 3 <= age < 10:
-                                    pet.adult()
-                                else:
-                                    pet.elder()
-                            else:
-                                print("\nYour pet has deceased... 🪦\n")
-                        
-                        
-                    elif choice == 6:
-                        shopping = Shop(User.current_user)
-                        shopping.interact()
-
-                    elif choice == 7:
-                        User.current_user = None
-                        self.current_user = None
-                        print()
+                    if not self._handle_pet_zone_choice(choice):
                         break
-
-                    else:
-                        print("\nPlease type again...\n")
-                    
-                    self.time_spend()
 
 
 if __name__ == "__main__":
