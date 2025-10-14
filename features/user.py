@@ -4,6 +4,7 @@ import math
 import string
 from random import randrange
 
+GARIS = "─────────────────────────────────────────────────────────────────────────────────────────────────────"
 class User:
     users = {}      
     current_user = None  
@@ -71,17 +72,17 @@ class User:
 
         if total_digit < 1:
             print("Password must contain at least 1 digit!\n")
-            print("─────────────────────────────────────────────────────────────────────────────────────────────────────")
+            print(GARIS)
             return
 
         if total_symbol < 2:
             print("Password must consist of at least 2 symbols!\n")
-            print("─────────────────────────────────────────────────────────────────────────────────────────────────────")
+            print(GARIS)
             return
 
         if total_letter < 8:
             print("Password must consist of at least 8 letters!\n")
-            print("─────────────────────────────────────────────────────────────────────────────────────────────────────")
+            print(GARIS)
             return
 
         new_user = cls(username, password)

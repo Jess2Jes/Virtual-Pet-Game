@@ -1,6 +1,6 @@
 import datetime
 from random import randrange, choice as ch
-from .animal import *
+from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
 from .formatter import Formatter
 from .user import User
 

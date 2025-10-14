@@ -5,6 +5,8 @@ from features.user import User
 
 import sys
 
+INPUT_USERNAME = "Username: "
+INPUT_PASSWORD = "Password: "
 class Main:
     def __init__(self):
         self.game = Game()           
@@ -18,7 +20,7 @@ class Main:
         self.game.create()
 
         if Game.animal_list:
-            new_pet = Game.animal_list[-1]  # last created pet
+            new_pet = Game.animal_list[-1]  
             self.current_user.add_pet(new_pet)
             print(f"\nYou adopted {new_pet.name} the {new_pet.type}!\n")
         else:
@@ -99,7 +101,7 @@ class Main:
 
                 print()
                 if choice == 1:
-                    username = input("Username: ").strip()
+                    username = input(INPUT_USERNAME).strip()
                     password = input(
                         "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
                     ).strip()
@@ -107,14 +109,14 @@ class Main:
                     self.current_user = User.current_user
 
                 elif choice == 2:
-                    username = input("Username: ").strip()
-                    password = input("Password: ").strip()
+                    username = input(INPUT_USERNAME).strip()
+                    password = input(INPUT_PASSWORD).strip()
                     User.login(username, password)
                     self.current_user = User.current_user
                 
                 elif choice == 3:
-                    username = input("Username: ").strip()
-                    password = input("Password: ").strip()
+                    username = input(INPUT_USERNAME).strip()
+                    password = input(INPUT_PASSWORD).strip()
                     new_password = input("Your New Password: ").strip()
                     if (username in User.users):
                         user = User.users[username]
