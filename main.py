@@ -2,6 +2,7 @@ from features.shop import Shop
 from features.game import Game
 from features.user import User
 import sys
+from features.formatter import GARIS
 
 INPUT_USERNAME = "Username: "
 INPUT_PASSWORD = "Password: "
@@ -77,7 +78,7 @@ class Main:
         print("2. Login")
         print("3. Change Password")
         print("4. Exit")
-        print("─" * 101)
+        print(GARIS)
         try:
             return int(input("Choose (1-4): ").strip())
         except ValueError:
@@ -111,7 +112,7 @@ class Main:
                 print("\nPlease create your own username/password first!")
             print("\n")
         elif choice == 4:
-            print("─" * 101)
+            print(GARIS)
             sys.exit("Thank you for playing!\n")
         else:
             print("Please type again...\n")
@@ -126,7 +127,7 @@ class Main:
         print("5. Show Pets")
         print("6. Go to shop")
         print("7. Logout")
-        print("─" * 101)
+        print(GARIS)
         try:
             return int(input("Choose (1-7): ").strip())
         except ValueError:
@@ -134,16 +135,16 @@ class Main:
             return None
 
     def _show_time_and_days(self) -> bool:
-        print("\n" + "─"*101)
+        print("\n" + GARIS)
         print("Time".center(101))
-        print("─"*101)
+        print(GARIS)
         print(f"Time: {self.time()}")
-        print("─"*101)
-        print("\n" + "─"*101)
+        print(GARIS)
+        print("\n" + GARIS)
         print("Day Spent Playing Virtual Pet Game".center(101))
-        print("─"*101)
+        print(GARIS)
         print(f"Days: {self.days()} days")
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
         return True
 
     def _interact_with_selected_pet(self) -> bool:

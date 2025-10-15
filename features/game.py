@@ -1,7 +1,7 @@
 import datetime
 from random import randrange, choice as ch
 from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
-from .formatter import Formatter
+from .formatter import Formatter, GARIS
 from .user import User
 
 class Game:
@@ -22,14 +22,14 @@ class Game:
         print()
         print("─"*36 + " " + "Create Your Own Pet" + " " + "─"*44)
         name = input("Name your pet: ").title()
-        print("─"*101)
+        print(GARIS)
         print("Here's five types of species you can choose: ")
         print("1. Cat")
         print("2. Rabbit")
         print("3. Dinosaur")
         print("4. Dragon")
         print("5. Pou")
-        print("─"*101)
+        print(GARIS)
         
         species_map = {
             "cat": Cat,
@@ -50,9 +50,9 @@ class Game:
             print()
 
         print()
-        print("─"*101)
+        print(GARIS)
         print(f"{name}, a {species}, has born!")
-        print("─"*101)
+        print(GARIS)
     
     
     def view(self, pet) -> None:
@@ -87,7 +87,7 @@ class Game:
         print("6. Take a walk")
         print("7. Talk to pet")
         print("8. Exit")
-        print("─"*101)
+        print(GARIS)
 
     @staticmethod
     def _input_int(prompt: str):
@@ -98,9 +98,9 @@ class Game:
 
     @staticmethod
     def _print_stock(title: str, store: dict) -> None:
-        print("\n" + "─"*101)
+        print("\n" + GARIS)
         print(title)
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
         for key in store.keys():
             vals = store[key]
             if len(vals) == 3:
@@ -112,14 +112,14 @@ class Game:
     
     @staticmethod
     def _print_potion_requirement(title: str) -> None:
-        print("\n" + "─"*101)
+        print("\n" + GARIS)
         print(title)
-        print("─"*101)
+        print(GARIS)
         print("1. Fat Burner can be used if your energy is below 50.")
         print("2. Health Potion can be used if your health is below 100.")
         print("3. Energizer can be used if your energy is below 100.")
         print("4. Adult Potion can be used if your age is below 20.")
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
 
     @staticmethod
     def _feed(pet: VirtualPet) -> None:
@@ -172,7 +172,7 @@ class Game:
         print(f"Happiness : {pet.happiness}")
         print(f"Hunger: {pet.hunger}")
         print(f"Energy: {pet.energy}")
-        print("─"*101)
+        print(GARIS)
 
     @staticmethod
     def _bath(pet: VirtualPet) -> None:
@@ -247,19 +247,19 @@ class Game:
         print(f"Happiness : {pet.happiness}")
         print(f"Hunger: {pet.hunger}")
         print(f"Energy: {pet.energy}")
-        print("─"*101)
+        print(GARIS)
     
     def _talk_menu(self, pet: VirtualPet) -> None:
         while True:
-            print("─"*101)
+            print(GARIS)
             print("Topic of Conversation: ")
-            print("─"*101)
+            print(GARIS)
             print("1. What do you want to do today?")
             print("2. What is your favourite food?")
             print("3. Can you give me money?")
             print("4. Tell a joke")
             print("5. Goodbye")
-            print("─"*101)
+            print(GARIS)
             topic = self._input_int("Choose a topic: ")
 
             if topic is None:
