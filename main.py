@@ -129,8 +129,6 @@ class Main:
 
         elif choice == 3:
             while True:
-                is_auth = False
-
                 username = input(INPUT_USERNAME).strip()
                 password = input(INPUT_PASSWORD).strip()
                 new_password = input("Your New Password: ").strip()
@@ -142,21 +140,19 @@ class Main:
                     else:
                         user.password = new_password
                         if (user.password != password):
-                            is_auth = True
+                            print("\n")
+                            break
                 else:
                     print("\nPlease create your own username/password first!")
 
-                if (not is_auth):
-                    print("\n" + GARIS)
-                    change_chances = input("Would you like change password again? (Y/N)\n" \
-                        "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
-                    if (change_chances == "Y"):
-                        print("\n")
-                        continue
-                    else:
-                        print("\n")
-                        break
+                print("\n" + GARIS)
+                change_chances = input("Would you like change password again? (Y/N)\n" \
+                    "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
+                if (change_chances == "Y"):
+                    print("\n")
+                    continue
                 else:
+                    print("\n")
                     break
             
         elif choice == 4:
