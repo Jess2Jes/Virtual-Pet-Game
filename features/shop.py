@@ -31,6 +31,14 @@ class Shop:
         self.user = user
         self.money = user.current_user.currency
 
+    @staticmethod
+    def _input_int(prompt: str, err: str = "\nPlease insert digit at choice input!"):
+        try:
+            return int(input(prompt))
+        except ValueError:
+            print(err)
+            return None
+
     def show_currency(self) -> None:
         print("─"*101)
 
@@ -129,6 +137,13 @@ class Shop:
         else:
             print(f"Total money left: Rp. {self.money}\n")
 
+    def _buy_flow(self) -> None:
+        item = input("What do you want to buy? ").title()
+        while True:
+            amount = self._input_int("How many do you want to buy? ", "\nPlease input number in amount!")
+            if amount is not None:
+                break
+        self.buy(item, amount)
 
     def interact(self) -> None:
         while True: 
@@ -141,41 +156,26 @@ class Shop:
             print("6. Exit")
             print('='*101)
 
-            try:
-                choice = int(input("Choose (1-6): "))
-            except ValueError:
+            choice = self._input_int("Choose (1-6): ")
+            if choice is None:
                 print("\nPlease insert digit at choice input!")
-            else:
+                continue
+
+            actions = {
+                1: self.catalog_food,
+                2: self.catalog_soap,
+                3: self.catalog_potion,
+                4: self._buy_flow,
+                5: self.show_currency
+            }
+
+            if choice == 6:
+                print("Thank you for shopping.\n")
+                break
+
+            action = actions.get(choice)
+            if action:
                 print()
-                
-                if (choice == 1):
-                    self.catalog_food()
-
-                elif (choice == 2):
-                    self.catalog_soap()
-
-                elif (choice == 3):
-                    self.catalog_potion()
-                
-                elif (choice == 4):
-                    item = input("What do you want to buy? ").title()
-
-                    while True:
-                        try:
-                            amount = int(input("How many do you want to buy? "))
-                            break
-                        except ValueError:
-                            print("\nPlease input number in amount!")
-                        
-                    self.buy(item, amount)
-                
-                elif (choice == 5):
-                    self.show_currency()
-                
-                elif (choice == 6):
-                    print("Thank you for shopping.\n")
-                    break
-                    
-                else:
-                    print("\nPlease choose from (1-6).")
-                    
+                action()
+            else:
+                print("\nPlease choose from (1-6).")

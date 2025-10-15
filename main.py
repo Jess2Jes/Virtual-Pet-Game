@@ -132,86 +132,108 @@ class Main:
             print("\nPlease insert digit at choice input!\n")
             return None
 
-    def _handle_pet_zone_choice(self, choice: int) -> bool:
-        if choice == 1:
-            print("\n" + "─"*101)
-            print("Time".center(101))
-            print("─"*101)
-            print(f"Time: {self.time()}")
-            print("─"*101)
-            print("\n" + "─"*101)
-            print("Day Spent Playing Virtual Pet Game".center(101))
-            print("─"*101)
-            print(f"Days: {self.days()} days")
-            print("─"*101 + "\n")
-
-        elif choice == 2:
-            self.create_pet()
-
-        elif choice == 3:
-            pet = self.select_pet()
-            if pet:
-                if getattr(pet, "health", 1) > 0:
-                    self.interact_with_pet(pet)
-                    pet.time_past()
-                else:
-                    print("\nYour pet has deceased... 🧦\n")
-
-        elif choice == 4:
-            pet = self.select_pet() 
-            if pet: 
-                self.show_pet_stats(pet)
-
-        elif choice == 5:
-            pet = self.select_pet()
-            if pet:
-                if getattr(pet, "health", 1) > 0:
-                    age = pet.get_age()
-
-                    if age < 1:
-                        pet.baby()
-                    elif 1 <= age < 3:
-                        pet.teen()
-                    elif 3 <= age < 10:
-                        pet.adult()
-                    else:
-                        pet.elder()
-                else:
-                    print("\nYour pet has deceased... 🧦\n")
-
-        elif choice == 6:
-            shopping = Shop(User.current_user)
-            shopping.interact()
-
-        elif choice == 7:
-            User.current_user = None
-            self.current_user = None
-            print()
-            return False
-
-        else:
-            print("\nPlease type again...\n")
-
-        self.time_spend()
+    def _show_time_and_days(self) -> bool:
+        print("\n" + "─"*101)
+        print("Time".center(101))
+        print("─"*101)
+        print(f"Time: {self.time()}")
+        print("─"*101)
+        print("\n" + "─"*101)
+        print("Day Spent Playing Virtual Pet Game".center(101))
+        print("─"*101)
+        print(f"Days: {self.days()} days")
+        print("─"*101 + "\n")
         return True
+
+    def _interact_with_selected_pet(self) -> bool:
+        pet = self.select_pet()
+        if not pet:
+            return True
+        if getattr(pet, "health", 1) > 0:
+            self.interact_with_pet(pet)
+            pet.time_past()
+        else:
+            print("\nYour pet has deceased... 🧦\n")
+        return True
+
+    def _show_selected_pet_stats(self) -> bool:
+        pet = self.select_pet()
+        if pet:
+            self.show_pet_stats(pet)
+        return True
+
+    def _show_pet_stage(self) -> bool:
+        pet = self.select_pet()
+        if not pet:
+            return True
+        if getattr(pet, "health", 1) > 0:
+            age = pet.get_age()
+            if age < 1:
+                pet.baby()
+            elif 1 <= age < 3:
+                pet.teen()
+            elif 3 <= age < 10:
+                pet.adult()
+            else:
+                pet.elder()
+        else:
+            print("\nYour pet has deceased... 🧦\n")
+        return True
+
+    def _go_to_shop(self) -> bool:
+        shopping = Shop(User.current_user)
+        shopping.interact()
+        return True
+
+    def _logout(self) -> bool:
+        User.current_user = None
+        self.current_user = None
+        print()
+        return False
+
+    def _invalid_pet_zone_choice(self) -> bool:
+        print("\nPlease type again...\n")
+        return True
+
+    def _handle_pet_zone_choice(self, choice: int) -> bool:
+        handlers = {
+            1: self._show_time_and_days,
+            2: self.create_pet,
+            3: self._interact_with_selected_pet,
+            4: self._show_selected_pet_stats,
+            5: self._show_pet_stage,
+            6: self._go_to_shop,
+            7: self._logout,
+        }
+        handler = handlers.get(choice, self._invalid_pet_zone_choice)
+        result = handler()
+        # Keep original behavior: advance time after handling a choice
+        self.time_spend()
+        return bool(result)
+
+    def _auth_flow(self) -> None:
+        while not User.current_user:
+            choice = self._auth_menu()
+            if choice is None:
+                continue
+            print()
+            self._handle_auth_choice(choice)
+
+    def _pet_zone_flow(self) -> None:
+        while User.current_user:
+            choice = self._pet_zone_menu()
+            if choice is None:
+                continue
+            if not self._handle_pet_zone_choice(choice):
+                break
 
     def run(self) -> None:
         print()
-
         while True:
             if not User.current_user:
-                choice = self._auth_menu()
-                if choice is None:
-                    continue
-                print()
-                self._handle_auth_choice(choice)
+                self._auth_flow()
             else:
-                while True:
-                    choice = self._pet_zone_menu()
-                    if choice is None:
-                        continue
-                    if not self._handle_pet_zone_choice(choice):
-                        break
+                self._pet_zone_flow()
 
 
 if __name__ == "__main__":
