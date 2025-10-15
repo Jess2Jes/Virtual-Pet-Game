@@ -330,30 +330,27 @@ class Game:
 
             print()
 
-    @staticmethod
-    def interact(pet) -> None:
+    def interact(self, pet) -> None:
         print("\n" + "="*101)
         print(f"Playing with {pet.name}, the {pet.type}:")
+        actions = {
+            1: self._feed,
+            2: self._play,
+            3: self._bath,
+            4: self._give_potion,
+            5: self._sleep,
+            6: self._walk,
+            7: self._talk_menu
+        }
         while True:
-            Game._print_main_interact_menu()
-            choice = Game._input_int("Choose (1-8): ")
+            self._print_main_interact_menu()
+            choice = self._input_int("Choose (1-8): ")
             if choice is None:
                 continue
-            if choice == 1:
-                Game()._feed(pet)
-            elif choice == 2:
-                Game()._play(pet)
-            elif choice == 3:
-                Game()._bath(pet)
-            elif choice == 4:
-                Game()._give_potion(pet)
-            elif choice == 5:
-                Game()._sleep(pet)
-            elif choice == 6:
-                Game()._walk(pet)
-            elif choice == 7:
-                Game()._talk_menu(pet)
-            elif choice == 8:
+            if choice == 8:
                 break
+            action = actions.get(choice)
+            if action:
+                action(pet)
             else:
                 print("\nPlease choose from (1-8).")

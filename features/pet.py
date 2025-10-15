@@ -1,6 +1,11 @@
 from random import randrange
 from typing import Dict, List
 
+FAT_BURNER = "Fat Burner"
+HEALTH_POTION = "Health Potion"
+ENERGIZER = "Energizer"
+ADULT_POTION = "Adult Potion"
+
 class VirtualPet:
     list_food: Dict[str, List[int]] = {
         "Kentucky Fried Chicken": [1, 15, 5],
@@ -19,10 +24,10 @@ class VirtualPet:
     }
 
     list_potion: Dict[str, List[int]] = {
-        "Fat Burner": [1, -50],     
-        "Health Potion": [2, 50],   
-        "Energizer": [1, 50],       
-        "Adult Potion": [0, 20],    
+        FAT_BURNER: [1, -50],     
+        HEALTH_POTION: [2, 50],   
+        ENERGIZER: [1, 50],       
+        ADULT_POTION: [0, 20],    
     }
 
     def __init__(self, name: str, age: float = 0, species: str = "Pet"):
@@ -153,21 +158,21 @@ class VirtualPet:
 
         _, value = VirtualPet.list_potion[potion]
 
-        if potion == "Fat Burner" and self.fat > 50:
+        if potion == FAT_BURNER and self.fat > 50:
             self.fat = max(0, self.fat - 50)
             print(f"\n{self.name}'s fat has been reduced!\n")
-        elif potion == "Fat Burner":
+        elif potion == FAT_BURNER:
             print(f"\n{self.name}'s fat hasn't reached 50!\n")
 
-        elif potion == "Health Potion" and self.health < 100:
+        elif potion == HEALTH_POTION and self.health < 100:
             self.health += int(value)
             print(f"\n{self.name} has been healed 💊!\n")
 
-        elif potion == "Energizer" and self.energy < 100:
+        elif potion == ENERGIZER and self.energy < 100:
             self.energy += int(value)
             print(f"\n{self.name}'s energy has been recharged 😆!\n")
 
-        elif potion == "Adult Potion" and self.age < 20:
+        elif potion == ADULT_POTION and self.age < 20:
             self.age += int(value)
             print(f"\n{self.name} has leveled up to adult!\n")
 
