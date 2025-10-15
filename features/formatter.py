@@ -33,18 +33,22 @@ class Formatter:
 
             Contoh:
             lines = [
-                "Mochi the Cat",     # length = 13
-                "Age     : 2",       # length = 10
-                "Hunger  : 90",      # length = 12
-                "Happy   : 50",      # length = 12
-                "Energy  : 10",      # length = 12
-                "Health  : 100",     # length = 13
-                "Mood    : Hungry"   # length = 17  <-- ini paling panjang
+                "Mochi the Cat",          # length = 13
+                "Age        : 2",         # length = 14
+                "Hunger     : 90",        # length = 15
+                "Fat        : 0",         # length = 14
+                "Sanity     : 50",        # length = 15
+                "Happy      : 100",       # length = 16
+                "Energy     : 15",        # length = 15
+                "Health     : 20",        # length = 15
+                "Mood       : Happy",     # length = 18
+                "Status     : Critical",  # length = 21
+                "Age Status : Teen",      # length = 17
             ]
 
             Hasil:
-            max_length = 17
-            (semua baris box akan disesuaikan dengan lebar 17) 
+            max_length = 21
+            (semua baris box akan disesuaikan dengan lebar 21) 
         '''
 
         for line in lines:
