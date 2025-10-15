@@ -39,7 +39,7 @@ class Formatter:
                 "Fat        : 0",         # length = 14
                 "Sanity     : 50",        # length = 15
                 "Happy      : 100",       # length = 16
-                "Energy     : 15",        # length = 15
+                "Energy     : 52",        # length = 15
                 "Health     : 20",        # length = 15
                 "Mood       : Happy",     # length = 18
                 "Status     : Critical",  # length = 21
