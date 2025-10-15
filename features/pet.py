@@ -98,112 +98,151 @@ class VirtualPet:
         return self.age
 
     def feed(self, food: str) -> None:
-        print("="*101)
-        if food not in VirtualPet.list_food:
-            print(f"\nUnknown food: {food}\n")
-            return
+        
+        try: 
+            food_value, hunger_change, happiness_change = VirtualPet.list_food[food]
 
-        if self.hunger >= 100:
-            print(f"\n{self.name} doesn't want to eat anymore 🤢!\n")
-            return
+        except KeyError:
+            print(f"\n{food} doesn't exist in the fridge!")
 
-        _, hunger_change, happiness_change = VirtualPet.list_food[food]
+        else:
+            if VirtualPet.list_food[food][0] == 0:
+                print(f"\nThere are no {food.lower()} left in the fridge!")
+                return
 
-        print(f"\n{self.name} has been fed with '{food}' 🍽️.\n")
-        self.hunger += int(hunger_change)
-        self.happiness += int(happiness_change)
+            if self.hunger >= 100:
+                print(f"\n{self.name} doesn't want to eat anymore 🤢!")
+                return
 
-        if self.hunger >= 100:
-            self.fat += 5
+            print("\n" + "="*101)
 
-        self.limit_stat()
+            print(f"\n{self.name} has been fed with '{food}' 🍽️.")
 
-        print("="*101)
-        print(f"{self.name}'s status: ")
-        print("="*101)
-        print(f"Fat: {self.fat}")
-        print(f"Hunger: {self.hunger}")
-        print(f"Happiness: {self.happiness}")
-        print("="*101)
+            food_value -= 1
+
+            print(f"Remaining {food}: {food_value}\n")
+
+            self.hunger += int(hunger_change)
+            self.happiness += int(happiness_change)
+
+            if (self.hunger >= 100):
+                self.fat += 5
+
+            self.limit_stat()
+
+            print("="*101)
+            print(f"{self.name}'s status: ")
+            print("="*101)
+            print(f"Fat: {self.fat}")
+            print(f"Hunger: {self.hunger}")
+            print(f"Happiness: {self.happiness}")
+            print("="*101)
+
+            VirtualPet.list_food[food][0] = food_value
 
     def bath(self, soap: str) -> None:
-        print("="*101)
-        if soap not in VirtualPet.list_soap:
-            print(f"\nUnknown soap: {soap}\n")
-            return
+        
+        try:
+            soap_value, sanity_change, happiness_change = VirtualPet.list_soap[soap]
+            
+        except KeyError:
+            print(f"\n{soap} doesn't exist in the cabinet!")
 
-        if self.sanity >= 100:
-            print(f"\n{self.name}'s sanity is still full!\n")
-            return
+        else:
+            if (VirtualPet.list_soap[soap][0] == 0):
+                print(f"\nThere are no {soap.lower()} left in the cabinet!")
+                return
+            
+            if (self.sanity >= 100):
+                print(f"\n{self.name}'s sanity is still full!\n")
+                return
+            
+            print("\n" + "="*101)
 
-        _, sanity_change, happiness_change = VirtualPet.list_soap[soap]
-        self.sanity += int(sanity_change)
-        self.happiness += int(happiness_change)
-        print(f"\n{self.name} has been bathed 🛁 with '{soap}'.\n")
+            self.sanity += int(sanity_change)
+            self.happiness += int(happiness_change)
 
-        self.limit_stat()
+            print(f"\n{self.name} has been bathed 🛁 with '{soap}'.")
 
-        print("="*101)
-        print(f"{self.name}'s status: ")
-        print("="*101)
-        print(f"Sanity: {self.sanity}")
-        print(f"Happiness: {self.happiness}")
-        print("="*101)
+            soap_value -= 1
+
+            print(f"Remaining {soap}: {soap_value}\n")
+
+            self.limit_stat()
+
+            print("="*101)
+            print(f"{self.name}'s status: ")
+            print("="*101)
+            print(f"Sanity: {self.sanity}")
+            print(f"Happiness: {self.happiness}")
+            print("="*101)
+
+            VirtualPet.list_soap[soap][0] = soap_value
 
     def health_care(self, potion: str) -> None:
-        print("\n" + "="*101)
-        if potion not in VirtualPet.list_potion:
-            print(f"\nUnknown potion: {potion}\n")
-            return
+        
+        try:
+            potion_value, change = VirtualPet.list_potion[potion]
 
-        _, value = VirtualPet.list_potion[potion]
+        except KeyError:
+            print(f"\n{potion} doesn't exist!")
+        
+        else:
+            if potion == FAT_BURNER and self.fat > 50:
+                self.fat = max(0, self.fat - 50)
+                print(f"\n{self.name}'s fat has been reduced!\n")
+            elif potion == FAT_BURNER:
+                print(f"\n{self.name}'s fat hasn't reached 50!\n")
 
-        if potion == FAT_BURNER and self.fat > 50:
-            self.fat = max(0, self.fat - 50)
-            print(f"\n{self.name}'s fat has been reduced!\n")
-        elif potion == FAT_BURNER:
-            print(f"\n{self.name}'s fat hasn't reached 50!\n")
+            elif potion == HEALTH_POTION and self.health < 100:
+                self.health += int(change)
+                print(f"\n{self.name} has been healed 💊!\n")
 
-        elif potion == HEALTH_POTION and self.health < 100:
-            self.health += int(value)
-            print(f"\n{self.name} has been healed 💊!\n")
+            elif potion == ENERGIZER and self.energy < 100:
+                self.energy += int(change)
+                print(f"\n{self.name}'s energy has been recharged 😆!\n")
 
-        elif potion == ENERGIZER and self.energy < 100:
-            self.energy += int(value)
-            print(f"\n{self.name}'s energy has been recharged 😆!\n")
+            elif potion == ADULT_POTION and self.age < 20:
+                self.age += int(change)
+                print(f"\n{self.name} has leveled up to adult!\n")
 
-        elif potion == ADULT_POTION and self.age < 20:
-            self.age += int(value)
-            print(f"\n{self.name} has leveled up to adult!\n")
+            else:
+                print(f"\n{self.name} hasn't reached requirement to use {potion}!")
+                return
+            
+            potion_value -= 1
+            print(f"Remaining {potion}: {potion_value}\n")
 
-        self.limit_stat()
+            self.limit_stat()
 
-        print("="*101)
-        print(f"{self.name}'s status: ")
-        print("="*101)
-        print(f"Fat: {self.fat}")
-        print(f"Health: {self.health}")
-        print(f"Energy: {self.energy}")
-        print("="*101)
+            print("="*101)
+            print(f"{self.name}'s status: ")
+            print("="*101)
+            print(f"Fat: {self.fat}")
+            print(f"Health: {self.health}")
+            print(f"Energy: {self.energy}")
+            print("="*101)
+
+            VirtualPet.list_potion[potion][0] = potion_value
 
     def sleep(self, hours: int) -> None:
 
         print("\n" + "="*101)
-        if hours < 4:
+        if (hours < 4):
             print(f"{self.name} has a good nap 😴.")
             print(f"{self.name}'s energy increased by 10.")
             print(f"{self.name}'s hunger decreased by 4.")
             self.energy += 10
             self.hunger = max(0, self.hunger - 4)
 
-        elif 4 <= hours <= 8:
+        elif (4 <= hours <= 8):
             print(f"{self.name} has a good night sleep 😴.")
             print(f"{self.name}'s energy increased by 55.")
             print(f"{self.name}'s hunger decreased by 35.")
             self.energy += 55
             self.hunger = max(0, self.hunger - 35)
 
-        elif hours >= 12:
+        elif (hours >= 12):
             print(f"{self.name} has too much sleep 😴.")
             print(f"{self.name}'s energy increased by 100.")
             print(f"{self.name}'s hunger decreased by 95.")
