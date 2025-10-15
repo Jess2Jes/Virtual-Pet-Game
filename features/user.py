@@ -21,7 +21,11 @@ class User:
 
     @currency.setter
     def currency(self, value) -> None:
-        self._currency = value
+
+        if (value < 0):
+            print("\nCurrency cannot be below 0!")
+        else:
+            self._currency = value
     
     def limit_currency(self) -> None:
         for attr in ("currency"):
