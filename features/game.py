@@ -110,22 +110,30 @@ class Game:
                 print(f"- {key} (Available: {vals[0]})")
             else:
                 print(f"- {key} (Available: {vals[0]})")
+    
+    @staticmethod
+    def _print_potion_requirement(title: str) -> None:
+        print("─"*101)
+        print(title)
+        print("─"*101 + "\n")
+        print("1. Fat Burner can be used if your energy is below 50.")
+        print("2. Health Potion can be used if your health is below 100.")
+        print("3. Energizer can be used if your energy is below 100.")
+        print("4. Adult Potion can be used if your age is below 20.")
+        print("─"*101 + "\n")
 
     def _feed(self, pet: VirtualPet) -> None:
+
         print("─"*101)
         print("Available food:")
         print("─"*101 + "\n")
+
         for food_name, (avail, hunger, happy) in VirtualPet.list_food.items():
             print(f"- {food_name} (Hunger: {hunger}, Happiness: {happy}, Available: {avail})")
+
         food = input("\nWhich food (input food's name)? ").title()
-        if food not in VirtualPet.list_food:
-            print("\nFood that you inputted doesn't exist on your fridge!")
-            return
-        if VirtualPet.list_food[food][0] == 0:
-            print(f"\nThere are no {food.lower()} left in the fridge!\n")
-            return
+    
         pet.feed(food)
-        VirtualPet.list_food[food][0] -= 1
 
     def _play(self, pet: VirtualPet) -> None:
         if pet.energy < 10:
@@ -172,36 +180,29 @@ class Game:
         print("─"*101)
 
     def _bath(self, pet: VirtualPet) -> None:
+
         print("─"*101)
         print("Available soap:")
         print("─"*101 + "\n")
+
         for soap_name, (avail, sanity, happy) in VirtualPet.list_soap.items():
             print(f"- {soap_name} (Sanity: {sanity}, Happiness: {happy}, Available: {avail})")
+
         soap = input("\nWhich soap (input soap's name)? ").title()
-        if soap not in VirtualPet.list_soap:
-            print("\nSoap that you inputted doesn't exist on your cabinet!")
-            return
-        if VirtualPet.list_soap[soap][0] == 0:
-            print(f"\nThere are no {soap.lower()} left in the cabinet!\n")
-            return
+        
         pet.bath(soap)
-        VirtualPet.list_soap[soap][0] -= 1
 
     def _give_potion(self, pet: VirtualPet) -> None:
         print("─"*101)
         print("Available potions:")
         print("─"*101 + "\n")
+
         for potion_name in VirtualPet.list_potion.keys():
             print(f"- {potion_name} (Available: {VirtualPet.list_potion[potion_name][0]})")
+
         potion = input("\nWhich potion (input potion's name)? ").title()
-        if potion not in VirtualPet.list_potion:
-            print("\nPotion that you inputted doesn't exist!")
-            return
-        if VirtualPet.list_potion[potion][0] == 0:
-            print(f"\nThere are no {potion.lower()} left!\n")
-            return
+
         pet.health_care(potion)
-        VirtualPet.list_potion[potion][0] -= 1
 
     def _sleep(self, pet: VirtualPet) -> None:
         hours = self._input_int(f"{pet.name}'s sleep duration (1-12): ")
