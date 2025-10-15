@@ -138,7 +138,7 @@ class Shop:
             print(f"Total money left: Rp. {self.money}\n")
 
     def _buy_flow(self) -> None:
-        item = input("What do you want to buy? ").title()
+        item = input("What do you want to buy? ").title().strip()
         while True:
             amount = self._input_int("How many do you want to buy? ")
             if amount is not None:

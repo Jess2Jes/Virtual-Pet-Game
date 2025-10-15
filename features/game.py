@@ -21,7 +21,7 @@ class Game:
     def create(cls) -> None:
         print()
         print("─"*36 + " " + "Create Your Own Pet" + " " + "─"*44)
-        name = input("Name your pet: ").title()
+        name = input("Name your pet: ").title().strip()
         print(GARIS)
         print("Here's five types of species you can choose: ")
         print("1. Cat")
@@ -40,7 +40,7 @@ class Game:
         }
 
         while True: 
-            species = input("Choose his/her species (input type of species here): ").lower()
+            species = input("Choose his/her species (input type of species here): ").lower().strip()
             cls_type = species_map.get(species)
             if cls_type:
                 animal = cls_type(name, 0)
@@ -123,7 +123,7 @@ class Game:
 
     @staticmethod
     def _feed(pet: VirtualPet) -> None:
-        food = input("\nWhich food (input food's name)? ").title()
+        food = input("\nWhich food (input food's name)? ").title().strip()
         pet.feed(food)
 
     @staticmethod
@@ -176,12 +176,12 @@ class Game:
 
     @staticmethod
     def _bath(pet: VirtualPet) -> None:
-        soap = input("\nWhich soap (input soap's name)? ").title()
+        soap = input("\nWhich soap (input soap's name)? ").title().strip()
         pet.bath(soap)
 
     @staticmethod
     def _give_potion(pet: VirtualPet) -> None:
-        potion = input("\nWhich potion (input potion's name)? ").title()
+        potion = input("\nWhich potion (input potion's name)? ").title().strip()
         pet.health_care(potion)
 
     def _sleep(self, pet: VirtualPet) -> None:
