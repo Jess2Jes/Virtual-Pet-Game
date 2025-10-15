@@ -240,6 +240,9 @@ class Game:
         pet.happiness += 25
         pet.hunger -= 5
         pet.energy -= 15
+        
+        print(f"{pet.name}'s hunger decreased by 5.")
+        print(f"{pet.name}'s energy decreased by 15.")
 
         pet.limit_stat()
 
