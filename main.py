@@ -128,18 +128,36 @@ class Main:
                         break
 
         elif choice == 3:
-            username = input(INPUT_USERNAME).strip()
-            password = input(INPUT_PASSWORD).strip()
-            new_password = input("Your New Password: ").strip()
-            if (username in User.users):
-                user = User.users[username]
-                if (password != user.password):
-                    print("\nWrong Previous Password! Change Password Operation Unsuccessful!")
+            while True:
+                is_auth = False
+
+                username = input(INPUT_USERNAME).strip()
+                password = input(INPUT_PASSWORD).strip()
+                new_password = input("Your New Password: ").strip()
+                
+                if (username in User.users):
+                    user = User.users[username]
+                    if (password != user.password):
+                        print("\nWrong Previous Password! Change Password Operation Unsuccessful!")
+                    else:
+                        user.password = new_password
+                        if (user.password != password):
+                            is_auth = True
                 else:
-                    user.password = new_password
-            else:
-                print("\nPlease create your own username/password first!")
-            print("\n")
+                    print("\nPlease create your own username/password first!")
+
+                if (not is_auth):
+                    print("\n" + GARIS)
+                    change_chances = input("Would you like change password again? (Y/N)\n" \
+                        "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
+                    if (change_chances == "Y"):
+                        print("\n")
+                        continue
+                    else:
+                        print("\n")
+                        break
+                else:
+                    break
             
         elif choice == 4:
             print(GARIS)

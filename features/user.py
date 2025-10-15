@@ -37,7 +37,7 @@ class User:
         return self.__password
 
     @password.setter
-    def password(self, new_password) -> None:
+    def password(self, new_password) -> None | int:
 
         total_digit = sum(ch.isdigit() for ch in new_password)
         total_symbol = sum(1 for ch in new_password if ch in string.punctuation)
