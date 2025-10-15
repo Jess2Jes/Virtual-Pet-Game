@@ -1,7 +1,6 @@
 # Formatter : untuk tabel pet stats
 GARIS = "─"*101
 class Formatter:
-
     def __init__(self):
         self.max_length = 0
         self.max_len = 55
