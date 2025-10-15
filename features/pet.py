@@ -191,8 +191,6 @@ class VirtualPet:
             if potion == FAT_BURNER and self.fat > 50:
                 self.fat = max(0, self.fat - 50)
                 print(f"\n{self.name}'s fat has been reduced!\n")
-            elif potion == FAT_BURNER:
-                print(f"\n{self.name}'s fat hasn't reached 50!\n")
 
             elif potion == HEALTH_POTION and self.health < 100:
                 self.health += int(change)

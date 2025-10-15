@@ -32,11 +32,10 @@ class Shop:
         self.money = user.current_user.currency
 
     @staticmethod
-    def _input_int(prompt: str, err: str = "\nPlease insert digit at choice input!"):
+    def _input_int(prompt: str):
         try:
             return int(input(prompt))
         except ValueError:
-            print(err)
             return None
 
     def show_currency(self) -> None:
@@ -140,9 +139,11 @@ class Shop:
     def _buy_flow(self) -> None:
         item = input("What do you want to buy? ").title()
         while True:
-            amount = self._input_int("How many do you want to buy? ", "\nPlease input number in amount!")
+            amount = self._input_int("How many do you want to buy? ")
             if amount is not None:
                 break
+            else:
+                print("\nPlease input number in amount!")
         self.buy(item, amount)
 
     def interact(self) -> None:
@@ -170,7 +171,7 @@ class Shop:
             }
 
             if choice == 6:
-                print("Thank you for shopping.\n")
+                print("\nThank you for shopping.\n")
                 break
 
             action = actions.get(choice)

@@ -90,16 +90,15 @@ class Game:
         print("─"*101)
 
     @staticmethod
-    def _input_int(prompt: str, err: str = "\nPlease insert digit at choice input!\n"):
+    def _input_int(prompt: str):
         try:
             return int(input(prompt))
         except ValueError:
-            print(err)
             return None
 
     @staticmethod
-    def _print_stock(title: str, store: dict, formatter) -> None:
-        print("─"*101)
+    def _print_stock(title: str, store: dict) -> None:
+        print("\n" + "─"*101)
         print(title)
         print("─"*101 + "\n")
         for key in store.keys():
@@ -113,37 +112,31 @@ class Game:
     
     @staticmethod
     def _print_potion_requirement(title: str) -> None:
-        print("─"*101)
+        print("\n" + "─"*101)
         print(title)
-        print("─"*101 + "\n")
+        print("─"*101)
         print("1. Fat Burner can be used if your energy is below 50.")
         print("2. Health Potion can be used if your health is below 100.")
         print("3. Energizer can be used if your energy is below 100.")
         print("4. Adult Potion can be used if your age is below 20.")
         print("─"*101 + "\n")
 
-    def _feed(self, pet: VirtualPet) -> None:
-
-        print("─"*101)
-        print("Available food:")
-        print("─"*101 + "\n")
-
-        for food_name, (avail, hunger, happy) in VirtualPet.list_food.items():
-            print(f"- {food_name} (Hunger: {hunger}, Happiness: {happy}, Available: {avail})")
-
+    @staticmethod
+    def _feed(pet: VirtualPet) -> None:
         food = input("\nWhich food (input food's name)? ").title()
-    
         pet.feed(food)
 
-    def _play(self, pet: VirtualPet) -> None:
+    @staticmethod
+    def _play(pet: VirtualPet) -> None:
+        
         if pet.energy < 10:
-            print(f"{pet.name} is too tired to play..")
+            print(f"\n{pet.name} is too tired to play..")
             return
         if pet.hunger < 30:
-            print(f"{pet.name} is too hungry to play..")
+            print(f"\n{pet.name} is too hungry to play..")
             return
         if pet.health < 20:
-            print(f"{pet.name} is too sick to play..")
+            print(f"\n{pet.name} is too sick to play..")
             return
 
         act = {
@@ -152,14 +145,16 @@ class Game:
             "dinosaur": "You play hide and seek with",
             "dragon": "You play fireball with",
             "pou": "You brought to swimming pool"
+
         }.get(pet.type.lower(), "You play with")
 
         emoji = {
             "cat": "💥", "rabbit": "🤾", "dinosaur": "🏃",
             "dragon": "☄️", "pou": "🏊‍♂️"
+
         }.get(pet.type.lower(), "🎲")
 
-        print(f"{act} {pet.name} {emoji}!")
+        print(f"\n{act} {pet.name} {emoji}!")
 
         print(f"\n{pet.name}'s happiness increased by 10.")
         print(f"{pet.name}'s hunger decreased by 5.")
@@ -179,54 +174,44 @@ class Game:
         print(f"Energy: {pet.energy}")
         print("─"*101)
 
-    def _bath(self, pet: VirtualPet) -> None:
-
-        print("─"*101)
-        print("Available soap:")
-        print("─"*101 + "\n")
-
-        for soap_name, (avail, sanity, happy) in VirtualPet.list_soap.items():
-            print(f"- {soap_name} (Sanity: {sanity}, Happiness: {happy}, Available: {avail})")
-
+    @staticmethod
+    def _bath(pet: VirtualPet) -> None:
         soap = input("\nWhich soap (input soap's name)? ").title()
-        
         pet.bath(soap)
 
-    def _give_potion(self, pet: VirtualPet) -> None:
-        print("─"*101)
-        print("Available potions:")
-        print("─"*101 + "\n")
-
-        for potion_name in VirtualPet.list_potion.keys():
-            print(f"- {potion_name} (Available: {VirtualPet.list_potion[potion_name][0]})")
-
+    @staticmethod
+    def _give_potion(pet: VirtualPet) -> None:
         potion = input("\nWhich potion (input potion's name)? ").title()
-
         pet.health_care(potion)
 
     def _sleep(self, pet: VirtualPet) -> None:
-        hours = self._input_int(f"{pet.name}'s sleep duration (1-12): ")
+
+        hours = self._input_int(f"\n{pet.name}'s sleep duration (1-12): ")
+
         if hours is None:
-            print("Please enter a correct value.")
+            print("\nPlease insert digit at choice input!\n")
             return
+        
         if not (1 <= hours <= 12):
-            print("Sleep duration must between 1 to 12 hours.")
+            print("\nSleep duration must between 1 to 12 hours.")
             return
+        
         pet.sleep(hours)
 
-    def _walk(self, pet: VirtualPet) -> None:
+    @staticmethod
+    def _walk(pet: VirtualPet) -> None:
         if pet.energy < 10:
-            print(f"{pet.name} is too tired to take a walk..")
+            print(f"\n{pet.name} is too tired to take a walk..")
             return
         if pet.hunger < 30:
-            print(f"{pet.name} is too hungry to take a walk..")
+            print(f"\n{pet.name} is too hungry to take a walk..")
             return
         if pet.health < 20:
-            print(f"{pet.name} is too sick to take a walk..")
+            print(f"\n{pet.name} is too sick to take a walk..")
             return
 
         random_event = randrange(0, 50)
-        print(f"You take {pet.name} for a walk!")
+        print(f"\nYou take {pet.name} for a walk!")
 
         if random_event == 10:
             print("\nYou found a wallet in your way home!")
@@ -263,19 +248,22 @@ class Game:
         print(f"Hunger: {pet.hunger}")
         print(f"Energy: {pet.energy}")
         print("─"*101)
-
+    
     def _talk_menu(self, pet: VirtualPet) -> None:
         while True:
             print("─"*101)
             print("Topic of Conversation: ")
+            print("─"*101)
             print("1. What do you want to do today?")
             print("2. What is your favourite food?")
             print("3. Can you give me money?")
             print("4. Tell a joke")
             print("5. Goodbye")
             print("─"*101)
-            topic = self._input_int("Choose a topic: ", "\nPlease type a number.")
+            topic = self._input_int("Choose a topic: ")
+
             if topic is None:
+                print("\nPlease type a number.")
                 continue
 
             if topic == 1:
@@ -312,14 +300,19 @@ class Game:
                     "Why don't programmers like nature? Too many \"bugs\".",
                     "Why don't robots panic? \"Nerves of steel\"."
                 ]
+
                 if pet.hunger < 30:
                     print(f"\n{pet.name} is too hungry to joke right now..")
+
                 elif pet.health < 20:
                     print(f"\n{pet.name} is too sick to joke right now..")
+
                 elif pet.energy < 10:
                     print(f"\n{pet.name} is too tired to joke right now..")
+
                 elif pet.happiness < 20:
                     print(f"\n{pet.name} is too stressed to joke right now..")
+
                 else:
                     print(f"\n{pet.name}: {ch(jokes)} Haha 🤭, funny right?")
             
@@ -335,23 +328,42 @@ class Game:
         print("\n" + "="*101)
         print(f"Playing with {pet.name}, the {pet.type}:")
         actions = {
-            1: self._feed,
-            2: self._play,
-            3: self._bath,
-            4: self._give_potion,
-            5: self._sleep,
-            6: self._walk,
-            7: self._talk_menu
+            1: [self._feed],
+            2: [self._play],
+            3: [self._bath],
+            4: [self._print_potion_requirement, self._give_potion],
+            5: [self._sleep],
+            6: [self._walk],
+            7: [self._talk_menu]
+        }
+        stocks = {
+            1: ["List of Foods:", VirtualPet.list_food],
+            3: ["List of Soaps:", VirtualPet.list_soap],
+            4: ["List of Potions:", VirtualPet.list_potion] 
         }
         while True:
             self._print_main_interact_menu()
             choice = self._input_int("Choose (1-8): ")
+
             if choice is None:
+                print("\nPlease enter digit!")
                 continue
-            if choice == 8:
+
+            elif (choice == 1) or (choice == 3) or (choice == 4):
+                self._print_stock(*stocks[choice])
+
+            elif (choice == 8):
+                print()
                 break
-            action = actions.get(choice)
-            if action:
-                action(pet)
-            else:
+            
+            elif (choice < 1 or choice > 8):
                 print("\nPlease choose from (1-8).")
+                continue
+            
+            action = actions.get(choice)
+
+            if (len(actions[choice]) == 2):
+                action[0]("Potion Usage Requirement")
+                action[1](pet)
+            else:
+                action[0](pet)

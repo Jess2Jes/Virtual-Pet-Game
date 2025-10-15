@@ -5,6 +5,7 @@ import sys
 
 INPUT_USERNAME = "Username: "
 INPUT_PASSWORD = "Password: "
+
 class Main:
     def __init__(self):
         self.game = Game()           
