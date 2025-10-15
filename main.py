@@ -87,17 +87,45 @@ class Main:
 
     def _handle_auth_choice(self, choice: int) -> bool:
         if choice == 1:
-            username = input(INPUT_USERNAME).strip()
-            password = input(
-                "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
-            ).strip()
-            User.register(username, password)
-            self.current_user = User.current_user
+            while True:
+                username = input(INPUT_USERNAME).strip()
+                password = input(
+                    "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
+                ).strip()
+                auth = User.register(username, password)
+
+                if auth is not None:
+                    self.current_user = User.current_user
+                    break
+                else:
+                    register_chances = input("Would you like to register again? (Y/N)\n" \
+                    "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
+                    if (register_chances == "Y"):
+                        print("\n")
+                        continue
+                    else:
+                        print("\n")
+                        break
+
         elif choice == 2:
-            username = input(INPUT_USERNAME).strip()
-            password = input(INPUT_PASSWORD).strip()
-            User.login(username, password)
-            self.current_user = User.current_user
+            while True:
+                username = input(INPUT_USERNAME).strip()
+                password = input(INPUT_PASSWORD).strip()
+                auth = User.login(username, password)
+                
+                if auth is not None:
+                    self.current_user = User.current_user
+                    break
+                else:
+                    login_chances = input("Would you like to login again? (Y/N)\n" \
+                        "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
+                    if (login_chances == "Y"):
+                        print("\n")
+                        continue
+                    else:
+                        print("\n")
+                        break
+
         elif choice == 3:
             username = input(INPUT_USERNAME).strip()
             password = input(INPUT_PASSWORD).strip()
@@ -111,6 +139,7 @@ class Main:
             else:
                 print("\nPlease create your own username/password first!")
             print("\n")
+            
         elif choice == 4:
             print(GARIS)
             sys.exit("Thank you for playing!\n")

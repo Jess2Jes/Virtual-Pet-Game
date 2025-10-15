@@ -53,22 +53,22 @@ class User:
         self.pets.append(pet)
 
     @classmethod # agar bisa dipanggil tanpa harus membuat objek
-    def register(cls, username: str, password: str) -> None:
+    def register(cls, username: str, password: str) -> None | int:
         print()
 
         if username in cls.users:
             print("This username has already signed in!\n")
-            return
+            return None
         
         if username.strip().lower() in password.strip().lower():
             print("Password cannot be the same as username!\n")
-            return
+            return None
         
         for user in cls.users.values(): # mengecek apakah user mendaftar menggunakan password yang sama 
                                         # dengan user sebelumnya
             if (password == user.password):
                 print("This password is already in used!\n")
-                return
+                return None
 
         total_digit = sum(ch.isdigit() for ch in password)
         total_symbol = sum(1 for ch in password if ch in string.punctuation)
@@ -77,34 +77,36 @@ class User:
         if total_digit < 1:
             print("Password must contain at least 1 digit!\n")
             print(GARIS)
-            return
+            return None
 
         if total_symbol < 2:
             print("Password must consist of at least 2 symbols!\n")
             print(GARIS)
-            return
+            return None
 
         if total_letter < 8:
             print("Password must consist of at least 8 letters!\n")
             print(GARIS)
-            return
+            return None
 
         new_user = cls(username, password)
         cls.users[username] = new_user
 
         cls.current_user = new_user
         print(f"User {username} registered successfully.\n")
+        return 1
 
     @classmethod
-    def login(cls, username: str, password: str) -> None:
+    def login(cls, username: str, password: str) -> None | int:
         print()
         if username not in cls.users:
             print("User not found!\n")
-            return
+            return None
 
         if cls.users[username].password != password:
             print("Wrong password!\n")
-            return
+            return None
 
         cls.current_user = cls.users[username]
         print(f"Welcome back, {username}!\n")
+        return 1
