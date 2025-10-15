@@ -98,6 +98,7 @@ class Main:
                     self.current_user = User.current_user
                     break
                 else:
+                    print(GARIS)
                     register_chances = input("Would you like to register again? (Y/N)\n" \
                     "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
                     if (register_chances == "Y"):
