@@ -85,9 +85,9 @@ class VirtualPet:
         self.age = max(0.0, float(self.age))
 
     def time_past(self) -> None:
-        self.hunger = max(0, self.hunger - 1)
+        self.hunger = max(0, self.hunger - 5)
         if self.hunger < 50:
-            self.happiness = max(0, self.happiness - 2)
+            self.happiness = max(0, self.happiness - 5)
 
         if (self.hunger == 0) or (self.energy == 0):
             self.health = max(0, self.health - 5)
