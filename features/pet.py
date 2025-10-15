@@ -1,5 +1,6 @@
 from random import randrange
 from typing import Dict, List
+from .formatter import GARIS
 
 FAT_BURNER = "Fat Burner"
 HEALTH_POTION = "Health Potion"
@@ -212,9 +213,9 @@ class VirtualPet:
 
         self.limit_stat()
 
-        print("\n" + "─"*101)
+        print("\n" + GARIS)
         print(f"{self.name}'s status: ")
-        print("─"*101)
+        print(GARIS)
         print(f"Energy: {self.energy}")
         print(f"Hunger: {self.hunger}")
-        print("─"*101)
+        print(GARIS)

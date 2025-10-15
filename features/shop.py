@@ -1,5 +1,6 @@
 from .pet import VirtualPet
 from typing import Dict
+from .formatter import GARIS
 
 class Shop:
 
@@ -40,7 +41,7 @@ class Shop:
             return None
 
     def show_currency(self) -> None:
-        print("─"*101)
+        print(GARIS)
 
         if (self.money >= 1000):
             print(f"Your current currency: Rp. {"{:,}".format(self.money)}")
@@ -51,43 +52,43 @@ class Shop:
             print("You are broke... 💸")
         else:
             print("You still have lots... 💰")
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
     
     def catalog_food(self) -> None:
-        print("─"*101)
+        print(GARIS)
         for key, value in self.food.items():
             print(f"-> {key} : {"{:,}".format(value)}")
-        print("─"*101 + "\n")
-        print("─"*101)
+        print(GARIS + "\n")
+        print(GARIS)
         print("Your Current Food Stock:")
-        print("─"*101)
+        print(GARIS)
         for key, value in VirtualPet.list_food.items():
             print(f"-> {key} : {value[0]}")
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
 
     def catalog_soap(self) -> None:
-        print("─"*101)
+        print(GARIS)
         for key, value in self.soap.items():
             print(f"-> {key} : {"{:,}".format(value)}")
-        print("─"*101 + "\n")
-        print("─"*101)
+        print(GARIS + "\n")
+        print(GARIS)
         print("Your Current Soap Stock:")
-        print("─"*101)
+        print(GARIS)
         for key, value in VirtualPet.list_soap.items():
             print(f"-> {key} : {value[0]}")
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
     
     def catalog_potion(self) -> None:
-        print("─"*101)
+        print(GARIS)
         for key, value in self.potion.items():
             print(f"-> {key} : Rp. {"{:,}".format(value)}")
-        print("─"*101 + "\n")
-        print("─"*101)
+        print(GARIS + "\n")
+        print(GARIS)
         print("Your Current Potion Stock:")
-        print("─"*101)
+        print(GARIS)
         for key, value in VirtualPet.list_potion.items():
             print(f"-> {key} : {value[0]}")
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
     
     def buy(self, item, amount) -> None:
         if (not ((item in self.food.keys()) or (item in self.soap.keys()) 

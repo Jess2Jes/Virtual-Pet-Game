@@ -1,7 +1,7 @@
 import datetime
 from random import randrange, choice as ch
 from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
-from .formatter import Formatter
+from .formatter import Formatter, GARIS
 from .user import User
 
 class Game:
@@ -22,14 +22,14 @@ class Game:
         print()
         print("─"*36 + " " + "Create Your Own Pet" + " " + "─"*44)
         name = input("Name your pet: ").title()
-        print("─"*101)
+        print(GARIS)
         print("Here's five types of species you can choose: ")
         print("1. Cat")
         print("2. Rabbit")
         print("3. Dinosaur")
         print("4. Dragon")
         print("5. Pou")
-        print("─"*101)
+        print(GARIS)
         
         species_map = {
             "cat": Cat,
@@ -50,9 +50,9 @@ class Game:
             print()
 
         print()
-        print("─"*101)
+        print(GARIS)
         print(f"{name}, a {species}, has born!")
-        print("─"*101)
+        print(GARIS)
     
     
     def view(self, pet) -> None:
@@ -87,7 +87,7 @@ class Game:
         print("6. Take a walk")
         print("7. Talk to pet")
         print("8. Exit")
-        print("─"*101)
+        print(GARIS)
 
     @staticmethod
     def _input_int(prompt: str, err: str = "\nPlease insert digit at choice input!\n"):
@@ -99,9 +99,9 @@ class Game:
 
     @staticmethod
     def _print_stock(title: str, store: dict, formatter) -> None:
-        print("─"*101)
+        print(GARIS)
         print(title)
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
         for key in store.keys():
             vals = store[key]
             if len(vals) == 3:
@@ -112,9 +112,9 @@ class Game:
                 print(f"- {key} (Available: {vals[0]})")
 
     def _feed(self, pet: VirtualPet) -> None:
-        print("─"*101)
+        print(GARIS)
         print("Available food:")
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
         for food_name, (avail, hunger, happy) in VirtualPet.list_food.items():
             print(f"- {food_name} (Hunger: {hunger}, Happiness: {happy}, Available: {avail})")
         food = input("\nWhich food (input food's name)? ").title()
@@ -169,12 +169,12 @@ class Game:
         print(f"Happiness : {pet.happiness}")
         print(f"Hunger: {pet.hunger}")
         print(f"Energy: {pet.energy}")
-        print("─"*101)
+        print(GARIS)
 
     def _bath(self, pet: VirtualPet) -> None:
-        print("─"*101)
+        print(GARIS)
         print("Available soap:")
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
         for soap_name, (avail, sanity, happy) in VirtualPet.list_soap.items():
             print(f"- {soap_name} (Sanity: {sanity}, Happiness: {happy}, Available: {avail})")
         soap = input("\nWhich soap (input soap's name)? ").title()
@@ -188,9 +188,9 @@ class Game:
         VirtualPet.list_soap[soap][0] -= 1
 
     def _give_potion(self, pet: VirtualPet) -> None:
-        print("─"*101)
+        print(GARIS)
         print("Available potions:")
-        print("─"*101 + "\n")
+        print(GARIS + "\n")
         for potion_name in VirtualPet.list_potion.keys():
             print(f"- {potion_name} (Available: {VirtualPet.list_potion[potion_name][0]})")
         potion = input("\nWhich potion (input potion's name)? ").title()
@@ -261,18 +261,18 @@ class Game:
         print(f"Happiness : {pet.happiness}")
         print(f"Hunger: {pet.hunger}")
         print(f"Energy: {pet.energy}")
-        print("─"*101)
+        print(GARIS)
 
     def _talk_menu(self, pet: VirtualPet) -> None:
         while True:
-            print("─"*101)
+            print(GARIS)
             print("Topic of Conversation: ")
             print("1. What do you want to do today?")
             print("2. What is your favourite food?")
             print("3. Can you give me money?")
             print("4. Tell a joke")
             print("5. Goodbye")
-            print("─"*101)
+            print(GARIS)
             topic = self._input_int("Choose a topic: ", "\nPlease type a number.")
             if topic is None:
                 continue

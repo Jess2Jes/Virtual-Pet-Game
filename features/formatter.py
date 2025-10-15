@@ -1,4 +1,5 @@
 # Formatter : untuk tabel pet stats
+GARIS = "─" * 101
 class Formatter:
 
     def __init__(self):
