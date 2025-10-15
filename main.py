@@ -207,7 +207,6 @@ class Main:
         }
         handler = handlers.get(choice, self._invalid_pet_zone_choice)
         result = handler()
-        # Keep original behavior: advance time after handling a choice
         self.time_spend()
         return bool(result)
 
