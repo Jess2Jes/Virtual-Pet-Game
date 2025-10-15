@@ -327,23 +327,38 @@ class Game:
 
             print()
 
+    def _stocks(self) -> dict:
+        return {
+            1: ["List of Foods:", VirtualPet.list_food],
+            3: ["List of Soaps:", VirtualPet.list_soap],
+            4: ["List of Potions:", VirtualPet.list_potion],
+        }
+
+    def _actions(self):
+        return {
+            1: lambda p: self._feed(p),
+            2: lambda p: self._play(p),
+            3: lambda p: self._bath(p),
+            4: self._action_potion,
+            5: lambda p: self._sleep(p),
+            6: lambda p: self._walk(p),
+            7: lambda p: self._talk_menu(p),
+        }
+
+    def _action_potion(self, pet: VirtualPet) -> None:
+        self._print_potion_requirement("Potion Usage Requirement")
+        self._give_potion(pet)
+
+    @staticmethod
+    def _is_valid_choice(choice: int) -> bool:
+        return 1 <= choice <= 8
+
+    def _should_show_stock(self, choice: int) -> bool:
+        return choice in self._stocks()
+
     def interact(self, pet) -> None:
         print("\n" + "="*101)
         print(f"Playing with {pet.name}, the {pet.type}:")
-        actions = {
-            1: [self._feed],
-            2: [self._play],
-            3: [self._bath],
-            4: [self._print_potion_requirement, self._give_potion],
-            5: [self._sleep],
-            6: [self._walk],
-            7: [self._talk_menu]
-        }
-        stocks = {
-            1: ["List of Foods:", VirtualPet.list_food],
-            3: ["List of Soaps:", VirtualPet.list_soap],
-            4: ["List of Potions:", VirtualPet.list_potion] 
-        }
         while True:
             self._print_main_interact_menu()
             choice = self._input_int("Choose (1-8): ")
@@ -352,21 +367,18 @@ class Game:
                 print("\nPlease enter digit!")
                 continue
 
-            elif (choice == 1) or (choice == 3) or (choice == 4):
-                self._print_stock(*stocks[choice])
-
-            elif (choice == 8):
+            if choice == 8:
                 print()
                 break
-            
-            elif (choice < 1 or choice > 8):
+
+            if not self._is_valid_choice(choice):
                 print("\nPlease choose from (1-8).")
                 continue
-            
-            action = actions.get(choice)
 
-            if (len(actions[choice]) == 2):
-                action[0]("Potion Usage Requirement")
-                action[1](pet)
-            else:
-                action[0](pet)
+            if self._should_show_stock(choice):
+                title, store = self._stocks()[choice]
+                self._print_stock(title, store)
+
+            action = self._actions().get(choice)
+            if action:
+                action(pet)
