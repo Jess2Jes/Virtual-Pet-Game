@@ -3,6 +3,10 @@ from features.game import Game
 from features.user import User
 import sys
 from features.formatter import GARIS
+import os
+
+def clear():
+    os.system("cls" if os.name == "nt" else "clear")
 
 INPUT_USERNAME = "Username: "
 INPUT_PASSWORD = "Password: "
@@ -102,7 +106,7 @@ class Main:
                     "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
                     if (register_chances == "Y"):
                         print("\n")
-                        continue
+                        clear()
                     else:
                         print("\n")
                         break
@@ -122,7 +126,7 @@ class Main:
                         "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
                     if (login_chances == "Y"):
                         print("\n")
-                        continue
+                        clear()
                     else:
                         print("\n")
                         break
@@ -136,11 +140,13 @@ class Main:
                 if (username in User.users):
                     user = User.users[username]
                     if (password != user.password):
-                        print("\nWrong Previous Password! Change Password Operation Unsuccessful!")
+                        print("\nPassword sebelumnya salah!\n")
                     else:
                         user.password = new_password
                         if (user.password != password):
-                            print("\n")
+                            print("\nPassword berhasil diubah!\n")
+                            input("Tekan Enter untuk melanjutkan...")
+                            clear()
                             break
                 else:
                     print("\nPlease create your own username/password first!")
@@ -150,7 +156,7 @@ class Main:
                     "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
                 if (change_chances == "Y"):
                     print("\n")
-                    continue
+                    clear()
                 else:
                     print("\n")
                     break
@@ -194,13 +200,15 @@ class Main:
     def _interact_with_selected_pet(self) -> bool:
         pet = self.select_pet()
         if not pet:
-            return True
+            # No pet selected; report unsuccessful interaction
+            return False
         if getattr(pet, "health", 1) > 0:
             self.interact_with_pet(pet)
             pet.time_past()
+            return True
         else:
             print("\nYour pet has deceased... 🧦\n")
-        return True
+            return False
 
     def _show_selected_pet_stats(self) -> bool:
         pet = self.select_pet()
@@ -211,7 +219,8 @@ class Main:
     def _show_pet_stage(self) -> bool:
         pet = self.select_pet()
         if not pet:
-            return True
+            # No pet selected; report unsuccessful stage display
+            return False
         if getattr(pet, "health", 1) > 0:
             age = pet.get_age()
             if age < 1:
@@ -222,9 +231,10 @@ class Main:
                 pet.adult()
             else:
                 pet.elder()
+            return True
         else:
             print("\nYour pet has deceased... 🧦\n")
-        return True
+            return False
 
     def _go_to_shop(self) -> bool:
         shopping = Shop(User.current_user)
@@ -252,7 +262,13 @@ class Main:
             7: self._logout,
         }
         handler = handlers.get(choice, self._invalid_pet_zone_choice)
-        result = handler()
+
+        if handler is self._logout:
+            result = handler()
+        else:
+            _ = handler()  
+            result = True  
+
         self.time_spend()
         return bool(result)
 
