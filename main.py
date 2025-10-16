@@ -266,7 +266,7 @@ class Main:
         if handler is self._logout:
             result = handler()
         else:
-            _ = handler()  
+            handler()
             result = True  
 
         self.time_spend()

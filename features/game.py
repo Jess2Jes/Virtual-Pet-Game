@@ -24,23 +24,23 @@ class Game:
         name = input("Name your pet: ").title().strip()
         print(GARIS)
         print("Here's five types of species you can choose: ")
-        print("1. Cat")
-        print("2. Rabbit")
-        print("3. Dinosaur")
-        print("4. Dragon")
-        print("5. Pou")
+        print("1. Cat (🐈)")
+        print("2. Rabbit (🐇)")
+        print("3. Dinosaur (🦖)")
+        print("4. Dragon (🐉)")
+        print("5. Pou (💩)")
         print(GARIS)
         
         species_map = {
-            "cat": Cat,
-            "rabbit": Rabbit,
-            "dinosaur": Dino,
-            "dragon": Dragon,
-            "pou": Pou,
+            "🐈": Cat,
+            "🐇": Rabbit,
+            "🦖": Dino,
+            "🐉": Dragon,
+            "💩": Pou,
         }
 
         while True: 
-            species = input("Choose his/her species (input type of species here): ").lower().strip()
+            species = input("Choose his/her species (🐈/🐇/🦖/🐉/💩): ").strip()
             cls_type = species_map.get(species)
             if cls_type:
                 animal = cls_type(name, 0)
@@ -51,7 +51,7 @@ class Game:
 
         print()
         print(GARIS)
-        print(f"{name}, a {species}, has born!")
+        print(f"{name}, a {animal.type} ({species}), has born!")
         print(GARIS)
     
     
@@ -103,12 +103,14 @@ class Game:
         print(GARIS + "\n")
         for key in store.keys():
             vals = store[key]
-            if len(vals) == 3:
-                print(f"- {key} (Hunger: {vals[1]}, Happiness: {vals[2]}, Available: {vals[0]})")
-            elif len(vals) == 2:
-                print(f"- {key} (Available: {vals[0]})")
+            if len(vals) == 4 and vals in VirtualPet.list_food.values():
+                print(f"- {key} {vals[0]} (Hunger: {vals[2]}, Happiness: {vals[3]}, Available: {vals[1]})") 
+            elif len(vals) == 4 and vals in VirtualPet.list_soap.values():
+                print(f"- {key} {vals[0]} (Sanity: {vals[2]}, Happiness: {vals[3]}, Available: {vals[1]})")
+            elif len(vals) == 3:
+                print(f"- {key} {vals[0]} (Available: {vals[1]}, Effect: {vals[2]})")
             else:
-                print(f"- {key} (Available: {vals[0]})")
+                print(f"- {key} {vals[0]} (Available: {vals[1]})")
     
     @staticmethod
     def _print_potion_requirement(title: str) -> None:
@@ -120,11 +122,27 @@ class Game:
         print("3. Energizer can be used if your energy is below 100.")
         print("4. Adult Potion can be used if your age is below 20.")
         print(GARIS + "\n")
-
+    
     @staticmethod
-    def _feed(pet: VirtualPet) -> None:
-        food = input("\nWhich food (input food's name)? ").title().strip()
-        pet.feed(food)
+    def _food_emoticon_choice(food: str) -> None:
+        food_emoticon = {
+            "🍗": "kentucky fried chicken",
+            "🍦": "ice cream",
+            "🥘": "fried rice",
+            "🥗": "salad",
+            "🍟": "french fries",
+            "🥔": "mashed potato",
+            "🧀": "mozarella nugget",
+        }
+        try:
+            return food_emoticon[food].title()
+        except KeyError:
+            print("\nUnknown emoticon food! Please choose (🍗/🍦/🥘/🥗/🍟/🥔/🧀)!")
+
+    def _feed(self, pet: VirtualPet) -> None:
+        food = input("\nWhich food (🍗/🍦/🥘/🥗/🍟/🥔/🧀)? ").strip()
+        choice = self._food_emoticon_choice(food)
+        pet.feed(choice)
 
     @staticmethod
     def _play(pet: VirtualPet) -> None:
@@ -175,14 +193,40 @@ class Game:
         print(GARIS)
 
     @staticmethod
-    def _bath(pet: VirtualPet) -> None:
-        soap = input("\nWhich soap (input soap's name)? ").title().strip()
-        pet.bath(soap)
+    def _soap_emoticon_choice(soap: str) -> None:
+        soap_emoticon = {
+            "🌈": "rainbow bubble soap",
+            "💗": "pink bubble soap",
+            "⚪": "white silk soap",
+            "🌸": "flower bubble soap",
+        }
+        try:
+            return soap_emoticon[soap].title()
+        except KeyError:
+            print("\nUnknown emoticon soap! Please choose (🌈/💗/⚪/🌸)!")
+
+    def _bath(self, pet: VirtualPet) -> None:
+        soap = input("\nWhich soap (🌈/💗/⚪/🌸)? ").strip()
+        choice = self._soap_emoticon_choice(soap)
+        pet.bath(choice)
 
     @staticmethod
-    def _give_potion(pet: VirtualPet) -> None:
-        potion = input("\nWhich potion (input potion's name)? ").title().strip()
-        pet.health_care(potion)
+    def _potion_emoticon_choice(potion: str):
+        potion_emoticon = {
+            "🧪": "fat burner",
+            "💊": "health potion",
+            "⚡": "energizer",
+            "💉": "adult potion",
+        }
+        try:
+            return potion_emoticon[potion].title()
+        except KeyError:
+            print("\nUnknown emoticon potion! Please choose (🧪/💊/⚡/💉)!")
+
+    def _give_potion(self, pet: VirtualPet) -> None:
+        potion = input("\nWhich potion (🧪/💊/⚡/💉)? ").strip()
+        choice = self._potion_emoticon_choice(potion)
+        pet.health_care(choice)
 
     def _sleep(self, pet: VirtualPet) -> None:
 
@@ -211,7 +255,7 @@ class Game:
             return
 
         random_event = randrange(0, 50)
-        print(f"\nYou take {pet.name} for a walk!")
+        print(f"\nYou take {pet.name} for a walk! 🐾")
 
         if random_event == 10:
             print("\nYou found a wallet in your way home!")
