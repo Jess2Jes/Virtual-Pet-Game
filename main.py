@@ -89,83 +89,100 @@ class Main:
             print("\nPlease insert digit at choice input!\n")
             return None
 
-    def _handle_auth_choice(self, choice: int) -> bool:
-        if choice == 1:
-            while True:
-                username = input(INPUT_USERNAME).strip()
-                password = input(
-                    "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
-                ).strip()
-                auth = User.register(username, password)
+    # ===== Refactored helpers to flatten _handle_auth_choice =====
 
-                if auth is not None:
-                    self.current_user = User.current_user
-                    break
-                else:
-                    register_chances = input("Would you like to register again? (Y/N)\n" \
-                    "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
-                    if (register_chances == "Y"):
-                        print("\n")
-                        clear()
-                    else:
-                        print("\n")
-                        break
+    def _register_flow(self) -> None:
+        while True:
+            username = input(INPUT_USERNAME).strip()
+            password = input(
+                "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
+            ).strip()
+            auth = User.register(username, password)
 
-        elif choice == 2:
-            while True:
-                username = input(INPUT_USERNAME).strip()
-                password = input(INPUT_PASSWORD).strip()
-                auth = User.login(username, password)
-                
-                if auth is not None:
-                    self.current_user = User.current_user
-                    break
-                else:
-                    print(GARIS)
-                    login_chances = input("Would you like to login again? (Y/N)\n" \
-                        "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
-                    if (login_chances == "Y"):
-                        print("\n")
-                        clear()
-                    else:
-                        print("\n")
-                        break
+            if auth is not None:
+                self.current_user = User.current_user
+                break
 
-        elif choice == 3:
-            while True:
-                username = input(INPUT_USERNAME).strip()
-                password = input(INPUT_PASSWORD).strip()
-                new_password = input("Your New Password: ").strip()
-                
-                if (username in User.users):
-                    user = User.users[username]
-                    if (password != user.password):
-                        print("\nPassword sebelumnya salah!\n")
-                    else:
-                        user.password = new_password
-                        if (user.password != password):
-                            print("\nPassword berhasil diubah!\n")
-                            input("Tekan Enter untuk melanjutkan...")
-                            clear()
-                            break
-                else:
-                    print("\nPlease create your own username/password first!")
+            retry = input(
+                "Would you like to register again? (Y/N)\n"
+                "(Note: input other than Y and N will be considered as N): "
+            ).capitalize().strip()
+            if retry == "Y":
+                print("\n")
+                clear()
+                continue
+            print("\n")
+            break
 
-                print("\n" + GARIS)
-                change_chances = input("Would you like change password again? (Y/N)\n" \
-                    "(Note: input other than Y and N will be considered as N): ").capitalize().strip()
-                if (change_chances == "Y"):
-                    print("\n")
-                    clear()
-                else:
-                    print("\n")
-                    break
+    def _login_flow(self) -> None:
+        while True:
+            username = input(INPUT_USERNAME).strip()
+            password = input(INPUT_PASSWORD).strip()
+            auth = User.login(username, password)
             
-        elif choice == 4:
+            if auth is not None:
+                self.current_user = User.current_user
+                break
+
             print(GARIS)
-            sys.exit("Thank you for playing!\n")
-        else:
-            print("Please type again...\n")
+            retry = input(
+                "Would you like to login again? (Y/N)\n"
+                "(Note: input other than Y and N will be considered as N): "
+            ).capitalize().strip()
+            if retry == "Y":
+                print("\n")
+                clear()
+                continue
+            print("\n")
+            break
+
+    def _change_password_flow(self) -> None:
+        while True:
+            username = input(INPUT_USERNAME).strip()
+            password = input(INPUT_PASSWORD).strip()
+            new_password = input("Your New Password: ").strip()
+            
+            if username in User.users:
+                user = User.users[username]
+                if password != user.password:
+                    print("\nPassword sebelumnya salah!\n")
+                else:
+                    user.password = new_password
+                    if user.password != password:
+                        print("\nPassword berhasil diubah!\n")
+                        input("Press Enter to continue...")
+                        clear()
+                        break
+            else:
+                print("\nPlease create your own username/password first!")
+
+            print("\n" + GARIS)
+            retry = input(
+                "Would you like change password again? (Y/N)\n"
+                "(Note: input other than Y and N will be considered as N): "
+            ).capitalize().strip()
+            if retry == "Y":
+                print("\n")
+                clear()
+                continue
+            print("\n")
+            break
+
+    def _exit_game(self) -> None:
+        print(GARIS)
+        sys.exit("Thank you for playing!\n")
+
+    def _invalid_auth_choice(self) -> None:
+        print("Please type again...\n")
+
+    def _handle_auth_choice(self, choice: int) -> bool:
+        actions = {
+            1: self._register_flow,
+            2: self._login_flow,
+            3: self._change_password_flow,
+            4: self._exit_game,
+        }
+        actions.get(choice, self._invalid_auth_choice)()
         return True
 
     def _pet_zone_menu(self) -> int | None:
@@ -200,7 +217,6 @@ class Main:
     def _interact_with_selected_pet(self) -> bool:
         pet = self.select_pet()
         if not pet:
-            # No pet selected; report unsuccessful interaction
             return False
         if getattr(pet, "health", 1) > 0:
             self.interact_with_pet(pet)
@@ -219,7 +235,6 @@ class Main:
     def _show_pet_stage(self) -> bool:
         pet = self.select_pet()
         if not pet:
-            # No pet selected; report unsuccessful stage display
             return False
         if getattr(pet, "health", 1) > 0:
             age = pet.get_age()
