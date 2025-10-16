@@ -5,27 +5,32 @@ from .formatter import GARIS
 class Shop:
 
     food: Dict[str, int] = {
-        "Kentucky Fried Chicken": 20000,
-        "Ice Cream": 5000,
-        "Fried Rice": 1000,
-        "Salad": 5500,
-        "French Fries": 30000,
-        "Mashed Potato": 15000,
-        "Mozarella Nugget": 25000
+
+        "🍗": 20000,
+        "🍦": 5000,
+        "🥘": 1000,
+        "🥗": 5500,
+        "🍟": 30000,
+        "🥔": 15000,
+        "🧀": 25000,
 
     }
 
     soap: Dict[str, int] = {
-        "Rainbow Bubble Soap": 55000,
-        "Pink Bubble Soap": 35000,
-        "White Silk Soap": 10000
+
+        "🌈": 55000,
+        "💗": 35000,
+        "⚪": 10000,
+        "🌸": 25000,
     }
 
     potion: Dict[str, int] = {
-        "Fat Burner": 110000,
-        "Health Potion": 200000,
-        "Energizer": 800000,
-        "Adult Potion": 1000000
+
+        "🧪": 110000,
+        "💊": 200000,
+        "⚡": 800000,
+        "💉": 1000000,
+
     }
 
     def __init__(self, user):
@@ -62,7 +67,7 @@ class Shop:
         print("Your Current Food Stock:")
         print(GARIS)
         for key, value in VirtualPet.list_food.items():
-            print(f"-> {key} : {value[0]}")
+            print(f"-> {key} {str(value[0])} : {value[1]}")
         print(GARIS + "\n")
 
     def catalog_soap(self) -> None:
@@ -74,7 +79,7 @@ class Shop:
         print("Your Current Soap Stock:")
         print(GARIS)
         for key, value in VirtualPet.list_soap.items():
-            print(f"-> {key} : {value[0]}")
+            print(f"-> {key} {str(value[0])} : {value[1]}")
         print(GARIS + "\n")
     
     def catalog_potion(self) -> None:
@@ -86,7 +91,7 @@ class Shop:
         print("Your Current Potion Stock:")
         print(GARIS)
         for key, value in VirtualPet.list_potion.items():
-            print(f"-> {key} : {value[0]}")
+            print(f"-> {key} {str(value[0])} : {value[1]}")
         print(GARIS + "\n")
     
     def buy(self, item, amount) -> None:
@@ -138,7 +143,7 @@ class Shop:
             print(f"Total money left: Rp. {self.money}\n")
 
     def _buy_flow(self) -> None:
-        item = input("What do you want to buy? ").title().strip()
+        item = input("What do you want to buy (Note: use emoticon)? ").strip()
         while True:
             amount = self._input_int("How many do you want to buy? ")
             if amount is not None:

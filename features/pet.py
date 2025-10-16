@@ -133,7 +133,7 @@ class VirtualPet:
         print(f"Happiness: {self.happiness}")
         print("="*101)
 
-        VirtualPet.list_food[food][0] = food_value
+        VirtualPet.list_food[food][1] = food_value
 
     def bath(self, soap: str) -> None:
         
@@ -167,7 +167,7 @@ class VirtualPet:
         print(f"Happiness: {self.happiness}")
         print("="*101)
 
-        VirtualPet.list_soap[soap][0] = soap_value
+        VirtualPet.list_soap[soap][1] = soap_value
 
     def health_care(self, potion: str) -> None:
         
@@ -210,7 +210,7 @@ class VirtualPet:
         print(f"Energy: {self.energy}")
         print("="*101)
 
-        VirtualPet.list_potion[potion][0] = potion_value
+        VirtualPet.list_potion[potion][1] = potion_value
 
     def sleep(self, hours: int) -> None:
 

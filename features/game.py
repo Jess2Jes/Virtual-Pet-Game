@@ -142,7 +142,8 @@ class Game:
     def _feed(self, pet: VirtualPet) -> None:
         food = input("\nWhich food (🍗/🍦/🥘/🥗/🍟/🥔/🧀)? ").strip()
         choice = self._food_emoticon_choice(food)
-        pet.feed(choice)
+        if (choice is not None):
+            pet.feed(choice)
 
     @staticmethod
     def _play(pet: VirtualPet) -> None:
@@ -208,7 +209,8 @@ class Game:
     def _bath(self, pet: VirtualPet) -> None:
         soap = input("\nWhich soap (🌈/💗/⚪/🌸)? ").strip()
         choice = self._soap_emoticon_choice(soap)
-        pet.bath(choice)
+        if (choice is not None):
+            pet.bath(choice)
 
     @staticmethod
     def _potion_emoticon_choice(potion: str):
@@ -226,7 +228,8 @@ class Game:
     def _give_potion(self, pet: VirtualPet) -> None:
         potion = input("\nWhich potion (🧪/💊/⚡/💉)? ").strip()
         choice = self._potion_emoticon_choice(potion)
-        pet.health_care(choice)
+        if (choice is not None):
+            pet.health_care(choice)
 
     def _sleep(self, pet: VirtualPet) -> None:
 
