@@ -252,79 +252,100 @@ class Game:
         print(f"Energy: {pet.energy}")
         print(GARIS)
     
+    def _print_talk_menu(self) -> None:
+        print(GARIS)
+        print("Topic of Conversation: ")
+        print(GARIS)
+        print("1. What do you want to do today?")
+        print("2. What is your favourite food?")
+        print("3. Can you give me money?")
+        print("4. Tell a joke")
+        print("5. Goodbye")
+        print(GARIS)
+
+    def _topic_plan(self, pet: VirtualPet) -> bool:
+        ans = [
+            f"I want to eat {pet.fav_food}!", "I want to play :D", 
+            "I want to take a walk 🌳.","I want to take a bath :)",
+            "I want to talk to you..👉👈"
+        ]
+        print(f"\n{pet.name}: {ch(ans)}")
+        return True
+
+    def _topic_fav_food(self, pet: VirtualPet) -> bool:
+        print(f"\n{pet.name}: My favourite food is {pet.fav_food}. :D")
+        return True
+
+    def _topic_money(self, pet: VirtualPet) -> bool:
+        if all(val < 50 for val in [pet.hunger, pet.sanity, pet.happiness, pet.health]):
+            print(f"\n{pet.name}: I will consider it if you take care of me properly!")
+            return True
+        if pet.generosity < 2:
+            print(f"\n{pet.name}: Here, I'll give you Rp. 100,000.")
+            User.current_user.currency += 100000
+            pet.generosity += 1
+        else:
+            print(f"\n{pet.name}: Sorry, can't give you anymore... 😔")
+        return True
+
+    def _can_tell_joke(self, pet: VirtualPet) -> tuple[bool, str | None]:
+        if pet.hunger < 30:
+            return False, f"\n{pet.name} is too hungry to joke right now.."
+        if pet.health < 20:
+            return False, f"\n{pet.name} is too sick to joke right now.."
+        if pet.energy < 10:
+            return False, f"\n{pet.name} is too tired to joke right now.."
+        if pet.happiness < 20:
+            return False, f"\n{pet.name} is too stressed to joke right now.."
+        return True, None
+
+    def _topic_joke(self, pet: VirtualPet) -> bool:
+        ok, reason = self._can_tell_joke(pet)
+        if not ok:
+            print(reason)
+            return True
+        jokes = [
+            "Why can't a nose be 12 inches long? Because then it would be a foot!",
+            "How much do rainbows weigh? Not much. They're actually pretty light!",
+            "I had a joke about paper today, but it was tearable!",
+            "What do you call an ant who fights crime? A vigilANTe!",
+            "How do you make holy water? You boil the hell out of it!",
+            "Some people pick their nose, but I was born with mine.",
+            "Justice is a dish best served cold. Otherwise, it's just water.",
+            "Why don't programmers like nature? Too many \"bugs\".",
+            "Why don't robots panic? \"Nerves of steel\"."
+        ]
+        print(f"\n{pet.name}: {ch(jokes)} Haha 🤭, funny right?")
+        return True
+
+    def _topic_goodbye(self, pet: VirtualPet) -> bool:
+        print(f"\n{pet.name}: Okay, goodbye!")
+        print(f"{pet.name}'s happiness has increased by 10.")
+        pet.happiness += 10
+        return False  
+
+    def _invalid_topic(self, pet: VirtualPet) -> bool:
+        print("\nPlease choose 1-5.")
+        return True
+
     def _talk_menu(self, pet: VirtualPet) -> None:
         while True:
-            print(GARIS)
-            print("Topic of Conversation: ")
-            print(GARIS)
-            print("1. What do you want to do today?")
-            print("2. What is your favourite food?")
-            print("3. Can you give me money?")
-            print("4. Tell a joke")
-            print("5. Goodbye")
-            print(GARIS)
+            self._print_talk_menu()
             topic = self._input_int("Choose a topic: ")
-
             if topic is None:
                 print("\nPlease type a number.")
                 continue
 
-            if topic == 1:
-                ans = [
-                    f"I want to eat {pet.fav_food}!", "I want to play :D", 
-                    "I want to take a walk 🌳.","I want to take a bath :)",
-                    "I want to talk to you..👉👈"
-                ]
-                print(f"\n{pet.name}: {ch(ans)}")
-
-            elif topic == 2:
-                print(f"\n{pet.name}: My favourite food is {pet.fav_food}. :D")
-            
-            elif topic == 3:
-                if all(val < 50 for val in [pet.hunger, pet.sanity, pet.happiness, pet.health]):
-                    print(f"\n{pet.name}: I will consider it if you take care of me properly!")
-                else:
-                    if pet.generosity < 2:
-                        print(f"\n{pet.name}: Here, I'll give you Rp. 100,000.")
-                        User.current_user.currency += 100000
-                        pet.generosity += 1
-                    else:
-                        print(f"\n{pet.name}: Sorry, can't give you anymore... 😔")
-            
-            elif topic == 4:
-                jokes = [
-                    "Why can't a nose be 12 inches long? Because then it would be a foot!",
-                    "How much do rainbows weigh? Not much. They're actually pretty light!",
-                    "I had a joke about paper today, but it was tearable!",
-                    "What do you call an ant who fights crime? A vigilANTe!",
-                    "How do you make holy water? You boil the hell out of it!",
-                    "Some people pick their nose, but I was born with mine.",
-                    "Justice is a dish best served cold. Otherwise, it's just water.",
-                    "Why don't programmers like nature? Too many \"bugs\".",
-                    "Why don't robots panic? \"Nerves of steel\"."
-                ]
-
-                if pet.hunger < 30:
-                    print(f"\n{pet.name} is too hungry to joke right now..")
-
-                elif pet.health < 20:
-                    print(f"\n{pet.name} is too sick to joke right now..")
-
-                elif pet.energy < 10:
-                    print(f"\n{pet.name} is too tired to joke right now..")
-
-                elif pet.happiness < 20:
-                    print(f"\n{pet.name} is too stressed to joke right now..")
-
-                else:
-                    print(f"\n{pet.name}: {ch(jokes)} Haha 🤭, funny right?")
-            
-            elif topic == 5:
-                print(f"\n{pet.name}: Okay, goodbye!")
-                print(f"{pet.name}'s happiness has increased by 10.")
-                pet.happiness += 10
+            actions = {
+                1: self._topic_plan,
+                2: self._topic_fav_food,
+                3: self._topic_money,
+                4: self._topic_joke,
+                5: self._topic_goodbye,
+            }
+            keep_talking = actions.get(topic, self._invalid_topic)(pet)
+            if not keep_talking:
                 break
-
             print()
 
     def _stocks(self) -> dict:
