@@ -4,6 +4,8 @@ from features.user import User
 import sys
 from features.formatter import GARIS
 import os
+from colorama import Fore, init
+init(autoreset=True)
 
 def clear():
     os.system("cls" if os.name == "nt" else "clear")
@@ -18,7 +20,7 @@ class Main:
 
     def create_pet(self) -> None:
         if not self.current_user:
-            print("\nPlease login or register first.\n")
+            print(Fore.YELLOW + "\nPlease login or register first.\n")
             return
 
         self.game.create()
@@ -26,7 +28,7 @@ class Main:
         if Game.animal_list:
             new_pet = Game.animal_list[-1]  
             self.current_user.add_pet(new_pet)
-            print(f"\nYou adopted {new_pet.name} the {new_pet.type}!\n")
+            print(Fore.GREEN + f"\nYou adopted {new_pet.name} the {new_pet.type}!\n")
         else:
             print("Pet creation failed.")
 
@@ -77,19 +79,17 @@ class Main:
         self.game.spend += 1
 
     def _auth_menu(self) -> int | None:
-        print("─" * 39 + " " + "VIRTUAL PET GAME" + " " + "─" * 44)
-        print("1. Register")
-        print("2. Login")
-        print("3. Change Password")
-        print("4. Exit")
-        print(GARIS)
+        print(Fore.CYAN + "─" * 39 + " " + "VIRTUAL PET GAME" + " " + "─" * 44)
+        print(Fore.YELLOW + "1. Register")
+        print(Fore.YELLOW + "2. Login")
+        print(Fore.YELLOW + "3. Change Password")
+        print(Fore.RED + "4. Exit")
+        print(Fore.MAGENTA + GARIS)
         try:
-            return int(input("Choose (1-4): ").strip())
+            return int(input(Fore.GREEN + "Choose (1-4): ").strip())
         except ValueError:
-            print("\nPlease insert digit at choice input!\n")
+            print(Fore.RED + "\nPlease insert digit at choice input!\n")
             return None
-
-    # ===== Refactored helpers to flatten _handle_auth_choice =====
 
     def _register_flow(self) -> None:
         while True:
@@ -186,20 +186,21 @@ class Main:
         return True
 
     def _pet_zone_menu(self) -> int | None:
-        print("─" * 43 + " " + "PET ZONE" + " " + "─" * 48)
-        print("1. Check time")
-        print("2. Create a new pet")
-        print("3. Interact with pet")
-        print("4. Pet stats")
-        print("5. Show Pets")
-        print("6. Go to shop")
-        print("7. Logout")
-        print(GARIS)
+        print(Fore.CYAN + "─" * 43 + " " + "PET ZONE" + " " + "─" * 48)
+        print(Fore.YELLOW + "1. Check time")
+        print(Fore.YELLOW + "2. Create a new pet")
+        print(Fore.YELLOW + "3. Interact with pet")
+        print(Fore.YELLOW + "4. Pet stats")
+        print(Fore.YELLOW + "5. Show Pets")
+        print(Fore.YELLOW + "6. Go to shop")
+        print(Fore.RED + "7. Logout")
+        print(Fore.MAGENTA + GARIS)
         try:
-            return int(input("Choose (1-7): ").strip())
+            return int(input(Fore.GREEN + "Choose (1-7): ").strip())
         except ValueError:
-            print("\nPlease insert digit at choice input!\n")
+            print(Fore.RED + "\nPlease insert digit at choice input!\n")
             return None
+
 
     def _show_time_and_days(self) -> bool:
         print("\n" + GARIS)
@@ -223,7 +224,7 @@ class Main:
             pet.time_past()
             return True
         else:
-            print("\nYour pet has deceased... 🧦\n")
+            print(Fore.RED + "\nYour pet has deceased... 🧦\n")
             return False
 
     def _show_selected_pet_stats(self) -> bool:
