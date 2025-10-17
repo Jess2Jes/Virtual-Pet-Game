@@ -1,41 +1,21 @@
 from .pet import VirtualPet
-from typing import Dict
+from typing import Dict, List, Tuple
 from .formatter import GARIS
+from .user import User
 
 class Shop:
-
-    food: Dict[str, int] = {
-
-        "🍗": 20000,
-        "🍦": 5000,
-        "🥘": 1000,
-        "🥗": 5500,
-        "🍟": 30000,
-        "🥔": 15000,
-        "🧀": 25000,
-
+    food_prices_by_emoji: Dict[str, int] = {
+        "🍗": 20000, "🍦": 5000, "🥘": 1000, "🥗": 5500, "🍟": 30000, "🥔": 15000, "🧀": 25000,
+    }
+    soap_prices_by_emoji: Dict[str, int] = {
+        "🌈": 55000, "💗": 35000, "⚪": 10000, "🌸": 25000,
+    }
+    potion_prices_by_emoji: Dict[str, int] = {
+        "🧪": 110000, "💊": 200000, "⚡": 800000, "💉": 1000000,
     }
 
-    soap: Dict[str, int] = {
-
-        "🌈": 55000,
-        "💗": 35000,
-        "⚪": 10000,
-        "🌸": 25000,
-    }
-
-    potion: Dict[str, int] = {
-
-        "🧪": 110000,
-        "💊": 200000,
-        "⚡": 800000,
-        "💉": 1000000,
-
-    }
-
-    def __init__(self, user):
+    def __init__(self, user: User):
         self.user = user
-        self.money = user.current_user.currency
 
     @staticmethod
     def _input_int(prompt: str):
@@ -44,117 +24,174 @@ class Shop:
         except ValueError:
             return None
 
+    def _price_for_food(self, name: str) -> int:
+        emoji = VirtualPet.FOOD_DEF[name][0]
+        return self.food_prices_by_emoji[emoji]
+
+    def _price_for_soap(self, name: str) -> int:
+        emoji = VirtualPet.SOAP_DEF[name][0]
+        return self.soap_prices_by_emoji[emoji]
+
+    def _price_for_potion(self, name: str) -> int:
+        emoji = VirtualPet.POTION_DEF[name][0]
+        return self.potion_prices_by_emoji[emoji]
+
     def show_currency(self) -> None:
         print(GARIS)
-
-        if (self.money >= 1000):
-            print(f"Your current currency: Rp. {"{:,}".format(self.money)}")
+        money = self.user.currency
+        if money >= 1000:
+            print(f"Your current currency: Rp. {'{:,}'.format(money)}")
         else:
-            print(f"Your current currency: Rp. {self.money}")
-
-        if (self.money < 5000):
-            print("You are broke... 💸")
-        else:
-            print("You still have lots... 💰")
+            print(f"Your current currency: Rp. {money}")
+        print("You are broke... 💸" if money < 5000 else "You still have lots... 💰")
         print(GARIS + "\n")
-    
+
+    def _list_food_items(self) -> List[Tuple[str, str, int, int, int]]:
+        items: List[Tuple[str, str, int, int, int]] = []
+        inv = self.user.inventory["food"]
+        for i, (name, (emoji, _, _)) in enumerate(VirtualPet.FOOD_DEF.items(), start=1):
+            price = self._price_for_food(name)
+            qty = inv.get(name, 0)
+            items.append((name, emoji, price, qty, i))
+        return items
+
+    def _list_soap_items(self) -> List[Tuple[str, str, int, int, int]]:
+        items: List[Tuple[str, str, int, int, int]] = []
+        inv = self.user.inventory["soap"]
+        for i, (name, (emoji, _, _)) in enumerate(VirtualPet.SOAP_DEF.items(), start=1):
+            price = self._price_for_soap(name)
+            qty = inv.get(name, 0)
+            items.append((name, emoji, price, qty, i))
+        return items
+
+    def _list_potion_items(self) -> List[Tuple[str, str, int, int, int]]:
+        items: List[Tuple[str, str, int, int, int]] = []
+        inv = self.user.inventory["potion"]
+        for i, (name, (emoji, _)) in enumerate(VirtualPet.POTION_DEF.items(), start=1):
+            price = self._price_for_potion(name)
+            qty = inv.get(name, 0)
+            items.append((name, emoji, price, qty, i))
+        return items
+
     def catalog_food(self) -> None:
         print(GARIS)
-        for key, value in self.food.items():
-            print(f"-> {key} : {"{:,}".format(value)}")
-        print(GARIS + "\n")
+        print("FOOD CATALOG")
         print(GARIS)
-        print("Your Current Food Stock:")
-        print(GARIS)
-        for key, value in VirtualPet.list_food.items():
-            print(f"-> {key} {str(value[0])} : {value[1]}")
+        for name, emoji, price, qty, i in self._list_food_items():
+            stock_text = f"{qty}" if qty > 0 else "0 (Out of stock)"
+            print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(GARIS + "\n")
 
     def catalog_soap(self) -> None:
         print(GARIS)
-        for key, value in self.soap.items():
-            print(f"-> {key} : {"{:,}".format(value)}")
-        print(GARIS + "\n")
+        print("SOAP CATALOG")
         print(GARIS)
-        print("Your Current Soap Stock:")
-        print(GARIS)
-        for key, value in VirtualPet.list_soap.items():
-            print(f"-> {key} {str(value[0])} : {value[1]}")
+        for name, emoji, price, qty, i in self._list_soap_items():
+            stock_text = f"{qty}" if qty > 0 else "0 (Out of stock)"
+            print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(GARIS + "\n")
-    
+
     def catalog_potion(self) -> None:
         print(GARIS)
-        for key, value in self.potion.items():
-            print(f"-> {key} : Rp. {"{:,}".format(value)}")
-        print(GARIS + "\n")
+        print("POTION CATALOG")
         print(GARIS)
-        print("Your Current Potion Stock:")
-        print(GARIS)
-        for key, value in VirtualPet.list_potion.items():
-            print(f"-> {key} {str(value[0])} : {value[1]}")
+        for name, emoji, price, qty, i in self._list_potion_items():
+            stock_text = f"{qty}" if qty > 0 else "0 (Out of stock)"
+            print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(GARIS + "\n")
-    
-    def buy(self, item, amount) -> None:
-        if (not ((item in self.food.keys()) or (item in self.soap.keys()) 
-            or (item in self.potion.keys()))):
 
-            print(f"\nThere's currently no {item} in this shop.\n")
-            return
+    def _buy_category_and_index(self) -> tuple[str | None, int | None]:
+        print("What do you want to buy?")
+        print("1. Food")
+        print("2. Soap")
+        print("3. Potion")
+        cat = self._input_int("Choose category (1-3): ")
+        if cat not in (1, 2, 3):
+            print("\nPlease choose 1-3.")
+            return None, None
 
-        if (self.money == 0):
-            print("\nYou cannot buy anything anymore!\n")
-            return
-        
-        print(f"\nYou bought {amount} {item}!\n")
-        
-        if (item in self.food.keys()):
-            if (self.food[item] * amount > self.money):
-                print(f"Not enough amount to buy {item}!\n")
-                return
-            self.user.currency -= (self.food[item] * amount)
-            self.money = self.user.currency
-            VirtualPet.list_food[item][0] += amount
-            print(f"\nYour current {item} has: {VirtualPet.list_food[item][0]}")
-        
-        elif (item in self.soap.keys()):
-            if (self.soap[item] * amount > self.money):
-                print(f"Not enough amount to buy {item}!\n")
-                return
-            self.user.currency -= (self.soap[item] * amount)
-            self.money = self.user.currency
-            VirtualPet.list_soap[item][0] += amount
-            print(f"\nYour current {item} has: {VirtualPet.list_soap[item][0]}")
-        
-        elif (item in self.potion.keys()):
-            if (self.potion[item] * amount > self.money):
-                print(f"Not enough amount to buy {item}!\n")
-                return
-            self.user.currency -= (self.potion[item] * amount)
-            self.money = self.user.currency
-            VirtualPet.list_potion[item][0] += amount
-            print(f"\nYour current {item} has: {VirtualPet.list_potion[item][0]}")
-        
-        if (self.money < 0):
-            self.money = 0
-
-        if (self.money >= 1000):
-            print(f"Total money left: Rp. {"{:,}".format(self.money)}\n")
+        if cat == 1:
+            self.catalog_food()
+            idx = self._input_int("Choose food number: ")
+            return "food", idx
+        elif cat == 2:
+            self.catalog_soap()
+            idx = self._input_int("Choose soap number: ")
+            return "soap", idx
         else:
-            print(f"Total money left: Rp. {self.money}\n")
+            self.catalog_potion()
+            idx = self._input_int("Choose potion number: ")
+            return "potion", idx
+
+    def _resolve_item_by_index(self, category: str, idx: int) -> str | None:
+        if idx is None:
+            return None
+        items = (
+            self._list_food_items() if category == "food"
+            else self._list_soap_items() if category == "soap"
+            else self._list_potion_items()
+        )
+        if not (1 <= idx <= len(items)):
+            print("\nInvalid item number.")
+            return None
+        return items[idx - 1][0]
+
+    def _price_for_category(self, category: str, name: str) -> int:
+        if category == "food":
+            return self._price_for_food(name)
+        elif category == "soap":
+            return self._price_for_soap(name)
+        else:
+            return self._price_for_potion(name)
+
+    def _add_stock(self, category: str, name: str, amount: int) -> None:
+        self.user.add_item(category, name, amount)
 
     def _buy_flow(self) -> None:
-        item = input("What do you want to buy (Note: use emoticon)? ").strip()
+        category, idx = self._buy_category_and_index()
+        if category is None or idx is None:
+            return
+        name = self._resolve_item_by_index(category, idx)
+        if not name:
+            return
+
         while True:
             amount = self._input_int("How many do you want to buy? ")
-            if amount is not None:
-                break
-            else:
-                print("\nPlease input number in amount!")
-        self.buy(item, amount)
+            if amount is None or amount <= 0:
+                print("\nPlease input a positive number!")
+                continue
+            break
+
+        price_per = self._price_for_category(category, name)
+        total = price_per * amount
+
+        if total > self.user.currency:
+            print(f"Not enough amount to buy {name}!")
+            print(f"Needed: Rp. {'{:,}'.format(total)}, You have: Rp. {'{:,}'.format(self.user.currency)}\n")
+            return
+
+        self.user.currency = self.user.currency - total
+        self._add_stock(category, name, amount)
+
+        emoji = (
+            VirtualPet.FOOD_DEF[name][0] if category == "food"
+            else VirtualPet.SOAP_DEF[name][0] if category == "soap"
+            else VirtualPet.POTION_DEF[name][0]
+        )
+
+        print(f"\nYou bought {amount} {name} {emoji}!")
+        new_qty = self.user.inventory[category][name]
+        print(f"\nYour current {name} {emoji} stock: {new_qty}")
+
+        money_left = self.user.currency
+        if money_left >= 1000:
+            print(f"Total money left: Rp. {'{:,}'.format(money_left)}\n")
+        else:
+            print(f"Total money left: Rp. {money_left}\n")
 
     def interact(self) -> None:
-        while True: 
-            print("\n" + "="*40 + " " + "Welcome to Pet Shop" + " " + "="*40)  
+        while True:
+            print("\n" + "="*40 + " " + "Welcome to Pet Shop" + " " + "="*40)
             print("1. See Food Catalog")
             print("2. See Soap Catalog")
             print("3. See Potion Catalog")

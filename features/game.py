@@ -3,6 +3,8 @@ from random import randrange, choice as ch
 from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
 from .formatter import Formatter, GARIS
 from .user import User
+from colorama import Fore, init
+init(autoreset=True)
 
 class Game:
     animal_list = []
@@ -32,15 +34,15 @@ class Game:
         print(GARIS)
         
         species_map = {
-            "🐈": Cat,
-            "🐇": Rabbit,
-            "🦖": Dino,
-            "🐉": Dragon,
-            "💩": Pou,
+            "1": Cat,
+            "2": Rabbit,
+            "3": Dino,
+            "4": Dragon,
+            "5": Pou,
         }
 
         while True: 
-            species = input("Choose his/her species (🐈/🐇/🦖/🐉/💩): ").strip()
+            species = input("Choose his/her species (1/2/3/4/5): ").strip()
             cls_type = species_map.get(species)
             if cls_type:
                 animal = cls_type(name, 0)
@@ -57,18 +59,10 @@ class Game:
     
     def view(self, pet) -> None:
         stats = {
-            "name": pet.name,
-            "type": pet.type,
-            "age": f"{pet.get_age():.1f}",
-            "hunger": pet.hunger,
-            "fat": pet.fat,
-            "sanity": pet.sanity,
-            "happiness": pet.happiness,
-            "energy": pet.energy,
-            "health": pet.health,
-            "mood": pet.get_mood(),
-            "summary": pet.get_summary(),
-            "age_summary": pet.get_age_summary()
+            "name": pet.name, "type": pet.type, "age": f"{pet.get_age():.1f}",
+            "hunger": pet.hunger, "fat": pet.fat, "sanity": pet.sanity,
+            "happiness": pet.happiness, "energy": pet.energy, "health": pet.health,
+            "mood": pet.get_mood(), "summary": pet.get_summary(), "age_summary": pet.get_age_summary()
         }
         print(self.format.format_status_box(stats))
 
@@ -97,20 +91,25 @@ class Game:
             return None
 
     @staticmethod
-    def _print_stock(title: str, store: dict) -> None:
+    def _print_stock(title: str, defs: dict, category: str) -> None:
         print("\n" + GARIS)
         print(title)
         print(GARIS + "\n")
-        for key in store.keys():
-            vals = store[key]
-            if len(vals) == 4 and vals in VirtualPet.list_food.values():
-                print(f"- {key} {vals[0]} (Hunger: {vals[2]}, Happiness: {vals[3]}, Available: {vals[1]})") 
-            elif len(vals) == 4 and vals in VirtualPet.list_soap.values():
-                print(f"- {key} {vals[0]} (Sanity: {vals[2]}, Happiness: {vals[3]}, Available: {vals[1]})")
-            elif len(vals) == 3:
-                print(f"- {key} {vals[0]} (Available: {vals[1]}, Effect: {vals[2]})")
+
+        inv = User.current_user.inventory[category]
+        is_food = category == "food"
+        is_soap = category == "soap"
+
+        for key, v in defs.items():
+            emoji = v[0]
+            qty = inv.get(key, 0)
+            stock_text = f"{qty}" if qty > 0 else f"{Fore.RED}Out of stock{Fore.RESET}"
+            if is_food:
+                print(f"- {key} {emoji} (Hunger: {v[1]}, Happiness: {v[2]}, Available: {stock_text})")
+            elif is_soap:
+                print(f"- {key} {emoji} (Sanity: {v[1]}, Happiness: {v[2]}, Available: {stock_text})")
             else:
-                print(f"- {key} {vals[0]} (Available: {vals[1]})")
+                print(f"- {key} {emoji} (Available: {stock_text}, Effect: {v[1]})")
     
     @staticmethod
     def _print_potion_requirement(title: str) -> None:
@@ -124,30 +123,34 @@ class Game:
         print(GARIS + "\n")
     
     @staticmethod
-    def _food_emoticon_choice(food: str) -> None:
-        food_emoticon = {
-            "🍗": "kentucky fried chicken",
-            "🍦": "ice cream",
-            "🥘": "fried rice",
-            "🥗": "salad",
-            "🍟": "french fries",
-            "🥔": "mashed potato",
-            "🧀": "mozarella nugget",
+    def _food_choice_from_number(food: str) -> str | None:
+        food_choice_map = {
+            "1": "kentucky fried chicken", "2": "ice cream", "3": "fried rice",
+            "4": "salad", "5": "french fries", "6": "mashed potato", "7": "mozarella nugget",
         }
         try:
-            return food_emoticon[food].title()
+            return food_choice_map[food].title()
         except KeyError:
-            print("\nUnknown emoticon food! Please choose (🍗/🍦/🥘/🥗/🍟/🥔/🧀)!")
+            print("\nUnknown food choice! Please choose (1/2/3/4/5/6/7)!")
 
     def _feed(self, pet: VirtualPet) -> None:
-        food = input("\nWhich food (🍗/🍦/🥘/🥗/🍟/🥔/🧀)? ").strip()
-        choice = self._food_emoticon_choice(food)
-        if (choice is not None):
-            pet.feed(choice)
+        food = input("\nWhich food (1/2/3/4/5/6/7)? ").strip()
+        choice = self._food_choice_from_number(food)
+        if not choice:
+            return
+        inv = User.current_user.inventory["food"]
+        if inv.get(choice, 0) <= 0:
+            print(f"\n{choice} is out of stock. Buy more in the shop before feeding.")
+            return
+        used = pet.feed(choice)
+        if used:
+            User.current_user.consume_item("food", choice, 1)
+            remaining = User.current_user.inventory["food"][choice]
+            emoji = VirtualPet.FOOD_DEF[choice][0]
+            print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     @staticmethod
     def _play(pet: VirtualPet) -> None:
-        
         if pet.energy < 10:
             print(f"\n{pet.name} is too tired to play..")
             return
@@ -159,22 +162,16 @@ class Game:
             return
 
         act = {
-            "cat": "You play laser with",
-            "rabbit": "You play catch ball with",
-            "dinosaur": "You play hide and seek with",
-            "dragon": "You play fireball with",
+            "cat": "You play laser with", "rabbit": "You play catch ball with",
+            "dinosaur": "You play hide and seek with", "dragon": "You play fireball with",
             "pou": "You brought to swimming pool"
-
         }.get(pet.type.lower(), "You play with")
 
         emoji = {
-            "cat": "💥", "rabbit": "🤾", "dinosaur": "🏃",
-            "dragon": "☄️", "pou": "🏊‍♂️"
-
+            "cat": "💥", "rabbit": "🤾", "dinosaur": "🏃", "dragon": "☄️", "pou": "🏊‍♂️"
         }.get(pet.type.lower(), "🎲")
 
         print(f"\n{act} {pet.name} {emoji}!")
-
         print(f"\n{pet.name}'s happiness increased by 10.")
         print(f"{pet.name}'s hunger decreased by 5.")
         print(f"{pet.name}'s energy decreased by 5.")
@@ -194,55 +191,66 @@ class Game:
         print(GARIS)
 
     @staticmethod
-    def _soap_emoticon_choice(soap: str) -> None:
-        soap_emoticon = {
-            "🌈": "rainbow bubble soap",
-            "💗": "pink bubble soap",
-            "⚪": "white silk soap",
-            "🌸": "flower bubble soap",
+    def _soap_choice_from_number(soap: str) -> str | None:
+        soap_choice_map = {
+            "1": "rainbow bubble soap", "2": "pink bubble soap",
+            "3": "white silk soap", "4": "flower bubble soap",
         }
         try:
-            return soap_emoticon[soap].title()
+            return soap_choice_map[soap].title()
         except KeyError:
-            print("\nUnknown emoticon soap! Please choose (🌈/💗/⚪/🌸)!")
+            print("\nUnknown soap choice! Please choose (1/2/3/4)!")
 
     def _bath(self, pet: VirtualPet) -> None:
-        soap = input("\nWhich soap (🌈/💗/⚪/🌸)? ").strip()
-        choice = self._soap_emoticon_choice(soap)
-        if (choice is not None):
-            pet.bath(choice)
+        soap = input("\nWhich soap (1/2/3/4)? ").strip()
+        choice = self._soap_choice_from_number(soap)
+        if not choice:
+            return
+        inv = User.current_user.inventory["soap"]
+        if inv.get(choice, 0) <= 0:
+            print(f"\n{choice} is out of stock. Buy more in the shop before bathing.")
+            return
+        used = pet.bath(choice)
+        if used:
+            User.current_user.consume_item("soap", choice, 1)
+            remaining = User.current_user.inventory["soap"][choice]
+            emoji = VirtualPet.SOAP_DEF[choice][0]
+            print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     @staticmethod
-    def _potion_emoticon_choice(potion: str):
-        potion_emoticon = {
-            "🧪": "fat burner",
-            "💊": "health potion",
-            "⚡": "energizer",
-            "💉": "adult potion",
+    def _potion_choice_from_number(potion: str) -> str | None:
+        potion_choice_map = {
+            "1": "fat burner", "2": "health potion", "3": "energizer", "4": "adult potion",
         }
         try:
-            return potion_emoticon[potion].title()
+            return potion_choice_map[potion].title()
         except KeyError:
-            print("\nUnknown emoticon potion! Please choose (🧪/💊/⚡/💉)!")
+            print("\nUnknown potion choice! Please choose (1/2/3/4)!")
 
     def _give_potion(self, pet: VirtualPet) -> None:
-        potion = input("\nWhich potion (🧪/💊/⚡/💉)? ").strip()
-        choice = self._potion_emoticon_choice(potion)
-        if (choice is not None):
-            pet.health_care(choice)
+        potion = input("\nWhich potion (1/2/3/4)? ").strip()
+        choice = self._potion_choice_from_number(potion)
+        if not choice:
+            return
+        inv = User.current_user.inventory["potion"]
+        if inv.get(choice, 0) <= 0:
+            print(f"\n{choice} is out of stock. Buy more in the shop before using.")
+            return
+        used = pet.health_care(choice)
+        if used:
+            User.current_user.consume_item("potion", choice, 1)
+            remaining = User.current_user.inventory["potion"][choice]
+            emoji = VirtualPet.POTION_DEF[choice][0]
+            print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     def _sleep(self, pet: VirtualPet) -> None:
-
         hours = self._input_int(f"\n{pet.name}'s sleep duration (1-12): ")
-
         if hours is None:
             print("\nPlease insert digit at choice input!\n")
             return
-        
         if not (1 <= hours <= 12):
             print("\nSleep duration must between 1 to 12 hours.")
             return
-        
         pet.sleep(hours)
 
     @staticmethod
@@ -312,8 +320,8 @@ class Game:
 
     def _topic_plan(self, pet: VirtualPet) -> bool:
         ans = [
-            f"I want to eat {pet.fav_food}!", "I want to play :D", 
-            "I want to take a walk 🌳.","I want to take a bath :)",
+            f"I want to eat {pet.fav_food}!", "I want to play :D",
+            "I want to take a walk 🌳.", "I want to take a bath :)",
             "I want to talk to you..👉👈"
         ]
         print(f"\n{pet.name}: {ch(ans)}")
@@ -398,9 +406,9 @@ class Game:
 
     def _stocks(self) -> dict:
         return {
-            1: ["List of Foods:", VirtualPet.list_food],
-            3: ["List of Soaps:", VirtualPet.list_soap],
-            4: ["List of Potions:", VirtualPet.list_potion],
+            1: ["List of Foods:", VirtualPet.FOOD_DEF, "food"],
+            3: ["List of Soaps:", VirtualPet.SOAP_DEF, "soap"],
+            4: ["List of Potions:", VirtualPet.POTION_DEF, "potion"],
         }
 
     def _actions(self):
@@ -445,8 +453,8 @@ class Game:
                 continue
 
             if self._should_show_stock(choice):
-                title, store = self._stocks()[choice]
-                self._print_stock(title, store)
+                title, defs, category = self._stocks()[choice]
+                self._print_stock(title, defs, category)
 
             action = self._actions().get(choice)
             if action:
