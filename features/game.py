@@ -326,14 +326,15 @@ class Game:
     def _topic_money(self, pet: VirtualPet) -> bool:
         if all(val < 50 for val in [pet.hunger, pet.sanity, pet.happiness, pet.health]):
             print(f"\n{pet.name}: I will consider it if you take care of me properly!")
-            return True
+            return False
         if pet.generosity < 2:
             print(f"\n{pet.name}: Here, I'll give you Rp. 100,000.")
             User.current_user.currency += 100000
             pet.generosity += 1
+            return True
         else:
             print(f"\n{pet.name}: Sorry, can't give you anymore... 😔")
-        return True
+            return False
 
     def _can_tell_joke(self, pet: VirtualPet) -> tuple[bool, str | None]:
         if pet.hunger < 30:
@@ -350,7 +351,7 @@ class Game:
         ok, reason = self._can_tell_joke(pet)
         if not ok:
             print(reason)
-            return True
+            return False
         jokes = [
             "Why can't a nose be 12 inches long? Because then it would be a foot!",
             "How much do rainbows weigh? Not much. They're actually pretty light!",
