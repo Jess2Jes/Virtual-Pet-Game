@@ -1,5 +1,5 @@
 from random import randrange
-from typing import Dict, Tuple
+from typing import Dict, Literal
 from .formatter import GARIS
 
 FAT_BURNER = "Fat Burner"
@@ -7,29 +7,31 @@ HEALTH_POTION = "Health Potion"
 ENERGIZER = "Energizer"
 ADULT_POTION = "Adult Potion"
 
+PotionType = Literal["fat", "health", "energy", "age"]
+
 class VirtualPet:
-    FOOD_DEF: Dict[str, Tuple[str, int, int]] = {
-        "Kentucky Fried Chicken": ("🍗", 15, 5),
-        "Ice Cream": ("🍦", 5, 3),
-        "Fried Rice": ("🥘", 10, 0),
-        "Salad": ("🥗", 10, -5),
-        "French Fries": ("🍟", 5, 5),
-        "Mashed Potato": ("🥔", 5, -2),
-        "Mozarella Nugget": ("🧀", 20, 10),
+    FOOD_DEF: Dict[str, Dict[str, int | str]] = {
+        "Kentucky Fried Chicken": {"emoji": "🍗", "hunger": 15, "happiness": 5, "price": 20000},
+        "Ice Cream": {"emoji": "🍦", "hunger": 5, "happiness": 3, "price": 5000},
+        "Fried Rice": {"emoji": "🥘", "hunger": 10, "happiness": 0, "price": 1000},
+        "Salad": {"emoji": "🥗", "hunger": 10, "happiness": -5, "price": 5500},
+        "French Fries": {"emoji": "🍟", "hunger": 5, "happiness": 5, "price": 30000},
+        "Mashed Potato": {"emoji": "🥔", "hunger": 5, "happiness": -2, "price": 15000},
+        "Mozarella Nugget": {"emoji": "🧀", "hunger": 20, "happiness": 10, "price": 25000},
     }
 
-    SOAP_DEF: Dict[str, Tuple[str, int, int]] = {
-        "Rainbow Bubble Soap": ("🌈", 50, 20),
-        "Pink Bubble Soap": ("💗", 20, 10),
-        "White Silk Soap": ("⚪", 10, 5),
-        "Flower Bubble Soap": ("🌸", 30, 15),
+    SOAP_DEF: Dict[str, Dict[str, int | str]] = {
+        "Rainbow Bubble Soap": {"emoji": "🌈", "sanity": 50, "happiness": 20, "price": 55000},
+        "Pink Bubble Soap": {"emoji": "💗", "sanity": 20, "happiness": 10, "price": 35000},
+        "White Silk Soap": {"emoji": "⚪", "sanity": 10, "happiness": 5, "price": 10000},
+        "Flower Bubble Soap": {"emoji": "🌸", "sanity": 30, "happiness": 15, "price": 25000},
     }
 
-    POTION_DEF: Dict[str, Tuple[str, int]] = {
-        FAT_BURNER: ("🧪", -50),
-        HEALTH_POTION: ("💊", 50),
-        ENERGIZER: ("⚡", 50),
-        ADULT_POTION: ("💉", 20),
+    POTION_DEF: Dict[str, Dict[str, int | str | PotionType]] = {
+        FAT_BURNER: {"emoji": "🧪", "type": "fat", "delta": -50, "price": 110000},
+        HEALTH_POTION: {"emoji": "💊", "type": "health", "delta": 50, "price": 200000},
+        ENERGIZER: {"emoji": "⚡", "type": "energy", "delta": 50, "price": 800000},
+        ADULT_POTION: {"emoji": "💉", "type": "age", "delta": 20, "price": 1000000},
     }
 
     def __init__(self, name: str, age: float = 0, species: str = "Pet"):
@@ -95,8 +97,17 @@ class VirtualPet:
     def get_age(self) -> float:
         return self.age
 
+    def play(self) -> None:
+        self.happiness += 10
+        self.hunger -= 5
+        self.energy -= 5
+        self.limit_stat()
+
     def feed(self, food: str) -> bool:
-        emoji, hunger_change, happiness_change = VirtualPet.FOOD_DEF[food]
+        data = VirtualPet.FOOD_DEF[food]
+        emoji = data["emoji"]  
+        hunger_change = int(data["hunger"]) 
+        happiness_change = int(data["happiness"])  
 
         if self.hunger >= 100:
             print(f"\n{self.name} doesn't want to eat anymore 🤢!")
@@ -106,8 +117,8 @@ class VirtualPet:
         print("\n" + "="*101)
         print(f"\n{self.name} has been fed with '{food}' {emoji} 🍽️.")
 
-        self.hunger += int(hunger_change)
-        self.happiness += int(happiness_change)
+        self.hunger += hunger_change
+        self.happiness += happiness_change
         self.limit_stat()
 
         print("="*101)
@@ -120,15 +131,18 @@ class VirtualPet:
         return True
 
     def bath(self, soap: str) -> bool:
-        emoji, sanity_change, happiness_change = VirtualPet.SOAP_DEF[soap]
+        data = VirtualPet.SOAP_DEF[soap]
+        emoji = data["emoji"]  
+        sanity_change = int(data["sanity"])  
+        happiness_change = int(data["happiness"])  
 
         if self.sanity >= 100:
             print(f"\n{self.name}'s sanity is still full!\n")
             return False
 
         print("\n" + "="*101)
-        self.sanity += int(sanity_change)
-        self.happiness += int(happiness_change)
+        self.sanity += sanity_change
+        self.happiness += happiness_change
 
         print(f"\n{self.name} has been bathed 🛁 with '{soap}' {emoji}.")
 
@@ -143,66 +157,43 @@ class VirtualPet:
         return True
 
     def health_care(self, potion: str) -> bool:
-        emoji, change = VirtualPet.POTION_DEF[potion]
+        data = VirtualPet.POTION_DEF[potion]
+        emoji = data["emoji"]  
+        effect_type: PotionType = data["type"]  
+        delta = int(data["delta"])  
+
         used = False
+        if effect_type == "fat":
+            if self.fat > 50:
+                self.fat = max(0, self.fat + delta)  
+                print(f"\n{emoji} --> {self.name}'s fat has been reduced!\n")
+                used = True
+        elif effect_type == "health":
+            if self.health < 100:
+                self.health += delta
+                print(f"\n{self.name} has been healed {emoji}!\n")
+                used = True
+        elif effect_type == "energy":
+            if self.energy < 100:
+                self.energy += delta
+                print(f"\n{emoji} --> {self.name}'s energy has been recharged 😆!\n")
+                used = True
+        elif effect_type == "age":
+            if self.age < 20:
+                self.age += delta
+                print(f"\n{emoji} --> {self.name} has leveled up to adult!\n")
+                used = True
 
-        if potion == FAT_BURNER and self.fat > 50:
-            self.fat = max(0, self.fat - 50)
-            print(f"\n{emoji} --> {self.name}'s fat has been reduced!\n")
-            used = True
-        elif potion == HEALTH_POTION and self.health < 100:
-            self.health += int(change)
-            print(f"\n{self.name} has been healed {emoji}!\n")
-            used = True
-        elif potion == ENERGIZER and self.energy < 100:
-            self.energy += int(change)
-            print(f"\n{emoji} --> {self.name}'s energy has been recharged 😆!\n")
-            used = True
-        elif potion == ADULT_POTION and self.age < 20:
-            self.age += int(change)
-            print(f"\n{emoji} --> {self.name} has leveled up to adult!\n")
-            used = True
-        else:
+        if not used:
             print(f"\n{self.name} hasn't reached requirement to use {potion}!")
-
-        if used:
-            self.limit_stat()
-            print("="*101)
-            print(f"{self.name}'s status: ")
-            print("="*101)
-            print(f"Fat: {self.fat}")
-            print(f"Health: {self.health}")
-            print(f"Energy: {self.energy}")
-            print("="*101)
-
-        return used
-
-    def sleep(self, hours: int) -> None:
-        print("\n" + "="*101)
-        if (hours < 4):
-            print(f"{self.name} has a good nap 😴.")
-            print(f"{self.name}'s energy increased by 10.")
-            print(f"{self.name}'s hunger decreased by 4.")
-            self.energy += 10
-            self.hunger = max(0, self.hunger - 4)
-        elif (4 <= hours <= 8):
-            print(f"{self.name} has a good night sleep 😴.")
-            print(f"{self.name}'s energy increased by 55.")
-            print(f"{self.name}'s hunger decreased by 35.")
-            self.energy += 55
-            self.hunger = max(0, self.hunger - 35)
-        elif (hours >= 12):
-            print(f"{self.name} has too much sleep 😴.")
-            print(f"{self.name}'s energy increased by 100.")
-            print(f"{self.name}'s hunger decreased by 95.")
-            self.energy += 100
-            self.hunger = max(0, self.hunger - 95)
+            return False
 
         self.limit_stat()
-
-        print("\n" + GARIS)
+        print("="*101)
         print(f"{self.name}'s status: ")
-        print(GARIS)
+        print("="*101)
+        print(f"Fat: {self.fat}")
+        print(f"Health: {self.health}")
         print(f"Energy: {self.energy}")
-        print(f"Hunger: {self.hunger}")
-        print(GARIS)
+        print("="*101)
+        return True

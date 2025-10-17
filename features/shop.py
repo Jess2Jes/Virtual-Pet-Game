@@ -1,19 +1,9 @@
 from .pet import VirtualPet
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 from .formatter import GARIS
 from .user import User
 
 class Shop:
-    food_prices_by_emoji: Dict[str, int] = {
-        "🍗": 20000, "🍦": 5000, "🥘": 1000, "🥗": 5500, "🍟": 30000, "🥔": 15000, "🧀": 25000,
-    }
-    soap_prices_by_emoji: Dict[str, int] = {
-        "🌈": 55000, "💗": 35000, "⚪": 10000, "🌸": 25000,
-    }
-    potion_prices_by_emoji: Dict[str, int] = {
-        "🧪": 110000, "💊": 200000, "⚡": 800000, "💉": 1000000,
-    }
-
     def __init__(self, user: User):
         self.user = user
 
@@ -23,18 +13,6 @@ class Shop:
             return int(input(prompt))
         except ValueError:
             return None
-
-    def _price_for_food(self, name: str) -> int:
-        emoji = VirtualPet.FOOD_DEF[name][0]
-        return self.food_prices_by_emoji[emoji]
-
-    def _price_for_soap(self, name: str) -> int:
-        emoji = VirtualPet.SOAP_DEF[name][0]
-        return self.soap_prices_by_emoji[emoji]
-
-    def _price_for_potion(self, name: str) -> int:
-        emoji = VirtualPet.POTION_DEF[name][0]
-        return self.potion_prices_by_emoji[emoji]
 
     def show_currency(self) -> None:
         print(GARIS)
@@ -47,28 +25,31 @@ class Shop:
         print(GARIS + "\n")
 
     def _list_food_items(self) -> List[Tuple[str, str, int, int, int]]:
-        items: List[Tuple[str, str, int, int, int]] = []
         inv = self.user.inventory["food"]
-        for i, (name, (emoji, _, _)) in enumerate(VirtualPet.FOOD_DEF.items(), start=1):
-            price = self._price_for_food(name)
+        items: List[Tuple[str, str, int, int, int]] = []
+        for i, (name, data) in enumerate(VirtualPet.FOOD_DEF.items(), start=1):
+            emoji = data["emoji"]  
+            price = int(data["price"])  
             qty = inv.get(name, 0)
             items.append((name, emoji, price, qty, i))
         return items
 
     def _list_soap_items(self) -> List[Tuple[str, str, int, int, int]]:
-        items: List[Tuple[str, str, int, int, int]] = []
         inv = self.user.inventory["soap"]
-        for i, (name, (emoji, _, _)) in enumerate(VirtualPet.SOAP_DEF.items(), start=1):
-            price = self._price_for_soap(name)
+        items: List[Tuple[str, str, int, int, int]] = []
+        for i, (name, data) in enumerate(VirtualPet.SOAP_DEF.items(), start=1):
+            emoji = data["emoji"]  
+            price = int(data["price"])  
             qty = inv.get(name, 0)
             items.append((name, emoji, price, qty, i))
         return items
 
     def _list_potion_items(self) -> List[Tuple[str, str, int, int, int]]:
-        items: List[Tuple[str, str, int, int, int]] = []
         inv = self.user.inventory["potion"]
-        for i, (name, (emoji, _)) in enumerate(VirtualPet.POTION_DEF.items(), start=1):
-            price = self._price_for_potion(name)
+        items: List[Tuple[str, str, int, int, int]] = []
+        for i, (name, data) in enumerate(VirtualPet.POTION_DEF.items(), start=1):
+            emoji = data["emoji"]  
+            price = int(data["price"])  
             qty = inv.get(name, 0)
             items.append((name, emoji, price, qty, i))
         return items
@@ -138,11 +119,11 @@ class Shop:
 
     def _price_for_category(self, category: str, name: str) -> int:
         if category == "food":
-            return self._price_for_food(name)
+            return int(VirtualPet.FOOD_DEF[name]["price"])
         elif category == "soap":
-            return self._price_for_soap(name)
+            return int(VirtualPet.SOAP_DEF[name]["price"])
         else:
-            return self._price_for_potion(name)
+            return int(VirtualPet.POTION_DEF[name]["price"])
 
     def _add_stock(self, category: str, name: str, amount: int) -> None:
         self.user.add_item(category, name, amount)
@@ -174,10 +155,11 @@ class Shop:
         self._add_stock(category, name, amount)
 
         emoji = (
-            VirtualPet.FOOD_DEF[name][0] if category == "food"
-            else VirtualPet.SOAP_DEF[name][0] if category == "soap"
-            else VirtualPet.POTION_DEF[name][0]
+            VirtualPet.FOOD_DEF[name]["emoji"] if category == "food"
+            else VirtualPet.SOAP_DEF[name]["emoji"] if category == "soap"
+            else VirtualPet.POTION_DEF[name]["emoji"]
         )
+        emoji = str(emoji)
 
         print(f"\nYou bought {amount} {name} {emoji}!")
         new_qty = self.user.inventory[category][name]
