@@ -16,8 +16,8 @@ class Game:
         self.day = 0
     
     @staticmethod
-    def get_currency() -> int:
-        return User.current_user.currency
+    def get_currency(user: User) -> int:
+        return user.currency
     
     @classmethod
     def create(cls) -> None:
@@ -91,25 +91,25 @@ class Game:
             return None
 
     @staticmethod
-    def _print_stock(title: str, defs: dict, category: str) -> None:
+    def _print_stock(title: str, defs: dict, category: str, user: User) -> None:
         print("\n" + GARIS)
         print(title)
         print(GARIS + "\n")
 
-        inv = User.current_user.inventory[category]
+        inv = user.inventory[category]
         is_food = category == "food"
         is_soap = category == "soap"
 
         for key, v in defs.items():
-            emoji = v[0]
+            emoji = str(v["emoji"])
             qty = inv.get(key, 0)
             stock_text = f"{qty}" if qty > 0 else f"{Fore.RED}Out of stock{Fore.RESET}"
             if is_food:
-                print(f"- {key} {emoji} (Hunger: {v[1]}, Happiness: {v[2]}, Available: {stock_text})")
+                print(f"- {key} {emoji} (Hunger: {v['hunger']}, Happiness: {v['happiness']}, Available: {stock_text})")
             elif is_soap:
-                print(f"- {key} {emoji} (Sanity: {v[1]}, Happiness: {v[2]}, Available: {stock_text})")
+                print(f"- {key} {emoji} (Sanity: {v['sanity']}, Happiness: {v['happiness']}, Available: {stock_text})")
             else:
-                print(f"- {key} {emoji} (Available: {stock_text}, Effect: {v[1]})")
+                print(f"- {key} {emoji} (Available: {stock_text}, Effect: {v['delta']})")
     
     @staticmethod
     def _print_potion_requirement(title: str) -> None:
@@ -133,24 +133,25 @@ class Game:
         except KeyError:
             print("\nUnknown food choice! Please choose (1/2/3/4/5/6/7)!")
 
-    def _feed(self, pet: VirtualPet) -> None:
+    def _feed(self, pet: VirtualPet, user: User) -> None:
         food = input("\nWhich food (1/2/3/4/5/6/7)? ").strip()
         choice = self._food_choice_from_number(food)
         if not choice:
             return
-        inv = User.current_user.inventory["food"]
+        inv = user.inventory["food"]
         if inv.get(choice, 0) <= 0:
             print(f"\n{choice} is out of stock. Buy more in the shop before feeding.")
             return
         used = pet.feed(choice)
         if used:
-            User.current_user.consume_item("food", choice, 1)
-            remaining = User.current_user.inventory["food"][choice]
-            emoji = VirtualPet.FOOD_DEF[choice][0]
+            user.consume_item("food", choice, 1)
+            remaining = user.inventory["food"][choice]
+            emoji = str(VirtualPet.FOOD_DEF[choice]["emoji"])
             print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     @staticmethod
-    def _play(pet: VirtualPet) -> None:
+    def _play(self_pet: VirtualPet, user: User) -> None:
+        pet = self_pet 
         if pet.energy < 10:
             print(f"\n{pet.name} is too tired to play..")
             return
@@ -172,17 +173,14 @@ class Game:
         }.get(pet.type.lower(), "🎲")
 
         print(f"\n{act} {pet.name} {emoji}!")
+
+        pet.play()
+
         print(f"\n{pet.name}'s happiness increased by 10.")
         print(f"{pet.name}'s hunger decreased by 5.")
         print(f"{pet.name}'s energy decreased by 5.")
         print("You earned Rp. 25,000!")
-
-        pet.happiness += 10
-        pet.hunger -= 5
-        pet.energy -= 5
-        User.current_user.currency += 25000
-
-        pet.limit_stat()
+        user.currency = user.currency + 25000
 
         print("\n" + "="*101)
         print(f"Happiness : {pet.happiness}")
@@ -201,20 +199,20 @@ class Game:
         except KeyError:
             print("\nUnknown soap choice! Please choose (1/2/3/4)!")
 
-    def _bath(self, pet: VirtualPet) -> None:
+    def _bath(self, pet: VirtualPet, user: User) -> None:
         soap = input("\nWhich soap (1/2/3/4)? ").strip()
         choice = self._soap_choice_from_number(soap)
         if not choice:
             return
-        inv = User.current_user.inventory["soap"]
+        inv = user.inventory["soap"]
         if inv.get(choice, 0) <= 0:
             print(f"\n{choice} is out of stock. Buy more in the shop before bathing.")
             return
         used = pet.bath(choice)
         if used:
-            User.current_user.consume_item("soap", choice, 1)
-            remaining = User.current_user.inventory["soap"][choice]
-            emoji = VirtualPet.SOAP_DEF[choice][0]
+            user.consume_item("soap", choice, 1)
+            remaining = user.inventory["soap"][choice]
+            emoji = str(VirtualPet.SOAP_DEF[choice]["emoji"])
             print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     @staticmethod
@@ -227,23 +225,23 @@ class Game:
         except KeyError:
             print("\nUnknown potion choice! Please choose (1/2/3/4)!")
 
-    def _give_potion(self, pet: VirtualPet) -> None:
+    def _give_potion(self, pet: VirtualPet, user: User) -> None:
         potion = input("\nWhich potion (1/2/3/4)? ").strip()
         choice = self._potion_choice_from_number(potion)
         if not choice:
             return
-        inv = User.current_user.inventory["potion"]
+        inv = user.inventory["potion"]
         if inv.get(choice, 0) <= 0:
             print(f"\n{choice} is out of stock. Buy more in the shop before using.")
             return
         used = pet.health_care(choice)
         if used:
-            User.current_user.consume_item("potion", choice, 1)
-            remaining = User.current_user.inventory["potion"][choice]
-            emoji = VirtualPet.POTION_DEF[choice][0]
+            user.consume_item("potion", choice, 1)
+            remaining = user.inventory["potion"][choice]
+            emoji = str(VirtualPet.POTION_DEF[choice]["emoji"])
             print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
-    def _sleep(self, pet: VirtualPet) -> None:
+    def _sleep(self, pet: VirtualPet, user: User) -> None:
         hours = self._input_int(f"\n{pet.name}'s sleep duration (1-12): ")
         if hours is None:
             print("\nPlease insert digit at choice input!\n")
@@ -254,7 +252,8 @@ class Game:
         pet.sleep(hours)
 
     @staticmethod
-    def _walk(pet: VirtualPet) -> None:
+    def _walk(self_pet: VirtualPet, user: User) -> None:
+        pet = self_pet
         if pet.energy < 10:
             print(f"\n{pet.name} is too tired to take a walk..")
             return
@@ -271,7 +270,7 @@ class Game:
         if random_event == 10:
             print("\nYou found a wallet in your way home!")
             print("You brought back home Rp. 25,000...")
-            User.current_user.currency += 25000
+            user.currency = user.currency + 25000
         elif random_event == 30:
             print("\nYour pet stepped on mud!")
             print(f"{pet.name}' sanity decreased (-10)...")
@@ -289,8 +288,8 @@ class Game:
         elif random_event == 50:
             print("\nYou got robbed on your way home!")
             print("You lose Rp. 100,000!")
-            User.current_user.currency -= 100000
-            User.limit_currency()
+            user.currency = user.currency - 100000
+            user.limit_currency()
 
         pet.happiness += 25
         pet.hunger -= 5
@@ -318,26 +317,26 @@ class Game:
         print("5. Goodbye")
         print(GARIS)
 
-    def _topic_plan(self, pet: VirtualPet) -> bool:
+    def _topic_plan(self, pet: VirtualPet, user: User) -> bool:
         ans = [
-            f"I want to eat {pet.fav_food}!", "I want to play :D",
-            "I want to take a walk 🌳.", "I want to take a bath :)",
+            f"I want to eat {pet.fav_food}!", "I want to play :D", 
+            "I want to take a walk 🌳.","I want to take a bath :)",
             "I want to talk to you..👉👈"
         ]
         print(f"\n{pet.name}: {ch(ans)}")
         return True
 
-    def _topic_fav_food(self, pet: VirtualPet) -> bool:
+    def _topic_fav_food(self, pet: VirtualPet, user: User) -> bool:
         print(f"\n{pet.name}: My favourite food is {pet.fav_food}. :D")
         return True
 
-    def _topic_money(self, pet: VirtualPet) -> bool:
+    def _topic_money(self, pet: VirtualPet, user: User) -> bool:
         if all(val < 50 for val in [pet.hunger, pet.sanity, pet.happiness, pet.health]):
             print(f"\n{pet.name}: I will consider it if you take care of me properly!")
             return False
         if pet.generosity < 2:
             print(f"\n{pet.name}: Here, I'll give you Rp. 100,000.")
-            User.current_user.currency += 100000
+            user.currency = user.currency + 100000
             pet.generosity += 1
             return True
         else:
@@ -355,7 +354,7 @@ class Game:
             return False, f"\n{pet.name} is too stressed to joke right now.."
         return True, None
 
-    def _topic_joke(self, pet: VirtualPet) -> bool:
+    def _topic_joke(self, pet: VirtualPet, user: User) -> bool:
         ok, reason = self._can_tell_joke(pet)
         if not ok:
             print(reason)
@@ -374,17 +373,17 @@ class Game:
         print(f"\n{pet.name}: {ch(jokes)} Haha 🤭, funny right?")
         return True
 
-    def _topic_goodbye(self, pet: VirtualPet) -> bool:
+    def _topic_goodbye(self, pet: VirtualPet, user: User) -> bool:
         print(f"\n{pet.name}: Okay, goodbye!")
         print(f"{pet.name}'s happiness has increased by 10.")
         pet.happiness += 10
         return False  
 
-    def _invalid_topic(self, pet: VirtualPet) -> bool:
+    def _invalid_topic(self, pet: VirtualPet, user: User) -> bool:
         print("\nPlease choose 1-5.")
         return True
 
-    def _talk_menu(self, pet: VirtualPet) -> None:
+    def _talk_menu(self, pet: VirtualPet, user: User) -> None:
         while True:
             self._print_talk_menu()
             topic = self._input_int("Choose a topic: ")
@@ -399,7 +398,7 @@ class Game:
                 4: self._topic_joke,
                 5: self._topic_goodbye,
             }
-            keep_talking = actions.get(topic, self._invalid_topic)(pet)
+            keep_talking = actions.get(topic, self._invalid_topic)(pet, user)
             if not keep_talking:
                 break
             print()
@@ -413,18 +412,18 @@ class Game:
 
     def _actions(self):
         return {
-            1: lambda p: self._feed(p),
-            2: lambda p: self._play(p),
-            3: lambda p: self._bath(p),
+            1: self._feed,
+            2: self._play,
+            3: self._bath,
             4: self._action_potion,
-            5: lambda p: self._sleep(p),
-            6: lambda p: self._walk(p),
-            7: lambda p: self._talk_menu(p),
+            5: self._sleep,
+            6: self._walk,
+            7: self._talk_menu,
         }
 
-    def _action_potion(self, pet: VirtualPet) -> None:
+    def _action_potion(self, pet: VirtualPet, user: User) -> None:
         self._print_potion_requirement("Potion Usage Requirement")
-        self._give_potion(pet)
+        self._give_potion(pet, user)
 
     @staticmethod
     def _is_valid_choice(choice: int) -> bool:
@@ -433,7 +432,7 @@ class Game:
     def _should_show_stock(self, choice: int) -> bool:
         return choice in self._stocks()
 
-    def interact(self, pet) -> None:
+    def interact(self, pet, user: User) -> None:
         print("\n" + "="*101)
         print(f"Playing with {pet.name}, the {pet.type}:")
         while True:
@@ -454,8 +453,8 @@ class Game:
 
             if self._should_show_stock(choice):
                 title, defs, category = self._stocks()[choice]
-                self._print_stock(title, defs, category)
+                self._print_stock(title, defs, category, user)
 
             action = self._actions().get(choice)
             if action:
-                action(pet)
+                action(pet, user)

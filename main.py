@@ -61,8 +61,8 @@ class Main:
     def show_pet_stats(self, pet) -> None:
         self.game.view(pet)
 
-    def interact_with_pet(self, pet) -> None:
-        self.game.interact(pet)
+    def interact_with_pet(self, pet, user) -> None:
+        self.game.interact(pet, user)
 
     def days(self) -> int:
 
@@ -220,7 +220,7 @@ class Main:
         if not pet:
             return False
         if getattr(pet, "health", 1) > 0:
-            self.interact_with_pet(pet)
+            self.interact_with_pet(pet, self.current_user)
             pet.time_past()
             return True
         else:
@@ -253,7 +253,7 @@ class Main:
             return False
 
     def _go_to_shop(self) -> bool:
-        shopping = Shop(User.current_user)
+        shopping = Shop(self.current_user)
         shopping.interact()
         return True
 
