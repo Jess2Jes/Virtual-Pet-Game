@@ -163,26 +163,22 @@ class VirtualPet:
         delta = int(data["delta"])  
 
         used = False
-        if effect_type == "fat":
-            if self.fat > 50:
-                self.fat = max(0, self.fat + delta)  
-                print(f"\n{emoji} --> {self.name}'s fat has been reduced!\n")
-                used = True
-        elif effect_type == "health":
-            if self.health < 100:
-                self.health += delta
-                print(f"\n{self.name} has been healed {emoji}!\n")
-                used = True
-        elif effect_type == "energy":
-            if self.energy < 100:
-                self.energy += delta
-                print(f"\n{emoji} --> {self.name}'s energy has been recharged 😆!\n")
-                used = True
-        elif effect_type == "age":
-            if self.age < 20:
-                self.age += delta
-                print(f"\n{emoji} --> {self.name} has leveled up to adult!\n")
-                used = True
+        if effect_type == "fat" and self.fat > 50:
+            self.fat = max(0, self.fat + delta)  
+            print(f"\n{emoji} --> {self.name}'s fat has been reduced!\n")
+            used = True
+        elif effect_type == "health" and self.health < 100:
+            self.health += delta
+            print(f"\n{self.name} has been healed {emoji}!\n")
+            used = True
+        elif effect_type == "energy" and self.energy < 100:
+            self.energy += delta
+            print(f"\n{emoji} --> {self.name}'s energy has been recharged 😆!\n")
+            used = True
+        elif effect_type == "age" and self.age < 20:
+            self.age += delta
+            print(f"\n{emoji} --> {self.name} has leveled up to adult!\n")
+            used = True
 
         if not used:
             print(f"\n{self.name} hasn't reached requirement to use {potion}!")
