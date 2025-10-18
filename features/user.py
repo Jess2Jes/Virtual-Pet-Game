@@ -18,10 +18,11 @@ class User:
         self._currency = randrange(0, 25000)
 
         self.inventory: Dict[str, Dict[str, int]] = {
-            "food": {name: 3 for name in VirtualPet.FOOD_DEF.keys()},
-            "soap": {name: 0 for name in VirtualPet.SOAP_DEF.keys()},
-            "potion": {name: 3 for name in VirtualPet.POTION_DEF.keys()},
+            "food": dict.fromkeys(VirtualPet.FOOD_DEF.keys(), 3),
+            "soap": dict.fromkeys(VirtualPet.SOAP_DEF.keys(), 3),
+            "potion": dict.fromkeys(VirtualPet.POTION_DEF.keys(), 3),
         }
+
 
     @property
     def currency(self) -> int:

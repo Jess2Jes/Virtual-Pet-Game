@@ -3,6 +3,7 @@ from typing import List, Tuple
 from .formatter import GARIS
 from .user import User
 
+OUT_OF_STOCK = "Out of stock"
 class Shop:
     def __init__(self, user: User):
         self.user = user
@@ -59,7 +60,7 @@ class Shop:
         print("FOOD CATALOG")
         print(GARIS)
         for name, emoji, price, qty, i in self._list_food_items():
-            stock_text = f"{qty}" if qty > 0 else "0 (Out of stock)"
+            stock_text = f"{qty}" if qty > 0 else OUT_OF_STOCK
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(GARIS + "\n")
 
@@ -68,7 +69,7 @@ class Shop:
         print("SOAP CATALOG")
         print(GARIS)
         for name, emoji, price, qty, i in self._list_soap_items():
-            stock_text = f"{qty}" if qty > 0 else "0 (Out of stock)"
+            stock_text = f"{qty}" if qty > 0 else OUT_OF_STOCK
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(GARIS + "\n")
 
@@ -77,7 +78,7 @@ class Shop:
         print("POTION CATALOG")
         print(GARIS)
         for name, emoji, price, qty, i in self._list_potion_items():
-            stock_text = f"{qty}" if qty > 0 else "0 (Out of stock)"
+            stock_text = f"{qty}" if qty > 0 else OUT_OF_STOCK
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(GARIS + "\n")
 
@@ -107,14 +108,18 @@ class Shop:
     def _resolve_item_by_index(self, category: str, idx: int) -> str | None:
         if idx is None:
             return None
-        items = (
-            self._list_food_items() if category == "food"
-            else self._list_soap_items() if category == "soap"
-            else self._list_potion_items()
-        )
+
+        if category == "food":
+            items = self._list_food_items()
+        elif category == "soap":
+            items = self._list_soap_items()
+        else:
+            items = self._list_potion_items()
+
         if not (1 <= idx <= len(items)):
             print("\nInvalid item number.")
             return None
+
         return items[idx - 1][0]
 
     def _price_for_category(self, category: str, name: str) -> int:
@@ -154,11 +159,12 @@ class Shop:
         self.user.currency = self.user.currency - total
         self._add_stock(category, name, amount)
 
-        emoji = (
-            VirtualPet.FOOD_DEF[name]["emoji"] if category == "food"
-            else VirtualPet.SOAP_DEF[name]["emoji"] if category == "soap"
-            else VirtualPet.POTION_DEF[name]["emoji"]
-        )
+        if category == "food":
+            emoji = VirtualPet.FOOD_DEF[name]["emoji"]
+        elif category == "soap":
+            emoji = VirtualPet.SOAP_DEF[name]["emoji"]
+        else:
+            emoji = VirtualPet.POTION_DEF[name]["emoji"]
         emoji = str(emoji)
 
         print(f"\nYou bought {amount} {name} {emoji}!")
