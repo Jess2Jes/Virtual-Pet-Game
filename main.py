@@ -20,29 +20,41 @@ class Main:
         self.current_user = User.current_user
 
     def _show_account_info(self, user: User) -> bool:
+        while True:
+            stats = {
+                "username": user.username,
+                "password": user.password,
+                "pets": len(user.pets)
+            }
 
-        stats = {
-            "username": user.username,
-            "password": user.password,
-            "pets": len(user.pets)
-        }
+            print("\n" + Fore.RESET + GARIS)
+            print(Fore.YELLOW + "ACCOUNT INFORMATION".center(len(GARIS)) + Fore.RESET)
+            print(GARIS)
 
-        print("\n" + Fore.RESET + GARIS)
-        print(Fore.YELLOW + "ACCOUNT INFORMATION".center(len(GARIS)) + Fore.RESET)
-        print(GARIS)
-
-        show_password = input(
-                    "Would you like to show your password? (Y/N)\n"
-                    "(Note: input other than Y and N will be considered as N): "
-                ).capitalize().strip()
-        
-        if show_password == "Y":
-            print(self.game.format.format_username_box(
-                stats["username"], stats["password"], user.pets, False))
+            show_password = input(
+                        "Would you like to show your password? (Y/N)\n"
+                        "(Note: input other than Y and N will be considered as N): "
+                    ).capitalize().strip() 
             
-        else:
-            print(self.game.format.format_username_box(
-                stats["username"], stats["password"], user.pets, True))
+            if show_password == "Y":
+                print(self.game.format.format_username_box(
+                    stats["username"], stats["password"], user.pets, False))
+                
+            else:
+                print(self.game.format.format_username_box(
+                    stats["username"], stats["password"], user.pets, True))
+            
+            show_again = input(
+                        "\nWould you like to clear your account info? (Y/N)\n"
+                        "(Note: input other than Y and N will be considered as N): "
+                    ).capitalize().strip()
+            
+            if show_again == "Y":
+                clear()
+                self._pet_zone_flow()
+            
+            print()
+            break
         
         return True
 

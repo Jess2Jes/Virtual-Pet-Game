@@ -16,6 +16,8 @@ class Formatter:
             return text[:self.max_len - 3] + "..."
     
     def format_username_box(self, username: str, password: str, pets: int, set: bool) -> str:
+
+        max_length = self.max_length
         
         lines = [
             self.truncate("USER STATUS"),
@@ -26,25 +28,27 @@ class Formatter:
         ]
 
         for line in lines:
-            self.max_length = max(self.max_length, len(line) + 5)
+            max_length = max(max_length, len(line) + 5)
 
         box = "\n"
-        box += f"┌{'─' * self.max_length}┐\n"
-        box += f"│{lines[0].center(self.max_length)}│\n"
-        box += f"├{'─' * self.max_length}┤\n"
+        box += f"┌{'─' * max_length}┐\n"
+        box += f"│{lines[0].center(max_length)}│\n"
+        box += f"├{'─' * max_length}┤\n"
 
         for line in lines[1:]:
             if (line != lines[-1]):
-                box += f"│{line.ljust(self.max_length)}│\n"
-                box += f"├{'─' * self.max_length}┤\n"
+                box += f"│{line.ljust(max_length)}│\n"
+                box += f"├{'─' * max_length}┤\n"
             else:
-                box += f"│{line.ljust(self.max_length)}│\n"
+                box += f"│{line.ljust(max_length)}│\n"
         
-        box += f"└{'─' * self.max_length}┘\n"
+        box += f"└{'─' * max_length}┘\n"
             
         return box
         
     def format_time_box(self, hours: str, days: str) -> str:
+
+        max_length = self.max_length
 
         lines = [
             self.truncate("TIME STATUS"),
@@ -53,29 +57,39 @@ class Formatter:
         ]
 
         for line in lines:
-            self.max_length = max(self.max_length, len(line))
+            max_length = max(max_length, len(line) + 5)
 
         box = "\n"
-        box += f"┌{'─' * self.max_length}┐\n"
-        box += f"│{lines[0].center(self.max_length)}│\n"
-        box += f"├{'─' * self.max_length}┤\n"
+        box += f"┌{'─' * max_length}┐\n"
+        box += f"│{lines[0].center(max_length)}│\n"
+        box += f"├{'─' * max_length}┤\n"
 
         for line in lines[1:]:
             if (line != lines[-1]):
-                box += f"│{line.ljust(self.max_length)}│\n"
-                box += f"├{'─' * self.max_length}┤\n"
+                box += f"│{line.ljust(max_length)}│\n"
+                box += f"├{'─' * max_length}┤\n"
             else:
-                box += f"│{line.ljust(self.max_length)}│\n"
+                box += f"│{line.ljust(max_length)}│\n"
         
-        box += f"└{'─' * self.max_length}┘\n"
+        box += f"└{'─' * max_length}┘\n"
             
         return box
 
     def format_upgrade_stats(self, pet, stats: Dict) -> str:
 
+        max_length = self.max_length
+
         title = self.truncate(f"{pet.name}'s Status")
 
-        if (len(stats.keys()) == 3):
+        if (len(stats.keys()) == 4):
+            lines = [
+                self.truncate(f"Fat        : {pet.fat}"),
+                self.truncate(f"Health     : {pet.health}"),
+                self.truncate(f"Energy     : {pet.energy}"),
+                self.truncate(f"Age        : {pet.age}")
+            ]
+
+        elif (len(stats.keys()) == 3):
 
             if (("fat", "hunger", "happiness") == tuple(stats.keys())):
                 lines = [
@@ -83,14 +97,7 @@ class Formatter:
                     self.truncate(f"Happiness  : {pet.happiness}"),
                     self.truncate(f"Fat        : {pet.fat}")
                 ] 
-
-            elif (("fat", "health", "energy") == tuple(stats.keys())):
-                lines = [
-                    self.truncate(f"Fat        : {pet.fat}"),
-                    self.truncate(f"Health     : {pet.health}"),
-                    self.truncate(f"Energy     : {pet.energy}")
-                ]
-
+                
             else:
                 lines = [
                     self.truncate(f"Hunger     : {pet.hunger}"),
@@ -111,21 +118,23 @@ class Formatter:
                 ]
 
         for line in lines:
-            self.max_length = max(self.max_length, len(title), len(line))
+            max_length = max(max_length, len(title), len(line) + 5)
 
         box = "\n"
-        box += f"┌{'─' * self.max_length}┐\n"
-        box += f"│{title.center(self.max_length)}│\n"
-        box += f"├{'─' * self.max_length}┤\n"
+        box += f"┌{'─' * max_length}┐\n"
+        box += f"│{title.center(max_length)}│\n"
+        box += f"├{'─' * max_length}┤\n"
 
         for line in lines:
-            box += f"│{line.ljust(self.max_length)}│\n"
+            box += f"│{line.ljust(max_length)}│\n"
         
-        box += f"└{'─' * self.max_length}┘\n"
+        box += f"└{'─' * max_length}┘\n"
 
         return box
 
     def format_status_box(self, stats: Dict[str, str]) -> str:
+
+        max_length = self.max_length
 
         lines = [
             self.truncate(f"{stats['name']}, the {stats['type']}"),
@@ -164,16 +173,16 @@ class Formatter:
         '''
 
         for line in lines:
-            self.max_length = max(self.max_length, len(line))
+            max_length = max(max_length, len(line))
 
         box = "\n"
-        box += f"┌{'─' * self.max_length}┐\n"
-        box += f"│{lines[0].center(self.max_length)}│\n"
-        box += f"├{'─' * self.max_length}┤\n"
+        box += f"┌{'─' * max_length}┐\n"
+        box += f"│{lines[0].center(max_length)}│\n"
+        box += f"├{'─' * max_length}┤\n"
 
         for line in lines[1:]:
-            box += f"│{line.ljust(self.max_length)}│\n"
+            box += f"│{line.ljust(max_length)}│\n"
 
-        box += f"└{'─' * self.max_length}┘\n"
+        box += f"└{'─' * max_length}┘\n"
 
         return box

@@ -120,6 +120,7 @@ class VirtualPet:
             "fat": self.fat,
             "health": self.health,
             "energy": self.energy,
+            "age": self.age,
         }
         return self.format.format_upgrade_stats(self, potion_stats)
 
@@ -151,7 +152,7 @@ class VirtualPet:
         happiness_change = int(data["happiness"])  
 
         if self.hunger >= 100:
-            print(f"\n{self.name} doesn't want to eat anymore 🤢!")
+            print(Fore.RED + f"\n{self.name} doesn't want to eat anymore 🤢!\n")
             self.fat += 5
             self.limit_stat()
             return False
@@ -174,7 +175,7 @@ class VirtualPet:
         happiness_change = int(data["happiness"])  
 
         if self.sanity >= 100:
-            print(f"\n{self.name}'s sanity is still full!\n")
+            print(Fore.RED + f"\n{self.name}'s sanity is still full!\n")
             return False
 
         print("\n" + "="*101)

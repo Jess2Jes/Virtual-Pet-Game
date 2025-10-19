@@ -89,7 +89,7 @@ class Shop:
     def _buy_category_and_index(self) -> tuple[str | None, int | None]:
         print(GARIS)
         print("🐼 : Hello, my lovely customer, welcome to our store!")
-        time.sleep(1.5)
+        time.sleep(0.5)
         print("\n🐼 : What do you want to buy?")
         print(GARIS)
         print("1. Food")
@@ -189,7 +189,7 @@ class Shop:
 
     def interact(self) -> None:
         print("\n🐼 : Hi, I'm Po Ping. I'll be your shopping assistant for today!")
-        time.sleep(1.5)
+        time.sleep(0.5)
         while True:
             print("\n🐼 : Here's list of options you can do!")
             # There will also be a sell item menu in here soon!

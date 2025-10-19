@@ -354,6 +354,7 @@ class Game:
 
         if all(val < 50 for val in [pet.hunger, pet.sanity, pet.happiness, pet.health]):
             print(Fore.CYAN + f"\n{pet.name}: I will consider it if you take care of me properly!\n")
+            return True
 
         if pet.generosity < 2:
             print(Fore.CYAN + f"\n{pet.name}: Here, I'll give you Rp. 100,000.")
