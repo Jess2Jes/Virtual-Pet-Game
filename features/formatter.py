@@ -1,4 +1,4 @@
-# Formatter : untuk tabel pet stats, pet after care stats dan timezone
+# Formatter : untuk tabel pet stats, pet after care stats, account info dan timezone
 from typing import Dict
 
 GARIS = "─"*101
@@ -186,3 +186,4 @@ class Formatter:
         box += f"└{'─' * max_length}┘\n"
 
         return box
+
