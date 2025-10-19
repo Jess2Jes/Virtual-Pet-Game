@@ -87,10 +87,6 @@ class User:
         if username.strip().lower() in password.strip().lower():
             print(Fore.RED + "Password cannot be the same as username!\n")
             return None
-        for user in cls.users.values():
-            if (password == user.password):
-                print(Fore.RED + "This password is already in used!\n")
-                return None
 
         total_digit = sum(ch.isdigit() for ch in password)
         total_symbol = sum(1 for ch in password if ch in string.punctuation)

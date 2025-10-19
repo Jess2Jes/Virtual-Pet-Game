@@ -4,6 +4,7 @@ from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
 from .formatter import Formatter, GARIS
 from .user import User
 from colorama import Fore, init
+import json
 init(autoreset=True)
 
 class Game:
@@ -13,7 +14,20 @@ class Game:
         self.format = Formatter()
         self.spend = 0
         self.day = 0
-    
+        self.jokes = []
+        self.load_jokes()
+        
+    def load_jokes(self):
+        try:
+            with open("datas/jokes.json", "r", encoding="utf-8") as f:
+                self.jokes = json.load(f)
+        except FileNotFoundError:
+            print(Fore.RED + "Warning: datas/jokes.json not found. Jokes will not be available.")
+            self.jokes = [] 
+        except json.JSONDecodeError:
+            print(Fore.RED + "Warning: datas/jokes.json is corrupted. Jokes will not be available.")
+            self.jokes = []
+
     @staticmethod
     def get_currency(user: User) -> int:
         return user.currency
@@ -383,17 +397,11 @@ class Game:
             print(Fore.RED + reason + "\n")
             return False
         
-        jokes = [
-            {"question": "What do you call a man who lose his car?", "answer": "carlos"},
-            {"question": "Who is the loneliest billionaire?", "answer": "elonmusk"},
-            {"question": "What do you call a laughing motorcycle?", "answer": "yamaha ha ha ha"},
-            {"question": "What did one wall say to the other?", "answer": "i'll meet you at the corner"},
-            {"question": "How do you make an idiot say 'how'?", "answer": "exactly"},
-            {"question": "I once had a dream I was floating in a sea of orange soda.", "answer": "It was a fanta sea"},
-            {"question": "What is a pig with three eyes?", "answer": "Piiig"},
-        ]
-
-        random_jokes = ch(jokes)
+        if not self.jokes:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I'm all out of jokes right now! Sorry!")
+            return True
+        
+        random_jokes = ch(self.jokes)
 
         ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_jokes.get("question")} " + Fore.RESET).strip()
         
