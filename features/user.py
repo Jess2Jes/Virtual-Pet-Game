@@ -4,6 +4,8 @@ import math
 import string
 from random import randrange
 from typing import Dict
+from colorama import Fore, init
+init(autoreset=True)
 
 GARIS = "─────────────────────────────────────────────────────────────────────────────────────────────────────"
 
@@ -31,7 +33,7 @@ class User:
     @currency.setter
     def currency(self, value) -> None:
         if value < 0:
-            print("\nCurrency cannot be below 0!")
+            print(Fore.RED + "\nCurrency cannot be below 0!")
         else:
             self._currency = value
 
@@ -50,8 +52,8 @@ class User:
         total_letter = sum(ch.isalpha() for ch in new_password)
 
         if (total_digit < 1 or total_letter < 8 or total_symbol < 2):
-            print("\nChange password operation unsuccessful!")
-            print("(Password must contain at least 1 digit, 8 letters, and 2 symbols)")
+            print(Fore.RED + "\nChange password operation unsuccessful!")
+            print(Fore.YELLOW + "(Password must contain at least 1 digit, 8 letters, and 2 symbols)")
         else:
             self.__password = new_password
 
@@ -80,14 +82,14 @@ class User:
 
         print()
         if username in cls.users:
-            print("This username has already signed in!\n")
+            print(Fore.RED + "This username has already signed in!\n")
             return None
         if username.strip().lower() in password.strip().lower():
-            print("Password cannot be the same as username!\n")
+            print(Fore.RED + "Password cannot be the same as username!\n")
             return None
         for user in cls.users.values():
             if (password == user.password):
-                print("This password is already in used!\n")
+                print(Fore.RED + "This password is already in used!\n")
                 return None
 
         total_digit = sum(ch.isdigit() for ch in password)
@@ -95,22 +97,22 @@ class User:
         total_letter = sum(ch.isalpha() for ch in password)
 
         if total_digit < 1:
-            print("Password must contain at least 1 digit!\n")
+            print(Fore.RED + "Password must contain at least 1 digit!\n")
             print(GARIS)
             return None
         if total_symbol < 2:
-            print("Password must consist of at least 2 symbols!\n")
+            print(Fore.RED + "Password must consist of at least 2 symbols!\n")
             print(GARIS)
             return None
         if total_letter < 8:
-            print("Password must consist of at least 8 letters!\n")
+            print(Fore.RED + "Password must consist of at least 8 letters!\n")
             print(GARIS)
             return None
 
         new_user = cls(username, password)
         cls.users[username] = new_user
         cls.current_user = new_user
-        print(f"User {username} registered successfully.\n")
+        print(Fore.GREEN + f"User {username} registered successfully.\n")
         return 1
 
     @classmethod
@@ -118,14 +120,14 @@ class User:
 
         print()
         if username not in cls.users:
-            print("User not found!\n")
+            print(Fore.RED + "User not found!\n")
             return None
         if cls.users[username].password != password:
-            print("Wrong password!\n")
+            print(Fore.RED + "Wrong password!\n")
             return None
 
         cls.current_user = cls.users[username]
-        print(f"Welcome back, {username}!\n")
+        print(Fore.GREEN + f"Welcome back, {username}!\n")
         return 1
     
     @classmethod

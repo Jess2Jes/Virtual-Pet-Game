@@ -37,7 +37,7 @@ class VirtualPet:
         ADULT_POTION: {"emoji": "💉", "type": "age", "delta": 20, "price": 1000000},
     }
 
-    def __init__(self, name: str, age: float = 0, species: str = "Pet"):
+    def __init__(self, name: str, age: float = 0.0, species: str = "Pet"):
         self.name: str = name
         self.age: float = age
         self.type: str = species

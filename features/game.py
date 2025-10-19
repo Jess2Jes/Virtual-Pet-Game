@@ -25,7 +25,7 @@ class Game:
         return flag, name, species
     
     @classmethod
-    def create_species(cls, name) -> VirtualPet | bool:
+    def create_species(cls, name: str) -> VirtualPet | bool:
         print(GARIS)
         print("Here's five types of species you can choose: ")
         print("1. Cat (🐈)")
@@ -398,15 +398,15 @@ class Game:
         ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_jokes.get("question")} " + Fore.RESET).strip()
         
         if (ans.lower() == random_jokes.get("answer")):
-            print(Fore.CYAN + f"\n{pet.name}: Wait! How did you know? 😱")
-            print(Fore.CYAN + f"\n{pet.name}: You absolutely killed the joke LOL. Great Job! 🫠")
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Wait! How did you know? 😱")
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : You absolutely killed the joke LOL. Great Job! 🫠")
         else:
-            print(Fore.CYAN + f"\n{pet.name}: {random_jokes.get("answer").capitalize()}! GOT YOU! 🤪")
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_jokes.get("answer").capitalize()}! GOT YOU! 🤪")
         
         return True
 
     def _topic_goodbye(self, pet: VirtualPet, user: User) -> bool:
-        print(Fore.CYAN + f"\n{pet.name}: Okay, goodbye!")
+        print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Okay, goodbye!")
         print(Fore.GREEN + f"{pet.name}'s happiness has increased by 10.\n")
         pet.happiness += 10
         return False  

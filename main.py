@@ -102,11 +102,11 @@ class Main:
         print(Fore.RED + "\nInvalid selection.\n")
         return True
 
-    def show_pet_stats(self, pet) -> bool:
+    def show_pet_stats(self, pet: str) -> bool:
         self.game.view(pet)
         return True
 
-    def interact_with_pet(self, pet, user) -> bool:
+    def interact_with_pet(self, pet: str, user: User) -> bool:
         self.game.interact(pet, user)
         return True
 
@@ -197,16 +197,19 @@ class Main:
                 if password != user.password:
                     print(Fore.GREEN + "\nWrong Previous Password!\n")
                 else:
-                    user.password = new_password
-                    if user.password != password:
+                    users_password = [user_id.password for user_id in User.users.values()]
+                    if new_password not in users_password and new_password != password:
+                        user.password = new_password  
                         print(Fore.GREEN + "\nPassword has been changed!\n" + Fore.RESET)
-                        input("Press Enter to continue...")
+                        input(Fore.YELLOW + "Press Enter to continue...")
                         clear()
                         break
+                    else:
+                        print(Fore.RED + "\nPassword has been used / same as previous password!\n")
             else:
-                print(Fore.RED + "\nPlease create your own username/password first!")
+                print(Fore.RED + "\nPlease create your own username/password first!\n")
 
-            print("\n" + GARIS)
+            print(GARIS)
             retry = input(
                 "Would you like change password again? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "

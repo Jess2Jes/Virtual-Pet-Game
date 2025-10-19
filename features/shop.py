@@ -27,7 +27,7 @@ class Shop:
             print(f"🐼 : Your current currency: Rp. {'{:,}'.format(money)}")
         else:
             print(f"🐼 : Your current currency: Rp. {money}")
-        print("🐼 : You are broke... 💸" if money < 5000 else "🐼 : You still have lots... 💰")
+        print(Fore.RED + "🐼 : You are broke... 💸" if money < 5000 else Fore.GREEN + "🐼 : You still have lots... 💰")
         print(GARIS + "\n")
 
     def _list_food_items(self) -> List[Tuple[str, str, int, int, int]]:
@@ -182,7 +182,7 @@ class Shop:
 
         print(f"\n🐼 : You bought {amount} {name} {emoji}! Fantastic!")
         new_qty = self.user.inventory[category][name]
-        print(f"\n🐼 : Your current {name} {emoji}'s {new_qty}")
+        print(f"\n🐼 : Your current {name} {emoji} : {new_qty}")
 
         money_left = self.user.currency
         if money_left >= 1000:
