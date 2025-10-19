@@ -199,19 +199,19 @@ class VirtualPet:
         used = False
         if effect_type == "fat" and self.fat > 50:
             self.fat = max(0, self.fat + delta)  
-            print(Fore.GREEN + f"\n{emoji} --> {self.name}'s fat has been reduced!")
+            print(f"\n{emoji} --> {self.name}'s fat has been reduced!\n")
             used = True
         elif effect_type == "health" and self.health < 100:
             self.health += delta
-            print(Fore.GREEN + f"\n{self.name} has been healed {emoji}!")
+            print(f"\n{self.name} has been healed {emoji}!\n")
             used = True
         elif effect_type == "energy" and self.energy < 100:
             self.energy += delta
-            print(Fore.GREEN + f"\n{emoji} --> {self.name}'s energy has been recharged 😆!")
+            print(f"\n{emoji} --> {self.name}'s energy has been recharged 😆!\n")
             used = True
         elif effect_type == "age" and self.age < 20:
             self.age += delta
-            print(Fore.GREEN + f"\n{emoji} --> {self.name} has leveled up to adult!")
+            print(f"\n{emoji} --> {self.name} has leveled up to adult!\n")
             used = True
 
         if not used:
