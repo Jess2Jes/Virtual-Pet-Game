@@ -8,7 +8,6 @@ init(autoreset=True)
 
 OUT_OF_STOCK = "Out of Stock"
 
-OUT_OF_STOCK = "Out of stock"
 class Shop:
     def __init__(self, user: User):
         self.user = user
