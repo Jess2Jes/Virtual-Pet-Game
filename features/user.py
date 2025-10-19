@@ -7,6 +7,7 @@ from typing import Dict
 
 GARIS = "─────────────────────────────────────────────────────────────────────────────────────────────────────"
 
+
 class User:
     users = {}
     current_user = None
@@ -18,9 +19,9 @@ class User:
         self._currency = randrange(0, 25000)
 
         self.inventory: Dict[str, Dict[str, int]] = {
-            "food": {name: 3 for name in VirtualPet.FOOD_DEF.keys()},
-            "soap": {name: 0 for name in VirtualPet.SOAP_DEF.keys()},
-            "potion": {name: 3 for name in VirtualPet.POTION_DEF.keys()},
+            "food": dict.fromkeys(VirtualPet.FOOD_DEF.keys(), 3),
+            "soap": dict.fromkeys(VirtualPet.SOAP_DEF.keys(), 3),
+            "potion": dict.fromkeys(VirtualPet.POTION_DEF.keys(), 3)
         }
 
     @property
@@ -76,6 +77,7 @@ class User:
 
     @classmethod
     def register(cls, username: str, password: str) -> None | int:
+
         print()
         if username in cls.users:
             print("This username has already signed in!\n")
@@ -113,6 +115,7 @@ class User:
 
     @classmethod
     def login(cls, username: str, password: str) -> None | int:
+
         print()
         if username not in cls.users:
             print("User not found!\n")
@@ -124,3 +127,9 @@ class User:
         cls.current_user = cls.users[username]
         print(f"Welcome back, {username}!\n")
         return 1
+    
+    @classmethod
+    def _logout(cls) -> bool:
+        cls.current_user = None
+        print()
+        return False

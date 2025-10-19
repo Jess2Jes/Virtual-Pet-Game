@@ -4,6 +4,7 @@ from features.user import User
 import sys
 from features.formatter import GARIS
 import os
+import time
 from colorama import Fore, init
 init(autoreset=True)
 
@@ -16,53 +17,86 @@ INPUT_PASSWORD = "Password: "
 class Main:
     def __init__(self):
         self.game = Game()           
-        self.current_user = None
+        self.current_user = User.current_user
 
-    def create_pet(self) -> None:
+    def _show_account_info(self, user: User) -> bool:
+
+        stats = {
+            "username": user.username,
+            "password": user.password,
+            "pets": len(user.pets)
+        }
+
+        print("\n" + Fore.RESET + GARIS)
+        print(Fore.YELLOW + "ACCOUNT INFORMATION".center(len(GARIS)) + Fore.RESET)
+        print(GARIS)
+
+        show_password = input(
+                    "Would you like to show your password? (Y/N)\n"
+                    "(Note: input other than Y and N will be considered as N): "
+                ).capitalize().strip()
+        
+        if show_password == "Y":
+            print(self.game.format.format_username_box(
+                stats["username"], stats["password"], user.pets, False))
+            
+        else:
+            print(self.game.format.format_username_box(
+                stats["username"], stats["password"], user.pets, True))
+        
+        return True
+
+    def create_pet(self) -> bool:
         if not self.current_user:
             print(Fore.YELLOW + "\nPlease login or register first.\n")
-            return
+            return True
 
-        self.game.create()
+        flag = self.game.create()
 
-        if Game.animal_list:
-            new_pet = Game.animal_list[-1]  
+        if self.game.animal_list and flag:
+            new_pet = self.game.animal_list[-1]  
             self.current_user.add_pet(new_pet)
-            print(Fore.GREEN + f"\nYou adopted {new_pet.name} the {new_pet.type}!\n")
+            print(Fore.GREEN + f"\nYou adopted {new_pet.name} the {new_pet.type} {new_pet.emoji}!\n")
         else:
-            print("Pet creation failed.")
+            print(Fore.RED + "Pet creation failed.\n")
+        
+        return True
 
-    def select_pet(self) -> None:
+    def select_pet(self) -> bool:
         if not self.current_user:
-            print("\nPlease login first.\n")
-            return None
+            print(Fore.RED + "\nPlease login first.\n")
+            return True
 
         pets = self.current_user.pets
         if not pets:
-            print("\nYou have no pets yet. Create one first.\n")
-            return None
+            print(Fore.RED + "\nYou have no pets yet. Create one first.\n")
+            return True
 
-        print("\nYour pets:")
+        print(Fore.YELLOW + "\nYour pets:")
         for i, p in enumerate(pets, start=1):
-            print(f"{i}. {p.name} ({p.type}) - Age: {p.get_age():.1f}")
+            print(Fore.YELLOW + f"{i}. {p.name} ({p.type}) - Age: {p.get_age():.1f}")
+        
+        print(Fore.YELLOW + GARIS)
 
         try:
-            idx = int(input("\nSelect pet number: ").strip())
+            idx = int(input(Fore.GREEN + "\nSelect pet number: ").strip())
         except ValueError:
-            print("\nInvalid selection.\n")
-            return None
+            print(Fore.RED + "\nInvalid selection (Please input number).\n")
+            return True
 
         if 1 <= idx <= len(pets):
             return pets[idx - 1]
 
-        print("\nInvalid selection.\n")
-        return None
+        print(Fore.RED + "\nInvalid selection.\n")
+        return True
 
-    def show_pet_stats(self, pet) -> None:
+    def show_pet_stats(self, pet) -> bool:
         self.game.view(pet)
+        return True
 
-    def interact_with_pet(self, pet, user) -> None:
+    def interact_with_pet(self, pet, user) -> bool:
         self.game.interact(pet, user)
+        return True
 
     def days(self) -> int:
 
@@ -135,6 +169,10 @@ class Main:
                 continue
             print("\n")
             break
+    
+    def _logout_flow(self) -> None:
+        User._logout()
+        self.current_user = User.current_user
 
     def _change_password_flow(self) -> None:
         while True:
@@ -145,16 +183,16 @@ class Main:
             if username in User.users:
                 user = User.users[username]
                 if password != user.password:
-                    print("\nPassword sebelumnya salah!\n")
+                    print(Fore.GREEN + "\nWrong Previous Password!\n")
                 else:
                     user.password = new_password
                     if user.password != password:
-                        print("\nPassword berhasil diubah!\n")
+                        print(Fore.GREEN + "\nPassword has been changed!\n" + Fore.RESET)
                         input("Press Enter to continue...")
                         clear()
                         break
             else:
-                print("\nPlease create your own username/password first!")
+                print(Fore.RED + "\nPlease create your own username/password first!")
 
             print("\n" + GARIS)
             retry = input(
@@ -173,7 +211,7 @@ class Main:
         sys.exit("Thank you for playing!\n")
 
     def _invalid_auth_choice(self) -> None:
-        print("Please type again...\n")
+        print(Fore.RED + "Please type again...\n")
 
     def _handle_auth_choice(self, choice: int) -> bool:
         actions = {
@@ -188,31 +226,25 @@ class Main:
     def _pet_zone_menu(self) -> int | None:
         print(Fore.CYAN + "─" * 43 + " " + "PET ZONE" + " " + "─" * 48)
         print(Fore.YELLOW + "1. Check time")
-        print(Fore.YELLOW + "2. Create a new pet")
-        print(Fore.YELLOW + "3. Interact with pet")
-        print(Fore.YELLOW + "4. Pet stats")
-        print(Fore.YELLOW + "5. Show Pets")
-        print(Fore.YELLOW + "6. Go to shop")
-        print(Fore.RED + "7. Logout")
+        print(Fore.YELLOW + "2. Show account info")
+        print(Fore.YELLOW + "3. Create a new pet")
+        print(Fore.YELLOW + "4. Interact with pet")
+        print(Fore.YELLOW + "5. Pet stats")
+        print(Fore.YELLOW + "6. Show Pets")
+        print(Fore.YELLOW + "7. Go to shop")
+        print(Fore.RED + "8. Logout")
         print(Fore.MAGENTA + GARIS)
         try:
-            return int(input(Fore.GREEN + "Choose (1-7): ").strip())
+            return int(input(Fore.GREEN + "Choose (1-8): " + Fore.RESET).strip())
         except ValueError:
             print(Fore.RED + "\nPlease insert digit at choice input!\n")
             return None
 
 
     def _show_time_and_days(self) -> bool:
-        print("\n" + GARIS)
-        print("Time".center(101))
-        print(GARIS)
-        print(f"Time: {self.time()}")
-        print(GARIS)
-        print("\n" + GARIS)
-        print("Day Spent Playing Virtual Pet Game".center(101))
-        print(GARIS)
-        print(f"Days: {self.days()} days")
-        print(GARIS + "\n")
+        hours = self.time()
+        days = str(self.days())
+        print(Fore.RESET + self.game.format.format_time_box(hours, days))
         return True
 
     def _interact_with_selected_pet(self) -> bool:
@@ -249,7 +281,7 @@ class Main:
                 pet.elder()
             return True
         else:
-            print("\nYour pet has deceased... 🧦\n")
+            print(Fore.RED + "\nYour pet has deceased... 🧦\n")
             return False
 
     def _go_to_shop(self) -> bool:
@@ -257,39 +289,28 @@ class Main:
         shopping.interact()
         return True
 
-    def _logout(self) -> bool:
-        User.current_user = None
-        self.current_user = None
-        print()
-        return False
-
     def _invalid_pet_zone_choice(self) -> bool:
-        print("\nPlease type again...\n")
+        print(Fore.RED + "\nPlease type again...\n")
         return True
 
     def _handle_pet_zone_choice(self, choice: int) -> bool:
         handlers = {
-            1: self._show_time_and_days,
-            2: self.create_pet,
-            3: self._interact_with_selected_pet,
-            4: self._show_selected_pet_stats,
-            5: self._show_pet_stage,
-            6: self._go_to_shop,
-            7: self._logout,
+            1: lambda: self._show_time_and_days(),
+            2: lambda: self._show_account_info(self.current_user),
+            3: lambda: self.create_pet(),
+            4: lambda: self._interact_with_selected_pet(),
+            5: lambda: self._show_selected_pet_stats(),
+            6: lambda: self._show_pet_stage(),
+            7: lambda: self._go_to_shop(),
+            8: lambda: self._logout_flow(),
         }
-        handler = handlers.get(choice, self._invalid_pet_zone_choice)
-
-        if handler is self._logout:
-            result = handler()
-        else:
-            handler()
-            result = True  
-
+        handler = handlers.get(choice, lambda: self._invalid_pet_zone_choice())
+        result = handler()
         self.time_spend()
         return bool(result)
 
     def _auth_flow(self) -> None:
-        while not User.current_user:
+        while not self.current_user:
             choice = self._auth_menu()
             if choice is None:
                 continue
@@ -297,7 +318,7 @@ class Main:
             self._handle_auth_choice(choice)
 
     def _pet_zone_flow(self) -> None:
-        while User.current_user:
+        while self.current_user:
             choice = self._pet_zone_menu()
             if choice is None:
                 continue
@@ -307,9 +328,11 @@ class Main:
     def run(self) -> None:
         print()
         while True:
-            if not User.current_user:
+            if not self.current_user:
                 self._auth_flow()
             else:
+                time.sleep(0.5)
+                clear()
                 self._pet_zone_flow()
 
 

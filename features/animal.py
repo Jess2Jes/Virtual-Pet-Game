@@ -1,14 +1,16 @@
 from .pet import VirtualPet
+from .formatter import GARIS
 
 class Cat(VirtualPet):
     def __init__(self, name, age):
         super().__init__(name, age, "Cat")
+        self.emoji = "🐈"
         self.fav_food = "Chicken"
     
     @staticmethod
     def baby() -> None:
 
-        print('='*98)
+        print(GARIS)
 
         print(r"""
 
@@ -23,7 +25,7 @@ class Cat(VirtualPet):
     @staticmethod
     def teen() -> None:
 
-        print('='*98)
+        print(GARIS)
 
         print(r"""
 
@@ -42,7 +44,7 @@ class Cat(VirtualPet):
     @staticmethod
     def adult() -> None:
 
-        print('='*98)
+        print(GARIS)
 
         print(r"""
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠲⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -80,7 +82,7 @@ class Cat(VirtualPet):
     @staticmethod
     def elder() -> None:
 
-        print('='*98)
+        print(GARIS)
 
         print(r"""
                             Sleeping is my life, miaw~
@@ -96,12 +98,13 @@ class Cat(VirtualPet):
 class Rabbit(VirtualPet):
     def __init__(self, name, age):
         super().__init__(name, age, "Rabbit")
+        self.emoji = "🐇"
         self.fav_food = "Ice Cream"
     
     @staticmethod
     def baby() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
 
@@ -119,7 +122,7 @@ class Rabbit(VirtualPet):
     @staticmethod
     def teen() -> None:
          
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
     ⡘⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -145,7 +148,7 @@ class Rabbit(VirtualPet):
     @staticmethod
     def adult() -> None:
 
-        print('='*98)
+        print(GARIS)
 
         print(r"""
 
@@ -176,7 +179,7 @@ class Rabbit(VirtualPet):
     @staticmethod
     def elder() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
 
@@ -207,12 +210,13 @@ class Rabbit(VirtualPet):
 class Dino(VirtualPet):
     def __init__(self, name, age):
         super().__init__(name, age, "Dinosaur")
+        self.emoji = "🦖"
         self.fav_food = "French Fries"
     
     @staticmethod
     def baby() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
 
@@ -230,7 +234,7 @@ class Dino(VirtualPet):
     @staticmethod
     def teen() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""                
                 
@@ -256,7 +260,7 @@ class Dino(VirtualPet):
     @staticmethod
     def adult() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
               
@@ -288,7 +292,7 @@ class Dino(VirtualPet):
     @staticmethod
     def elder() -> None:
 
-        print('='*98)
+        print(GARIS)
 
         print(r"""
 
@@ -320,12 +324,13 @@ class Dino(VirtualPet):
 class Dragon(VirtualPet):
     def __init__(self, name, age):
         super().__init__(name, age, "Dragon")
+        self.emoji = "🐉"
         self.fav_food = "Nugget"
     
     @staticmethod
     def baby() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
 ⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -352,7 +357,7 @@ class Dragon(VirtualPet):
     @staticmethod
     def teen() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
 
@@ -390,7 +395,7 @@ class Dragon(VirtualPet):
     @staticmethod
     def adult() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
                      ^\    ^                  
@@ -414,7 +419,7 @@ class Dragon(VirtualPet):
     @staticmethod
     def elder() -> None:
         
-        print("─"*98)
+        print(GARIS)
         print(r"""
 
               ^    ^
@@ -442,12 +447,13 @@ class Dragon(VirtualPet):
 class Pou(VirtualPet):
     def __init__(self, name, age):
         super().__init__(name, age, "Pou")
+        self.emoji = "💩"
         self.fav_food = "Chicken"
     
     @staticmethod
     def baby() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
 
@@ -466,7 +472,7 @@ class Pou(VirtualPet):
     @staticmethod
     def teen() -> None:
 
-        print("─"*98)
+        print(GARIS)
 
         print(r"""
 
@@ -485,7 +491,7 @@ class Pou(VirtualPet):
     @staticmethod
     def adult() -> None:
 
-        print("─"*98)
+        print(GARIS)
         print(r"""
 
                   ⣀⠤⠖⠒⠊⠑⠒⠒⠢⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -514,7 +520,7 @@ class Pou(VirtualPet):
     @staticmethod
     def elder() -> None:
 
-        print("─"*98)
+        print(GARIS)
         print(r"""
 
                   ⣀⠤⠖⠒⠊⠑⠒⠒⠢⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀

@@ -1,6 +1,9 @@
 from random import randrange
 from typing import Dict, Literal
+from .formatter import Formatter
 from .formatter import GARIS
+from colorama import Fore, init
+init(autoreset=True)
 
 FAT_BURNER = "Fat Burner"
 HEALTH_POTION = "Health Potion"
@@ -45,7 +48,7 @@ class VirtualPet:
         self.fat: int = 0
         self.energy: int = randrange(0, 50)
         self.generosity = 0
-        self.limit_stat()
+        self.format = Formatter()
 
     def get_mood(self) -> str:
         if self.happiness > 70 and self.energy > 50:
@@ -86,16 +89,54 @@ class VirtualPet:
         self.age = max(0.0, float(self.age))
 
     def time_past(self) -> None:
-        self.hunger = max(0, self.hunger - 5)
+        self.hunger -= 10
         if self.hunger < 50:
-            self.happiness = max(0, self.happiness - 5)
+            self.happiness -= 5
         if (self.hunger == 0) or (self.energy == 0):
-            self.health = max(0, self.health - 5)
+            self.health -= 10
         self.age += 0.2
         self.limit_stat()
 
     def get_age(self) -> float:
         return self.age
+    
+    def food_upgrade_stats(self) -> str:
+        food_stats = {
+            "fat": self.fat,
+            "hunger": self.hunger,
+            "happiness": self.happiness,
+        }
+        return self.format.format_upgrade_stats(self, food_stats)
+    
+    def bath_upgrade_stats(self) -> str:
+        bath_stats = {
+            "sanity": self.sanity,
+            "happiness": self.happiness,
+        }
+        return self.format.format_upgrade_stats(self, bath_stats)
+    
+    def potion_upgrade_stats(self) -> str:
+        potion_stats = {
+            "fat": self.fat,
+            "health": self.health,
+            "energy": self.energy,
+        }
+        return self.format.format_upgrade_stats(self, potion_stats)
+
+    def sleep_upgrade_stats(self) -> str:
+        sleep_stats = {
+            "energy": self.fat,
+            "hunger": self.hunger,
+        }
+        return self.format.format_upgrade_stats(self, sleep_stats)
+    
+    def joy_upgrade_stats(self) -> str:
+        play_stats = {
+            "happiness": self.happiness,
+            "hunger": self.hunger,
+            "energy": self.energy,
+        }
+        return self.format.format_upgrade_stats(self, play_stats)
 
     def play(self) -> None:
         self.happiness += 10
@@ -112,22 +153,18 @@ class VirtualPet:
         if self.hunger >= 100:
             print(f"\n{self.name} doesn't want to eat anymore 🤢!")
             self.fat += 5
+            self.limit_stat()
             return False
 
         print("\n" + "="*101)
-        print(f"\n{self.name} has been fed with '{food}' {emoji} 🍽️.")
+        print(Fore.GREEN + f"\n{self.name} has been fed with '{food}' {emoji} 🍽️.")
 
         self.hunger += hunger_change
         self.happiness += happiness_change
         self.limit_stat()
 
-        print("="*101)
-        print(f"{self.name}'s status: ")
-        print("="*101)
-        print(f"Fat: {self.fat}")
-        print(f"Hunger: {self.hunger}")
-        print(f"Happiness: {self.happiness}")
-        print("="*101)
+        print(Fore.YELLOW + self.food_upgrade_stats())
+
         return True
 
     def bath(self, soap: str) -> bool:
@@ -144,16 +181,12 @@ class VirtualPet:
         self.sanity += sanity_change
         self.happiness += happiness_change
 
-        print(f"\n{self.name} has been bathed 🛁 with '{soap}' {emoji}.")
+        print(Fore.GREEN + f"\n{self.name} has been bathed 🛁 with '{soap}' {emoji}.")
 
         self.limit_stat()
 
-        print("="*101)
-        print(f"{self.name}'s status: ")
-        print("="*101)
-        print(f"Sanity: {self.sanity}")
-        print(f"Happiness: {self.happiness}")
-        print("="*101)
+        print(Fore.YELLOW + self.bath_upgrade_stats())
+
         return True
 
     def health_care(self, potion: str) -> bool:
@@ -163,37 +196,45 @@ class VirtualPet:
         delta = int(data["delta"])  
 
         used = False
-        if effect_type == "fat":
-            if self.fat > 50:
-                self.fat = max(0, self.fat + delta)  
-                print(f"\n{emoji} --> {self.name}'s fat has been reduced!\n")
-                used = True
-        elif effect_type == "health":
-            if self.health < 100:
-                self.health += delta
-                print(f"\n{self.name} has been healed {emoji}!\n")
-                used = True
-        elif effect_type == "energy":
-            if self.energy < 100:
-                self.energy += delta
-                print(f"\n{emoji} --> {self.name}'s energy has been recharged 😆!\n")
-                used = True
-        elif effect_type == "age":
-            if self.age < 20:
-                self.age += delta
-                print(f"\n{emoji} --> {self.name} has leveled up to adult!\n")
-                used = True
+        if effect_type == "fat" and self.fat > 50:
+            self.fat = max(0, self.fat + delta)  
+            print(Fore.GREEN + f"\n{emoji} --> {self.name}'s fat has been reduced!")
+            used = True
+        elif effect_type == "health" and self.health < 100:
+            self.health += delta
+            print(Fore.GREEN + f"\n{self.name} has been healed {emoji}!")
+            used = True
+        elif effect_type == "energy" and self.energy < 100:
+            self.energy += delta
+            print(Fore.GREEN + f"\n{emoji} --> {self.name}'s energy has been recharged 😆!")
+            used = True
+        elif effect_type == "age" and self.age < 20:
+            self.age += delta
+            print(Fore.GREEN + f"\n{emoji} --> {self.name} has leveled up to adult!")
+            used = True
 
         if not used:
-            print(f"\n{self.name} hasn't reached requirement to use {potion}!")
+            print(Fore.RED + f"\n{self.name} hasn't reached requirement to use {potion}!\n")
             return False
 
         self.limit_stat()
-        print("="*101)
-        print(f"{self.name}'s status: ")
-        print("="*101)
-        print(f"Fat: {self.fat}")
-        print(f"Health: {self.health}")
-        print(f"Energy: {self.energy}")
-        print("="*101)
+
+        print(Fore.YELLOW + self.potion_upgrade_stats())
+
         return True
+
+    def sleep(self, hours: int) -> None:
+
+        if (self.energy >= 100):
+            print(Fore.RED + f"\n{self.name} is not tired yet! 😐\n")
+            return
+
+        self.energy += hours * 10
+        self.hunger -= hours * 5
+
+        self.limit_stat()
+        print(Fore.GREEN + f"\n{self.name} has slept for {hours} hours. 😴")
+        print(f"{self.name}'s energy increased by {hours * 10}" \
+               f" and hunger decreased by {hours * 5}.")
+        
+        print(Fore.YELLOW + self.sleep_upgrade_stats())

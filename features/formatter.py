@@ -1,25 +1,137 @@
-# Formatter : untuk tabel pet stats
+# Formatter : untuk tabel pet stats, pet after care stats dan timezone
+from typing import Dict
+
 GARIS = "─"*101
 class Formatter:
     def __init__(self):
         self.max_length = 0
         self.max_len = 55
 
-    def truncate(self, text):  # maksimal panjang teks
+    def truncate(self, text: str) -> str:  # maksimal panjang teks
         ''' Membuat fungsi truncate untuk memotong teks agar tidak terlalu panjang
             sehingga tidak merusak tampilan baris dalam box'''
         if len(text) <= self.max_len:
             return text
         else:
             return text[:self.max_len - 3] + "..."
+    
+    def format_username_box(self, username: str, password: str, pets: int, set: bool) -> str:
+        
+        lines = [
+            self.truncate("USER STATUS"),
+            self.truncate(f"Logged in as : {username}"),
+            self.truncate(f"Current Password : {'*' * len(password)}") if set == True else \
+            self.truncate(f"Current Password : {password}"),
+            self.truncate(f"Number of pets: {len(pets)}")
+        ]
 
-    def format_status_box(self, stats):
+        for line in lines:
+            self.max_length = max(self.max_length, len(line) + 5)
+
+        box = "\n"
+        box += f"┌{'─' * self.max_length}┐\n"
+        box += f"│{lines[0].center(self.max_length)}│\n"
+        box += f"├{'─' * self.max_length}┤\n"
+
+        for line in lines[1:]:
+            if (line != lines[-1]):
+                box += f"│{line.ljust(self.max_length)}│\n"
+                box += f"├{'─' * self.max_length}┤\n"
+            else:
+                box += f"│{line.ljust(self.max_length)}│\n"
+        
+        box += f"└{'─' * self.max_length}┘\n"
+            
+        return box
+        
+    def format_time_box(self, hours: str, days: str) -> str:
+
+        lines = [
+            self.truncate("TIME STATUS"),
+            self.truncate(f"Current Time : {hours}"),
+            self.truncate(f"Days Passed  : {days}")
+        ]
+
+        for line in lines:
+            self.max_length = max(self.max_length, len(line))
+
+        box = "\n"
+        box += f"┌{'─' * self.max_length}┐\n"
+        box += f"│{lines[0].center(self.max_length)}│\n"
+        box += f"├{'─' * self.max_length}┤\n"
+
+        for line in lines[1:]:
+            if (line != lines[-1]):
+                box += f"│{line.ljust(self.max_length)}│\n"
+                box += f"├{'─' * self.max_length}┤\n"
+            else:
+                box += f"│{line.ljust(self.max_length)}│\n"
+        
+        box += f"└{'─' * self.max_length}┘\n"
+            
+        return box
+
+    def format_upgrade_stats(self, pet, stats: Dict) -> str:
+
+        title = self.truncate(f"{pet.name}'s Status")
+
+        if (len(stats.keys()) == 3):
+
+            if (("fat", "hunger", "happiness") == tuple(stats.keys())):
+                lines = [
+                    self.truncate(f"Hunger     : {pet.hunger}"),
+                    self.truncate(f"Happiness  : {pet.happiness}"),
+                    self.truncate(f"Fat        : {pet.fat}")
+                ] 
+
+            elif (("fat", "health", "energy") == tuple(stats.keys())):
+                lines = [
+                    self.truncate(f"Fat        : {pet.fat}"),
+                    self.truncate(f"Health     : {pet.health}"),
+                    self.truncate(f"Energy     : {pet.energy}")
+                ]
+
+            else:
+                lines = [
+                    self.truncate(f"Hunger     : {pet.hunger}"),
+                    self.truncate(f"Happiness  : {pet.happiness}"),
+                    self.truncate(f"Energy     : {pet.energy}")
+                ]
+
+        else:
+            if (("sanity", "happiness") == tuple(stats.keys())):
+                lines = [
+                    self.truncate(f"Sanity     : {pet.sanity}"),
+                    self.truncate(f"Happiness  : {pet.happiness}")
+                ]
+            else:
+                lines = [
+                    self.truncate(f"Energy: {pet.energy}"),
+                    self.truncate(f"Hunger: {pet.hunger}")
+                ]
+
+        for line in lines:
+            self.max_length = max(self.max_length, len(title), len(line))
+
+        box = "\n"
+        box += f"┌{'─' * self.max_length}┐\n"
+        box += f"│{title.center(self.max_length)}│\n"
+        box += f"├{'─' * self.max_length}┤\n"
+
+        for line in lines:
+            box += f"│{line.ljust(self.max_length)}│\n"
+        
+        box += f"└{'─' * self.max_length}┘\n"
+
+        return box
+
+    def format_status_box(self, stats: Dict[str, str]) -> str:
 
         lines = [
             self.truncate(f"{stats['name']}, the {stats['type']}"),
             self.truncate(f"Age        : {stats['age']}"),
             self.truncate(f"Hunger     : {stats['hunger']}"),
-            self.truncate(f"Fat        : {stats['fat']}"),      # NEW LINE
+            self.truncate(f"Fat        : {stats['fat']}"),      
             self.truncate(f"Sanity     : {stats['sanity']}"),
             self.truncate(f"Happy      : {stats['happiness']}"),
             self.truncate(f"Energy     : {stats['energy']}"),
@@ -63,4 +175,5 @@ class Formatter:
             box += f"│{line.ljust(self.max_length)}│\n"
 
         box += f"└{'─' * self.max_length}┘\n"
+
         return box

@@ -7,9 +7,8 @@ from colorama import Fore, init
 init(autoreset=True)
 
 class Game:
-    animal_list = []
-
     def __init__(self):
+        self.animal_list = []
         self.clock = datetime.datetime.now().hour
         self.format = Formatter()
         self.spend = 0
@@ -19,11 +18,14 @@ class Game:
     def get_currency(user: User) -> int:
         return user.currency
     
-    @classmethod
-    def create(cls) -> None:
-        print()
-        print("─"*36 + " " + "Create Your Own Pet" + " " + "─"*44)
+    def create_name(self) -> str:
+        print(Fore.RESET + "\n" + GARIS)
         name = input("Name your pet: ").title().strip()
+        flag, species = self.create_species(name)
+        return flag, name, species
+    
+    @classmethod
+    def create_species(cls, name) -> VirtualPet | bool:
         print(GARIS)
         print("Here's five types of species you can choose: ")
         print("1. Cat (🐈)")
@@ -41,21 +43,44 @@ class Game:
             "5": Pou,
         }
 
-        while True: 
+        while True:
             species = input("Choose his/her species (1/2/3/4/5): ").strip()
             cls_type = species_map.get(species)
-            if cls_type:
+            if (cls_type):
                 animal = cls_type(name, 0)
-                cls.animal_list.append(animal)
-                break
-            print("Choose the correct species!")
-            print()
+                return True, animal
+            else:
+                print(Fore.RED + "\nUnknown species choice!\n")
+                return False, None
+        
+    def create(self) -> bool:
+        while True:
+            flag, name, species = self.create_name()
 
-        print()
-        print(GARIS)
-        print(f"{name}, a {animal.type} ({species}), has born!")
-        print(GARIS)
-    
+            if (species and flag):
+                if not (any(animal.name == name or animal.type == species.type 
+                        for animal in User.current_user.pets)):
+                    self.animal_list.append((species))
+                    print(Fore.GREEN + f"\nCongratulations! You have successfully" 
+                        f" give birth to {name}, the {species.type}!")
+                    return True
+                else:
+                    print(Fore.RED + f"\n{name} has been created! Please create another pet"
+                            " with different name and species.\n")
+                    flag = False
+            
+            if (not flag):
+                retry = input(
+                    "Would you like to create your pet again? (Y/N)\n"
+                    "(Note: input other than Y and N will be considered as N): "
+                ).capitalize().strip()
+                
+                if retry == "Y":
+                    continue
+
+                print()
+                return False
+            
     
     def view(self, pet) -> None:
         stats = {
@@ -72,7 +97,7 @@ class Game:
     
     @staticmethod
     def _print_main_interact_menu() -> None:
-        print("\n" + "="*101)
+        print("="*101)
         print("1. Feed")
         print("2. Play")
         print("3. Bath")
@@ -100,16 +125,16 @@ class Game:
         is_food = category == "food"
         is_soap = category == "soap"
 
-        for key, v in defs.items():
+        for idx, (key, v) in enumerate(defs.items(), start=1):
             emoji = str(v["emoji"])
             qty = inv.get(key, 0)
             stock_text = f"{qty}" if qty > 0 else f"{Fore.RED}Out of stock{Fore.RESET}"
             if is_food:
-                print(f"- {key} {emoji} (Hunger: {v['hunger']}, Happiness: {v['happiness']}, Available: {stock_text})")
+                print(f"{idx}. {key} {emoji} (Hunger: {v['hunger']}, Happiness: {v['happiness']}, Available: {stock_text})")
             elif is_soap:
-                print(f"- {key} {emoji} (Sanity: {v['sanity']}, Happiness: {v['happiness']}, Available: {stock_text})")
+                print(f"{idx}. {key} {emoji} (Sanity: {v['sanity']}, Happiness: {v['happiness']}, Available: {stock_text})")
             else:
-                print(f"- {key} {emoji} (Available: {stock_text}, Effect: {v['delta']})")
+                print(f"{idx}. {key} {emoji} (Available: {stock_text}, Effect: {v['delta']})")
     
     @staticmethod
     def _print_potion_requirement(title: str) -> None:
@@ -131,7 +156,7 @@ class Game:
         try:
             return food_choice_map[food].title()
         except KeyError:
-            print("\nUnknown food choice! Please choose (1/2/3/4/5/6/7)!")
+            print(Fore.RED + "\nUnknown food choice! Please choose (1/2/3/4/5/6/7)!\n")
 
     def _feed(self, pet: VirtualPet, user: User) -> None:
         food = input("\nWhich food (1/2/3/4/5/6/7)? ").strip()
@@ -140,7 +165,7 @@ class Game:
             return
         inv = user.inventory["food"]
         if inv.get(choice, 0) <= 0:
-            print(f"\n{choice} is out of stock. Buy more in the shop before feeding.")
+            print(Fore.RED + f"\n{choice} is out of stock. Buy more in the shop before feeding.\n")
             return
         used = pet.feed(choice)
         if used:
@@ -153,13 +178,13 @@ class Game:
     def _play(self_pet: VirtualPet, user: User) -> None:
         pet = self_pet 
         if pet.energy < 10:
-            print(f"\n{pet.name} is too tired to play..")
+            print(Fore.RED + f"\n{pet.name} is too tired to play..\n")
             return
         if pet.hunger < 30:
-            print(f"\n{pet.name} is too hungry to play..")
+            print(Fore.RED + f"\n{pet.name} is too hungry to play..\n")
             return
         if pet.health < 20:
-            print(f"\n{pet.name} is too sick to play..")
+            print(Fore.RED + f"\n{pet.name} is too sick to play..\n")
             return
 
         act = {
@@ -172,7 +197,7 @@ class Game:
             "cat": "💥", "rabbit": "🤾", "dinosaur": "🏃", "dragon": "☄️", "pou": "🏊‍♂️"
         }.get(pet.type.lower(), "🎲")
 
-        print(f"\n{act} {pet.name} {emoji}!")
+        print(Fore.GREEN + f"\n{act} {pet.name} {emoji}!")
 
         pet.play()
 
@@ -182,11 +207,7 @@ class Game:
         print("You earned Rp. 25,000!")
         user.currency = user.currency + 25000
 
-        print("\n" + "="*101)
-        print(f"Happiness : {pet.happiness}")
-        print(f"Hunger: {pet.hunger}")
-        print(f"Energy: {pet.energy}")
-        print(GARIS)
+        print(Fore.YELLOW + pet.joy_upgrade_stats())
 
     @staticmethod
     def _soap_choice_from_number(soap: str) -> str | None:
@@ -197,7 +218,7 @@ class Game:
         try:
             return soap_choice_map[soap].title()
         except KeyError:
-            print("\nUnknown soap choice! Please choose (1/2/3/4)!")
+            print(Fore.RED + "\nUnknown soap choice! Please choose (1/2/3/4)!\n")
 
     def _bath(self, pet: VirtualPet, user: User) -> None:
         soap = input("\nWhich soap (1/2/3/4)? ").strip()
@@ -206,7 +227,7 @@ class Game:
             return
         inv = user.inventory["soap"]
         if inv.get(choice, 0) <= 0:
-            print(f"\n{choice} is out of stock. Buy more in the shop before bathing.")
+            print(Fore.RED + f"\n{choice} is out of stock. Buy more in the shop before bathing.\n")
             return
         used = pet.bath(choice)
         if used:
@@ -223,7 +244,7 @@ class Game:
         try:
             return potion_choice_map[potion].title()
         except KeyError:
-            print("\nUnknown potion choice! Please choose (1/2/3/4)!")
+            print(Fore.RED + "\nUnknown potion choice! Please choose (1/2/3/4)!\n")
 
     def _give_potion(self, pet: VirtualPet, user: User) -> None:
         potion = input("\nWhich potion (1/2/3/4)? ").strip()
@@ -232,7 +253,7 @@ class Game:
             return
         inv = user.inventory["potion"]
         if inv.get(choice, 0) <= 0:
-            print(f"\n{choice} is out of stock. Buy more in the shop before using.")
+            print(Fore.RED + f"\n{choice} is out of stock. Buy more in the shop before using.\n")
             return
         used = pet.health_care(choice)
         if used:
@@ -242,52 +263,55 @@ class Game:
             print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     def _sleep(self, pet: VirtualPet, user: User) -> None:
+
         hours = self._input_int(f"\n{pet.name}'s sleep duration (1-12): ")
+
         if hours is None:
-            print("\nPlease insert digit at choice input!\n")
+            print(Fore.RED + "\nPlease insert digit at choice input!\n")
             return
         if not (1 <= hours <= 12):
-            print("\nSleep duration must between 1 to 12 hours.")
+            print(Fore.RED + "\nSleep duration must between 1 to 12 hours.\n")
             return
+        
         pet.sleep(hours)
-
+    
     @staticmethod
     def _walk(self_pet: VirtualPet, user: User) -> None:
         pet = self_pet
         if pet.energy < 10:
-            print(f"\n{pet.name} is too tired to take a walk..")
+            print(Fore.RED + f"\n{pet.name} is too tired to take a walk..\n")
             return
         if pet.hunger < 30:
-            print(f"\n{pet.name} is too hungry to take a walk..")
+            print(Fore.RED + f"\n{pet.name} is too hungry to take a walk..\n")
             return
         if pet.health < 20:
-            print(f"\n{pet.name} is too sick to take a walk..")
+            print(Fore.RED + f"\n{pet.name} is too sick to take a walk..\n")
             return
 
         random_event = randrange(0, 50)
-        print(f"\nYou take {pet.name} for a walk! 🐾")
+        print(Fore.GREEN + f"\nYou take {pet.name} for a walk! 🐾")
 
         if random_event == 10:
-            print("\nYou found a wallet in your way home!")
-            print("You brought back home Rp. 25,000...")
+            print(Fore.GREEN + "\nYou found a wallet in your way home!")
+            print(Fore.GREEN + "You brought back home Rp. 25,000...")
             user.currency = user.currency + 25000
         elif random_event == 30:
-            print("\nYour pet stepped on mud!")
-            print(f"{pet.name}' sanity decreased (-10)...")
+            print(Fore.RED + "\nYour pet stepped on mud!")
+            print(Fore.YELLOW + f"{pet.name}' sanity decreased (-10)...")
             pet.sanity -= 10
         elif random_event == 20:
-            print("\nYour pet ate rotten apple!")
-            print(f"{pet.name}'s health decreased (-15)...")
+            print(Fore.RED + "\nYour pet ate rotten apple!")
+            print(Fore.YELLOW + f"{pet.name}'s health decreased (-15)...")
             pet.health -= 15
         elif random_event == 4:
-            print("\nYour pet got run over by car!")
-            print(f"{pet.name} deceased... 💀\n")
+            print(Fore.RED + "\nYour pet got run over by car!")
+            print(Fore.RED + f"{pet.name} deceased... 💀\n")
             pet.health -= 100
             pet.limit_stat()
             return
         elif random_event == 50:
-            print("\nYou got robbed on your way home!")
-            print("You lose Rp. 100,000!")
+            print(Fore.RED + "\nYou got robbed on your way home!")
+            print(Fore.RED + "You lose Rp. 100,000!")
             user.currency = user.currency - 100000
             user.limit_currency()
 
@@ -300,14 +324,10 @@ class Game:
 
         pet.limit_stat()
 
-        print("\n" + "="*101)
-        print(f"Happiness : {pet.happiness}")
-        print(f"Hunger: {pet.hunger}")
-        print(f"Energy: {pet.energy}")
-        print(GARIS)
+        print(Fore.YELLOW + pet.joy_upgrade_stats())
     
     def _print_talk_menu(self) -> None:
-        print(GARIS)
+        print("\n" + GARIS)
         print("Topic of Conversation: ")
         print(GARIS)
         print("1. What do you want to do today?")
@@ -323,25 +343,27 @@ class Game:
             "I want to take a walk 🌳.","I want to take a bath :)",
             "I want to talk to you..👉👈"
         ]
-        print(f"\n{pet.name}: {ch(ans)}")
+        print(Fore.CYAN + f"\n{pet.name}: {ch(ans)}")
         return True
 
     def _topic_fav_food(self, pet: VirtualPet, user: User) -> bool:
-        print(f"\n{pet.name}: My favourite food is {pet.fav_food}. :D")
+        print(Fore.CYAN + f"\n{pet.name}: My favourite food is {pet.fav_food}. :D")
         return True
 
     def _topic_money(self, pet: VirtualPet, user: User) -> bool:
+
         if all(val < 50 for val in [pet.hunger, pet.sanity, pet.happiness, pet.health]):
-            print(f"\n{pet.name}: I will consider it if you take care of me properly!")
-            return False
+            print(Fore.CYAN + f"\n{pet.name}: I will consider it if you take care of me properly!\n")
+
         if pet.generosity < 2:
-            print(f"\n{pet.name}: Here, I'll give you Rp. 100,000.")
+            print(Fore.CYAN + f"\n{pet.name}: Here, I'll give you Rp. 100,000.")
             user.currency = user.currency + 100000
             pet.generosity += 1
-            return True
+
         else:
-            print(f"\n{pet.name}: Sorry, can't give you anymore... 😔")
-            return False
+            print(Fore.CYAN + f"\n{pet.name}: Sorry, can't give you anymore... 😔")
+        
+        return True
 
     def _can_tell_joke(self, pet: VirtualPet) -> tuple[bool, str | None]:
         if pet.hunger < 30:
@@ -357,30 +379,40 @@ class Game:
     def _topic_joke(self, pet: VirtualPet, user: User) -> bool:
         ok, reason = self._can_tell_joke(pet)
         if not ok:
-            print(reason)
+            print(Fore.RED + reason + "\n")
             return False
+        
         jokes = [
-            "Why can't a nose be 12 inches long? Because then it would be a foot!",
-            "How much do rainbows weigh? Not much. They're actually pretty light!",
-            "I had a joke about paper today, but it was tearable!",
-            "What do you call an ant who fights crime? A vigilANTe!",
-            "How do you make holy water? You boil the hell out of it!",
-            "Some people pick their nose, but I was born with mine.",
-            "Justice is a dish best served cold. Otherwise, it's just water.",
-            "Why don't programmers like nature? Too many \"bugs\".",
-            "Why don't robots panic? \"Nerves of steel\"."
+            {"question": "What do you call a man who lose his car?", "answer": "carlos"},
+            {"question": "Who is the loneliest billionaire?", "answer": "elonmusk"},
+            {"question": "What do you call a laughing motorcycle?", "answer": "yamaha ha ha ha"},
+            {"question": "What did one wall say to the other?", "answer": "i'll meet you at the corner"},
+            {"question": "How do you make an idiot say 'how'?", "answer": "exactly"},
+            {"question": "I once had a dream I was floating in a sea of orange soda.", "answer": "It was a fanta sea"},
+            {"question": "What is a pig with three eyes?", "answer": "Piiig"},
         ]
-        print(f"\n{pet.name}: {ch(jokes)} Haha 🤭, funny right?")
+
+        random_jokes = ch(jokes)
+
+        ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_jokes.get("question")} " + Fore.RESET).strip()
+        
+        if (ans.lower() == random_jokes.get("answer")):
+            print(Fore.CYAN + f"\n{pet.name}: Wait! How did you know? 😱")
+            print(Fore.CYAN + f"\n{pet.name}: You absolutely killed the joke LOL. Great Job! 🫠")
+        else:
+            print(Fore.CYAN + f"\n{pet.name}: {random_jokes.get("answer").capitalize()}! GOT YOU! 🤪")
+        
         return True
 
     def _topic_goodbye(self, pet: VirtualPet, user: User) -> bool:
-        print(f"\n{pet.name}: Okay, goodbye!")
-        print(f"{pet.name}'s happiness has increased by 10.")
+        print(Fore.CYAN + f"\n{pet.name}: Okay, goodbye!")
+        print(Fore.GREEN + f"{pet.name}'s happiness has increased by 10.\n")
         pet.happiness += 10
         return False  
 
-    def _invalid_topic(self, pet: VirtualPet, user: User) -> bool:
-        print("\nPlease choose 1-5.")
+    @staticmethod
+    def _invalid_topic() -> bool:
+        print(Fore.RED + "\nPlease choose 1-5.")
         return True
 
     def _talk_menu(self, pet: VirtualPet, user: User) -> None:
@@ -388,7 +420,7 @@ class Game:
             self._print_talk_menu()
             topic = self._input_int("Choose a topic: ")
             if topic is None:
-                print("\nPlease type a number.")
+                print(Fore.RED + "\nPlease type a number.")
                 continue
 
             actions = {
@@ -401,7 +433,6 @@ class Game:
             keep_talking = actions.get(topic, self._invalid_topic)(pet, user)
             if not keep_talking:
                 break
-            print()
 
     def _stocks(self) -> dict:
         return {
@@ -433,14 +464,14 @@ class Game:
         return choice in self._stocks()
 
     def interact(self, pet, user: User) -> None:
-        print("\n" + "="*101)
-        print(f"Playing with {pet.name}, the {pet.type}:")
+        print(Fore.RESET + "\n" + "="*101)
+        print(f"Playing with {pet.name}, the {pet.type}:".center(len(GARIS)))
         while True:
             self._print_main_interact_menu()
             choice = self._input_int("Choose (1-8): ")
 
             if choice is None:
-                print("\nPlease enter digit!")
+                print(Fore.RED + "\nPlease enter digit!\n")
                 continue
 
             if choice == 8:
@@ -448,7 +479,7 @@ class Game:
                 break
 
             if not self._is_valid_choice(choice):
-                print("\nPlease choose from (1-8).")
+                print(Fore.RED + "\nPlease choose from (1-8).\n")
                 continue
 
             if self._should_show_stock(choice):
