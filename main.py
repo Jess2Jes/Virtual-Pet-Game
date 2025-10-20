@@ -32,31 +32,33 @@ class Main:
             print(GARIS)
 
             show_password = input(
-                        "Would you like to show your password? (Y/N)\n"
-                        "(Note: input other than Y and N will be considered as N): "
-                    ).capitalize().strip() 
-            
+                "Would you like to show your password? (Y/N)\n"
+                "(Note: input other than Y and N will be considered as N): "
+            ).capitalize().strip()
+
             if show_password == "Y":
                 print(self.game.format.format_username_box(
                     stats["username"], stats["password"], user.pets, False))
-                
             else:
                 print(self.game.format.format_username_box(
                     stats["username"], stats["password"], user.pets, True))
-            
+
             show_again = input(
-                        "\nWould you like to clear your account info? (Y/N)\n"
-                        "(Note: input other than Y and N will be considered as N): "
-                    ).capitalize().strip()
-            
+                "\nWould you like to clear your account info? (Y/N)\n"
+                "(Note: input other than Y and N will be considered as N): "
+            ).capitalize().strip()
+
             if show_again == "Y":
                 clear()
                 self._pet_zone_flow()
-            
-            print()
-            break
-        
+                break  
+
+            repeat = input("\nWould you like to view again? (Y/N): ").capitalize().strip()
+            if repeat != "Y":
+                break  
+
         return True
+
 
     def create_pet(self) -> bool:
         if not self.current_user:
