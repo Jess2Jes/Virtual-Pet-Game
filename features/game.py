@@ -39,7 +39,7 @@ class Game:
         return flag, name, species
     
     @classmethod
-    def create_species(cls, name: str) -> VirtualPet | bool:
+    def create_species(cls, name: str) -> tuple[bool, VirtualPet | None]:
         print(GARIS)
         print("Here's five types of species you can choose: ")
         print("1. Cat (🐈)")
@@ -48,7 +48,7 @@ class Game:
         print("4. Dragon (🐉)")
         print("5. Pou (💩)")
         print(GARIS)
-        
+
         species_map = {
             "1": Cat,
             "2": Rabbit,
@@ -60,12 +60,12 @@ class Game:
         while True:
             species = input("Choose his/her species (1/2/3/4/5): ").strip()
             cls_type = species_map.get(species)
-            if (cls_type):
+            if cls_type:
                 animal = cls_type(name, 0)
                 return True, animal
             else:
-                print(Fore.RED + "\nUnknown species choice!\n")
-                return False, None
+                print(Fore.RED + "\nUnknown species choice! Please try again.\n")
+
         
     def create(self) -> bool:
         while True:
