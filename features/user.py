@@ -18,6 +18,8 @@ class User:
         self.username = username
         self.__password = password
         self.pets = []
+        self.music = {}
+        self.food = {}
         self._currency = randrange(0, 25000)
 
         self.inventory: Dict[str, Dict[str, int]] = {

@@ -1,0 +1,51 @@
+[
+    {"question": "What type of music do you like?", 
+    "choose": "Choose (pop, blues, jazz, k-pop, j-pop, rap, reggae, rock): ",
+    "answer": ["pop", "blues", "jazz", "k-pop", "j-pop", "rap",
+                "reggae", "country", "rock"],
+    "type": "Music Taste"
+    },
+
+    {"question": "What type of music do you dislike?", 
+    "choose": "Choose (pop, blues, jazz, k-pop, j-pop, rap, reggae, rock): ",
+    "answer": ["pop", "blues", "jazz", "k-pop", "j-pop", "rap",
+                "reggae", "country", "rock"],
+    "type": "Music Taste"
+    },
+
+    {"question": "Which song has the best lyrics?", 
+    "type": "Music Taste"
+    },
+
+    {"question": "What are three songs that get you excited (separate each by comma)?", 
+    "type": "Music Taste"
+    },
+
+    {"question": "Do you listen to music on Spotify (Y/N)?", 
+    "option": ["y", "n"],
+    "type": "Music Taste"
+    }, 
+
+    {"question": "Where do you usually eat your favorite food?", 
+    "type": "Favourite Food/Drink"
+    },
+
+    {"question": "What is your favorite food?", 
+    "type": "Favourite Food/Drink"
+    },
+
+    {"question": "Do you prefer sweet or salty food?", 
+    "option": ["sweet", "salty"],
+    "type": "Favourite Food/Drink"
+    }, 
+
+    {"question": "Is it a traditional dish from your country (Y/N)?", 
+    "option": ["y", "n"],
+    "type": "Favourite Food/Drink"
+    }, 
+    
+    {"question": "Why do you like your favourite food?", 
+    "type": "Favourite Food/Drink"
+    }
+
+]

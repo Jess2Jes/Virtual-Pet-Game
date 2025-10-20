@@ -55,8 +55,9 @@ class Main:
 
             repeat = input("\nWould you like to view again? (Y/N): ").capitalize().strip()
             if repeat != "Y":
+                print("\n")
                 break  
-
+            
         return True
 
 

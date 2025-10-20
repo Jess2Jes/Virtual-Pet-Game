@@ -81,7 +81,7 @@
   { "question": "Why was the broom tired?", "answer": "it had a sweeping day" },
   { "question": "Why was the ghost bad at lying?", "answer": "you could see right through him" },
   { "question": "Why did the banana go to the doctor?", "answer": "it wasn’t peeling well" },
-  { "question": "Why was the robot shy?", "answer": "it had low self-esteem" },
+  { "question": "Why did the old man fall down the well?", "answer": "He couldn’t see that well" },
   { "question": "Why did the chicken sit in the middle of the road?", "answer": "it wanted to lay it on the line" },
   { "question": "Why did the man stare at the can of orange juice?", "answer": "it said concentrate" },
   { "question": "Why was the Java developer so tired?", "answer": "he had too many classes" },
@@ -100,5 +100,6 @@
   { "question": "Why did the database break up?", "answer": "it lost its keys" },
   { "question": "Why did the printer go to the gym?", "answer": "to get toner" },
   { "question": "Why did the CPU stay calm?", "answer": "it had good cache control" },
-  { "question": "Why did the keyboard break up with the computer?", "answer": "it wasn’t their type" }
+  { "question": "Why did the keyboard break up with the computer?", "answer": "it wasn’t their type" },
+  { "question": "Why did the social media manager break up with her boyfriend?", "answer": "Lack of engagement." }
 ]

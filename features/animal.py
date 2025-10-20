@@ -6,6 +6,9 @@ class Cat(VirtualPet):
         super().__init__(name, age, "Cat")
         self.emoji = "🐈"
         self.fav_food = "Chicken"
+        self.music_taste = "Pop"
+        self.dislike_music = "Reggae"
+        self.songs = "Born Again by Doja Cat", "Golden by HUNTR/X", "Busy Woman by Sabrina Carpenter"
     
     @staticmethod
     def baby() -> None:
@@ -100,6 +103,9 @@ class Rabbit(VirtualPet):
         super().__init__(name, age, "Rabbit")
         self.emoji = "🐇"
         self.fav_food = "Ice Cream"
+        self.music_taste = "J-Pop"
+        self.dislike_music = "Rock"
+        self.songs = "Genic - It's Showtime", "Kis-My-Ft2 - Glory Days", "TWS - Hajimemashite"
     
     @staticmethod
     def baby() -> None:
@@ -212,6 +218,9 @@ class Dino(VirtualPet):
         super().__init__(name, age, "Dinosaur")
         self.emoji = "🦖"
         self.fav_food = "French Fries"
+        self.music_taste = "K-Pop"
+        self.dislike_music = "Country"
+        self.songs = "BTS - Spring Day", "Fifty Fifty - Cupid", "Twice - The Feels"
     
     @staticmethod
     def baby() -> None:
@@ -326,6 +335,9 @@ class Dragon(VirtualPet):
         super().__init__(name, age, "Dragon")
         self.emoji = "🐉"
         self.fav_food = "Nugget"
+        self.music_taste = "Blues"
+        self.dislike_music = "K-Pop"
+        self.songs = "The Thrill is Gone By BB King", "Mannish Boy By Muddy Waters", "Love in Vain By Robert Johnson"
     
     @staticmethod
     def baby() -> None:
@@ -449,6 +461,9 @@ class Pou(VirtualPet):
         super().__init__(name, age, "Pou")
         self.emoji = "💩"
         self.fav_food = "Chicken"
+        self.music_taste = "Jazz"
+        self.dislike_music = "Rap"
+        self.songs = "Modern Jazz Quartet - Django", "Ahmad Jamal - Poinciana", "George Shearing - Lullaby of Birdland"
     
     @staticmethod
     def baby() -> None:

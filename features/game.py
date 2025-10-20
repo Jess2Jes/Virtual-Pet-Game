@@ -15,7 +15,10 @@ class Game:
         self.spend = 0
         self.day = 0
         self.jokes = []
+        self.conversations = []
+        self.topics_used = []
         self.load_jokes()
+        self.load_conversations()
         
     def load_jokes(self):
         try:
@@ -27,6 +30,17 @@ class Game:
         except json.JSONDecodeError:
             print(Fore.RED + "Warning: datas/jokes.json is corrupted. Jokes will not be available.")
             self.jokes = []
+    
+    def load_conversations(self):
+        try:
+            with open("datas/conversations.json", "r", encoding="utf-8") as f:
+                self.conversations = json.load(f)
+        except FileNotFoundError:
+            print(Fore.RED + "Warning: datas/jokes.json not found. Jokes will not be available.")
+            self.conversations = [] 
+        except json.JSONDecodeError:
+            print(Fore.RED + "Warning: datas/jokes.json is corrupted. Jokes will not be available.")
+            self.conversations = []
 
     @staticmethod
     def get_currency(user: User) -> int:
@@ -342,13 +356,15 @@ class Game:
     
     def _print_talk_menu(self) -> None:
         print("\n" + GARIS)
-        print("Topic of Conversation: ")
+        print("Topics of Conversation: ")
         print(GARIS)
         print("1. What do you want to do today?")
         print("2. What is your favourite food?")
-        print("3. Can you give me money?")
-        print("4. Tell a joke")
-        print("5. Goodbye")
+        print("3. Ask me anything")
+        print("4. Can you give me money?")
+        print("5. Tell a joke")
+        # print("6. What do you know about me?") -- COMING SOON
+        print("6. Goodbye")
         print(GARIS)
 
     def _topic_plan(self, pet: VirtualPet, user: User) -> bool:
@@ -357,28 +373,173 @@ class Game:
             "I want to take a walk 🌳.","I want to take a bath :)",
             "I want to talk to you..👉👈"
         ]
-        print(Fore.CYAN + f"\n{pet.name}: {ch(ans)}")
+        print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {ch(ans)}")
         return True
 
     def _topic_fav_food(self, pet: VirtualPet, user: User) -> bool:
-        print(Fore.CYAN + f"\n{pet.name}: My favourite food is {pet.fav_food}. :D")
+        print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : My favourite food is {pet.fav_food}. :D")
         return True
 
     def _topic_money(self, pet: VirtualPet, user: User) -> bool:
 
         if all(val < 50 for val in [pet.hunger, pet.sanity, pet.happiness, pet.health]):
-            print(Fore.CYAN + f"\n{pet.name}: I will consider it if you take care of me properly!\n")
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I will consider it if you take care of me properly!\n")
             return True
 
         if pet.generosity < 2:
-            print(Fore.CYAN + f"\n{pet.name}: Here, I'll give you Rp. 100,000.")
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Here, I'll give you Rp. 100,000.")
             user.currency = user.currency + 100000
             pet.generosity += 1
 
         else:
-            print(Fore.CYAN + f"\n{pet.name}: Sorry, can't give you anymore... 😔")
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Sorry, can't give you anymore... 😔")
         
         return True
+    
+    def _print_conversation_menu(self) -> None:
+        print("\n" + GARIS)
+        print("1. Music Taste")
+        print("2. Favourite Food")
+        # --- COMING SOON ----
+        # print("3. Interest")
+        # print("4. Love and Relationship")
+        # print("5. Hobbies")
+        # print("6. Deep Subjects")
+        # print("7. Favourite Movies")
+        print(GARIS)
+
+    def _music_topic(self, pet: VirtualPet, user: User) -> bool:
+        
+        if not self.conversations:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I'm all out of topics right now! Sorry!")
+            return True
+        
+        music_questions = [q for q in self.conversations if q["type"] == "Music Taste"]
+        
+        while True:
+            random_music_topics = ch(music_questions)
+            
+            if (random_music_topics not in self.topics_used):
+                self.topics_used.append(random_music_topics)
+                break
+            
+            if (all(music in self.topics_used for music in music_questions)):
+                break
+        
+        ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_music_topics.get("question","")}\n" \
+                    f"{random_music_topics.get("choose","")}" + Fore.RESET).lower().strip()
+
+        like_topic = False if "dislike" in random_music_topics.get("question") else True
+
+        if (random_music_topics.get("answer", None) is not None):
+
+            if (ans in random_music_topics["answer"] and like_topic):
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : So, that's your fav! Mine is {pet.music_taste}.")
+                User.current_user.music["Fav_Music"] = ans
+
+            elif (ans in random_music_topics["answer"] and not like_topic):
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : So, that's not your cup of tea, Mine is {pet.dislike_music}.")
+                User.current_user.music["Dislike_Music"] = ans
+
+            else:
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Not sure I've ever heard that genre, but thanks for telling me!")
+                User.current_user.music["Fav_Music" if like_topic else "Dislike_Music"] = ans
+        
+        elif (random_music_topics.get("option", None) is not None):
+
+            hear_spotify = True if ans == random_music_topics.get("option")[0] else False
+            
+            if (ans in random_music_topics["option"] and not hear_spotify):
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : You should try it now! They had added your fav music playlist there!") 
+                User.current_user.music["Have_Used_Spotify"] = True
+
+            else:
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Have you heard your new fav music playlist come out there? Go check it now!")
+                User.current_user.music["Have_Used_Spotify"] = False
+        
+        else:
+            list_ans = [x.strip() for x in ans.split(",")]
+
+            if (len(list_ans) == 3):
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Owh! Mine is {", ".join(pet.songs)}.")
+                User.current_user.music["Fav_Songs"] = list_ans
+
+            else:
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I agree too. That song almost break my heart.")
+                User.current_user.music["Fav_Lyrics"] = list_ans[0]
+        
+        # --- In the future update, pet will remember its owner's fav music ---
+
+        return True
+
+    def _food_topic(self, pet: VirtualPet, user: User) -> bool:
+
+        if not self.conversations:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I'm all out of topics right now! Sorry!")
+            return True
+        
+        food_questions = [q for q in self.conversations if q["type"] == "Favourite Food/Drink"]
+        
+        while True:
+            random_food_topics = ch(food_questions)
+            
+            if (random_food_topics not in self.topics_used):
+                self.topics_used.append(random_food_topics)
+                break
+
+            if (all(food in self.topics_used for food in food_questions)):
+                break
+        
+        ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_food_topics.get("question","")}\n" + Fore.RESET).lower().strip()
+
+        if (random_food_topics.get("option") is not None):
+
+            flag = True if ans == random_food_topics.get("option")[0] else False
+
+            if (ans in random_food_topics["option"] and random_food_topics.get("option")[0] == "sweet" and flag):
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Owh, so you like sweet. I think you'd love Belgian Chocolate!") 
+                User.current_user.food["Like_Sweet_Salty"] = ans
+            
+            elif (ans in random_food_topics["option"] and random_food_topics.get("option")[0] == "sweet" and not flag):
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Owh, so you like salty food. I think you'd love Egg and Toast!") 
+                User.current_user.food["Like_Sweet_Salty"] = ans
+
+            elif (ans in random_food_topics["option"] and random_food_topics.get("option")[0] == "y" and not flag):
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Well, International Food also tastes better!")
+                User.current_user.food["Inter_Trad_Food"] = ans
+            
+            elif (ans in random_food_topics["option"] and random_food_topics.get("option")[0] == "y" and flag):
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Our own country food is the best! I will give it a five star ⭐!")
+                User.current_user.food["Inter_Trad_Food"] = ans
+
+        else:
+            if ("What is your favorite food?" in random_food_topics.get("question")):
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : That's great! My favourite food is {pet.fav_food}!")
+                User.current_user.food["Fav_Food"] = ans
+            else:
+                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I'm glad to hear that! Thanks for sharing.")
+            
+        # --- In the future update, pet will remember its owner's fav food ---
+
+        return True
+
+    def _topic_conversation_menu(self, pet: VirtualPet, user: User) -> bool:
+        while True:
+            self._print_conversation_menu()
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : What would you like to talk today? " + Fore.RESET)
+            topic = self._input_int("Choose a topic: ")
+            if topic is None:
+                print(Fore.RED + "\nPlease type a number.")
+                continue
+
+            actions = {
+                1: self._music_topic,
+                2: self._food_topic,
+            }
+            
+            keep_talking = actions.get(topic, self._invalid_topic)(pet, user)
+            if not keep_talking:
+                break
 
     def _can_tell_joke(self, pet: VirtualPet) -> tuple[bool, str | None]:
         if pet.hunger < 30:
@@ -420,8 +581,8 @@ class Game:
         return False  
 
     @staticmethod
-    def _invalid_topic() -> bool:
-        print(Fore.RED + "\nPlease choose 1-5.")
+    def _invalid_topic(pet: VirtualPet, user: User) -> bool:
+        print(Fore.RED + "\nPlease choose based on choices we have!")
         return True
 
     def _talk_menu(self, pet: VirtualPet, user: User) -> None:
@@ -435,9 +596,10 @@ class Game:
             actions = {
                 1: self._topic_plan,
                 2: self._topic_fav_food,
-                3: self._topic_money,
-                4: self._topic_joke,
-                5: self._topic_goodbye,
+                3: self._topic_conversation_menu,
+                4: self._topic_money,
+                5: self._topic_joke,
+                6: self._topic_goodbye,
             }
             keep_talking = actions.get(topic, self._invalid_topic)(pet, user)
             if not keep_talking:
