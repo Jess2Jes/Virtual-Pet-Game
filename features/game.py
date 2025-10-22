@@ -381,20 +381,19 @@ class Game:
         return True
 
     def _topic_money(self, pet: VirtualPet, user: User) -> bool:
-
         if all(val < 50 for val in [pet.hunger, pet.sanity, pet.happiness, pet.health]):
             print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I will consider it if you take care of me properly!\n")
-            return True
+            return False  
 
         if pet.generosity < 2:
             print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Here, I'll give you Rp. 100,000.")
-            user.currency = user.currency + 100000
+            user.currency += 100000
             pet.generosity += 1
+            return True  
 
-        else:
-            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Sorry, can't give you anymore... 😔")
-        
-        return True
+        print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Sorry, can't give you anymore... 😔")
+        return False  
+
     
     def _print_conversation_menu(self) -> None:
         print("\n" + GARIS)
