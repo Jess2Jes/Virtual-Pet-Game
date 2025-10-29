@@ -337,6 +337,8 @@ class Main:
         handler = handlers.get(choice, lambda: self._invalid_pet_zone_choice())
         result = handler()
         self.time_spend()
+        asyncio.run(loading())
+        clear()
         return bool(result)
 
     def _auth_flow(self) -> None:
