@@ -28,7 +28,7 @@ async def loading():
     with progress:
         for _ in range(100):
             progress.update(task, advance=1)
-            await asyncio.sleep(0.015)
+            await asyncio.sleep(0.01)
 
 class User:
     users = {}
