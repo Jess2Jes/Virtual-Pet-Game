@@ -3,7 +3,6 @@ from typing import List, Tuple
 from .user import loading
 from .formatter import GARIS
 from .user import User
-import time
 import asyncio
 from colorama import Fore, init
 init(autoreset=True)

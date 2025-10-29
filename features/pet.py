@@ -1,7 +1,6 @@
 from random import randrange
 from typing import Dict, Literal
 from .formatter import Formatter
-from .formatter import GARIS
 from colorama import Fore, init
 init(autoreset=True)
 
