@@ -258,7 +258,7 @@ class Dino(VirtualPet):
               """
     
     @staticmethod
-    async def adult():
+    async def adult():  # Generator
 
         yield GARIS
         yield r"""
@@ -289,7 +289,7 @@ class Dino(VirtualPet):
               """
 
     @staticmethod
-    async def elder():
+    async def elder():  # Generator
 
         yield GARIS
         yield r"""
@@ -328,7 +328,7 @@ class Dragon(VirtualPet):
         self.songs = "The Thrill is Gone By BB King", "Mannish Boy By Muddy Waters", "Love in Vain By Robert Johnson"
     
     @staticmethod
-    async def baby():
+    async def baby():  # Generator
 
         yield GARIS
         yield r"""
@@ -354,7 +354,7 @@ class Dragon(VirtualPet):
               """
     
     @staticmethod
-    async def teen():
+    async def teen():  # Generator
 
        yield GARIS
        yield r"""
@@ -391,7 +391,7 @@ class Dragon(VirtualPet):
                 """
     
     @staticmethod
-    async def adult():
+    async def adult():  # Generator
 
         yield GARIS
         yield r"""
@@ -414,7 +414,7 @@ class Dragon(VirtualPet):
               """
 
     @staticmethod
-    async def elder():
+    async def elder():  # Generator
         
         yield GARIS
         yield r"""
@@ -451,7 +451,7 @@ class Pou(VirtualPet):
         self.songs = "Modern Jazz Quartet - Django", "Ahmad Jamal - Poinciana", "George Shearing - Lullaby of Birdland"
     
     @staticmethod
-    async def baby():
+    async def baby():  # Generator
 
         yield GARIS
         yield r"""
@@ -469,7 +469,7 @@ class Pou(VirtualPet):
               """
     
     @staticmethod
-    async def teen():
+    async def teen():  # Generator
 
         yield GARIS
         yield r"""
@@ -486,8 +486,8 @@ class Pou(VirtualPet):
 
               """
         
-    @staticmethod
-    async def adult():
+    @staticmethod  
+    async def adult():  # Generator
 
         yield GARIS
         yield r"""
@@ -516,7 +516,7 @@ class Pou(VirtualPet):
               """
     
     @staticmethod
-    async def elder():
+    async def elder():  # Generator
 
         yield GARIS
         yield r"""
