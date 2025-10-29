@@ -1,11 +1,12 @@
 from features.shop import Shop
 from features.game import Game
-from features.user import User
+from features.user import User, loading
 import sys
 from features.formatter import GARIS
 import os
-import time
+import asyncio
 from colorama import Fore, init
+
 init(autoreset=True)
 
 def clear():
@@ -49,6 +50,8 @@ class Main:
             ).capitalize().strip()
 
             if show_again == "Y":
+                print()
+                asyncio.run(loading())
                 clear()
                 self._pet_zone_flow()
                 break  
@@ -180,6 +183,7 @@ class Main:
             ).capitalize().strip()
             if retry == "Y":
                 print("\n")
+                asyncio.run(loading())
                 clear()
                 continue
             print("\n")
@@ -188,6 +192,8 @@ class Main:
     def _logout_flow(self) -> None:
         User._logout()
         self.current_user = User.current_user
+        asyncio.run(loading())
+        clear()
 
     def _change_password_flow(self) -> None:
         while True:
@@ -219,6 +225,7 @@ class Main:
             ).capitalize().strip()
             if retry == "Y":
                 print("\n")
+                asyncio.run(loading())
                 clear()
                 continue
             print("\n")
@@ -282,21 +289,26 @@ class Main:
         if pet:
             self.show_pet_stats(pet)
         return True
+    
 
-    def _show_pet_stage(self) -> bool:
+    async def _show_pet_stage(self) -> bool:
         pet = self.select_pet()
         if not pet:
             return False
         if getattr(pet, "health", 1) > 0:
             age = pet.get_age()
             if age < 1:
-                pet.baby()
+                result = pet.baby() 
             elif 1 <= age < 3:
-                pet.teen()
+                result = pet.teen()
             elif 3 <= age < 10:
-                pet.adult()
+                result = pet.adult()
             else:
-                pet.elder()
+                result = pet.elder()
+
+            async for frame in result:
+                print(frame)
+
             return True
         else:
             print(Fore.RED + "\nYour pet has deceased... 🧦\n")
@@ -318,7 +330,7 @@ class Main:
             3: lambda: self.create_pet(),
             4: lambda: self._interact_with_selected_pet(),
             5: lambda: self._show_selected_pet_stats(),
-            6: lambda: self._show_pet_stage(),
+            6: lambda: asyncio.run(self._show_pet_stage()),
             7: lambda: self._go_to_shop(),
             8: lambda: self._logout_flow(),
         }
@@ -346,10 +358,10 @@ class Main:
     def run(self) -> None:
         print()
         while True:
-            if not self.current_user:
+            if (not self.current_user):
                 self._auth_flow()
             else:
-                time.sleep(0.5)
+                asyncio.run(loading())
                 clear()
                 self._pet_zone_flow()
 

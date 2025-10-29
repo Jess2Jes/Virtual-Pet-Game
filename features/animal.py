@@ -11,11 +11,11 @@ class Cat(VirtualPet):
         self.songs = "Born Again by Doja Cat", "Golden by HUNTR/X", "Busy Woman by Sabrina Carpenter"
     
     @staticmethod
-    def baby() -> None:
+    async def baby(): # Generator
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        
+        yield r"""
 
 /|、      ......
 (˚ˎ 。7  . miw! .
@@ -23,14 +23,13 @@ class Cat(VirtualPet):
 じしˍ,)ノ
 ~~~~~~~~~~~~~~~
 
-              """)
+              """
     
     @staticmethod
-    def teen() -> None:
+    async def teen(): # Generator
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
 
 ⠀⠀  ⢀⡴⠲⣄⠀⠀⢀⡶⠲⡄⠀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀     ........  
 ⣀⣀⣀⣾⠁⠀⠹⠿⠟⠟⠀⠀⠙⣛⣉⡻⠿⠋⣿⣷⢦⣄⠀⠀⠀⠀⠀⠀   . Nyaww~! .
@@ -42,14 +41,13 @@ class Cat(VirtualPet):
 ⠀⠀⠈⠳⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⠟⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠉⠿⠟⠛⠛⠻⠾⠛⠛⠛⠛⠻⠟⠛⠛⠻⠾⠃⠀⠀⠀
 
-              """)
+              """
     
     @staticmethod
-    def adult() -> None:
+    async def adult(): # Generator
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠲⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣷⡄⠈⢢⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣄⠀⠀⠀⠀⠀⠀⢀⣾⡀⠀⠀⠀⠀⠹⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -80,14 +78,13 @@ class Cat(VirtualPet):
 ⠀⠹⣦⣓⡒⠋⠉⠀⠀⠀⣀⡴⠋⠀⠀⠀⠀⡼⠁⡀⠀⠀⠀⠀⠀⠀⣠⠏⢀⣠⢾⣁⣀⣀⣀⣀⣠⠤⠒⠚⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠹⣦⣿⣯⣿⣷⣦⢀⡴⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-              """)
+              """
         
     @staticmethod
-    def elder() -> None:
+    async def elder(): # Generator
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
                             Sleeping is my life, miaw~
            __..--''``---....___   _..._    __
  /// //_.-'    .-/";  `        ``<._  ``.''_ `. / // /
@@ -95,7 +92,7 @@ class Cat(VirtualPet):
 / (_..-' // (< _     ;_..__               ; `' / ///
  / // // //  `-._,_)' // / ``--...____..-' /// / //
               
-              """)
+              """
 
 
 class Rabbit(VirtualPet):
@@ -108,11 +105,10 @@ class Rabbit(VirtualPet):
         self.songs = "Genic - It's Showtime", "Kis-My-Ft2 - Glory Days", "TWS - Hajimemashite"
     
     @staticmethod
-    def baby() -> None:
+    async def baby():
 
-        print(GARIS)
-
-        print(r"""
+       yield GARIS
+       yield r"""
 
             ((`\
             ___ \\ '--._
@@ -123,14 +119,13 @@ class Rabbit(VirtualPet):
         
     ~~~~~~~~~~~~~~~~~~~~~~
 
-              """)
+              """
     
     @staticmethod
-    def teen() -> None:
-         
-        print(GARIS)
+    async def teen(): # Generator
 
-        print(r"""
+        yield GARIS
+        yield r"""
     ⡘⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⡇⠀⢂⠀⠀⠀⠀⠀⠀⠀⡀⢔⠟⡉⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⡇⠀⠘⠀⠀⠀⠀⠀⢠⠊⡐⠁⢠⡑⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -149,14 +144,13 @@ class Rabbit(VirtualPet):
 ⠀⠀⠀⠀⠀⠀⠀⠀⠐⠪⠄⠒⠉⠁⠣⠀⠤⠒⠀⠀⠀⠀⠁⠀⠀⠀⠀
         ~~~~~~~~~~~~~~~~~~~~~~~~
               
-              """)
+              """
     
     @staticmethod
-    def adult() -> None:
+    async def adult(): # Generator
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
 
     
         /|      __
@@ -180,14 +174,13 @@ class Rabbit(VirtualPet):
               
 ~~~~~~~~~~~~~~~~~~~
 
-              """)
+              """
         
     @staticmethod
-    def elder() -> None:
+    async def elder(): # Generator
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
 
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                ⣀⣀⣀⡀⢸⡄⠀⠀⠙⢷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡏⠩⣩⣛⠻⢿⣦⡀⠀⠀⠙⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -211,7 +204,7 @@ class Rabbit(VirtualPet):
 ⠈⠻⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠀⠀⠀⠉⠻⣿⠙⣷⡀⠀⠀⠀⠀⠀⠈⢻⡄⠈⣷⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠈⠙⠛⠲⠶⠶⠤⠤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣄⣀⡀⠀⣸⡇⠘⠿⣦⣄⣀⡀⣀⣠⣾⣥⡾⠃⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠉⠁⠀⠀⠀⠈⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-              """)
+              """
 
 class Dino(VirtualPet):
     def __init__(self, name, age):
@@ -223,11 +216,10 @@ class Dino(VirtualPet):
         self.songs = "BTS - Spring Day", "Fifty Fifty - Cupid", "Twice - The Feels"
     
     @staticmethod
-    def baby() -> None:
+    async def baby():
 
-        print(GARIS)
-
-        print(r"""
+       yield GARIS
+       yield r"""
 
                                                               
                       boing         boing         boing              
@@ -238,14 +230,13 @@ class Dino(VirtualPet):
                   \\               "             "            
                   ^'                       
                                         
-              """)
+              """
     
     @staticmethod
-    def teen() -> None:
+    async def teen(): # Generator
 
-        print(GARIS)
-
-        print(r"""                
+        yield GARIS
+        yield r"""                
                 
      ⠀⠀⣠⠲⣄⡤⠖⢲⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
     ⣠⠤⠗⠒⠚⠓⠦⣼⢤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -264,14 +255,13 @@ class Dino(VirtualPet):
 ⠀⠀⠀⠀⠀⠀⠀⢀⡽     ⣧⣀⡀⢀⣀⣀⣀⣀⣀⣀⣈⣉⣉⣙⣳⠆
 ⠀⠀⠀⠀⠀⠀⠀⠘⠦⠤⠤⠴⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
                                         
-              """)
+              """
     
     @staticmethod
-    def adult() -> None:
+    async def adult():
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
               
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⣀⣀⡴⠚⠉⠐⠒⠦⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⡿⠇⠘⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠳⣄⠀⠀⠀⠀⠀
@@ -296,14 +286,13 @@ class Dino(VirtualPet):
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⡞⣰⠏⢿⣶⡋⢹⣿⣀⢣⠉⠦⢧⣀⣻⣤⡟⡼⠉⠁⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠿⢧⢸⠿⠿⣦⠟⠙⠞⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀
             
-              """)
+              """
 
     @staticmethod
-    def elder() -> None:
+    async def elder():
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
 
 ⢀⣀⣀⣀⡀⠰⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠈⠓⢤⡀⠈⠉⠲⢍⡓⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠔⠒⠢⠤⣀⠀⠀⠀⠀⠀⠀
@@ -326,8 +315,7 @@ class Dino(VirtualPet):
 ⠀⠀⠀⠀⣤⣴⡶⢺⣷⡆⢠⣤⣾⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⣤⣼⡄⠀⣤⣶⣄⢹⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠈⠳⠤⠻⠥⠤⠾⠯⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠓⠛⠿⠙⠂⠽⢿⠉⠊⠉⠁⠀⠀
 
-              """)
-
+              """
         
     
 class Dragon(VirtualPet):
@@ -340,11 +328,10 @@ class Dragon(VirtualPet):
         self.songs = "The Thrill is Gone By BB King", "Mannish Boy By Muddy Waters", "Love in Vain By Robert Johnson"
     
     @staticmethod
-    def baby() -> None:
+    async def baby():
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
 ⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⢀⡞⠉⢱⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⢸⠀⠀⠀⢳⠀⠀⠀⠀⠀⠀⠀⠀⢠⠞⠉⢣⠀⠀⠀⠀
@@ -364,14 +351,13 @@ class Dragon(VirtualPet):
 ⠀⠀⠀⠀⠀⠀⠀⠈⠁⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
               
-              """)
+              """
     
     @staticmethod
-    def teen() -> None:
+    async def teen():
 
-        print(GARIS)
-
-        print(r"""
+       yield GARIS
+       yield r"""
 
     ⠀⠀⠀             ⢀⣶⠀⠀⢀⣄⠀⠀⣠⣶⣾⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
     ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⡛⣆⣰⣿⣿⣠⠞⣓⣿⣿⠶⠞⠛⣫⣿⣷⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -402,14 +388,13 @@ class Dragon(VirtualPet):
     ⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣤⡶⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
     ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠛⠲⠦⢤⣤⣤⣤⣤⣤⣤⡶⠶⠚⠛⠋⠀⠀
                 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-                """)
+                """
     
     @staticmethod
-    def adult() -> None:
+    async def adult():
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
                      ^\    ^                  
                       / \\  / \                 
                      /.  \\/   \      |\___/|   
@@ -426,13 +411,13 @@ class Dragon(VirtualPet):
    ~.                 '-/        /.-~----.
      ~- _             /        >..----.\\\
          ~ - - - - ^}_ _ _ _ _ _ _.-\\\
-              """)
+              """
 
     @staticmethod
-    def elder() -> None:
+    async def elder():
         
-        print(GARIS)
-        print(r"""
+        yield GARIS
+        yield r"""
 
               ^    ^
                / \  //\
@@ -453,7 +438,7 @@ class Dragon(VirtualPet):
                                                           /.-'
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-              """)
+              """
         
 
 class Pou(VirtualPet):
@@ -466,11 +451,10 @@ class Pou(VirtualPet):
         self.songs = "Modern Jazz Quartet - Django", "Ahmad Jamal - Poinciana", "George Shearing - Lullaby of Birdland"
     
     @staticmethod
-    def baby() -> None:
+    async def baby():
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
 
                 ⣀⡀⠤⠤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠊⣀⡀⠱⠎⢀⣀⠙⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀.......
@@ -482,14 +466,13 @@ class Pou(VirtualPet):
 ⠀⠀⠀⠀⠀⠀⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠁⠂⠤⠄⢀⣀⣀⣀⣀⣀⣀⣀⣀⡀⠠
 
-              """)
+              """
     
     @staticmethod
-    def teen() -> None:
+    async def teen():
 
-        print(GARIS)
-
-        print(r"""
+        yield GARIS
+        yield r"""
 
                 ⣀⡀⠤⠤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠊⣀⡀⠱⠎⢀⣀⠙⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀.......
@@ -501,13 +484,13 @@ class Pou(VirtualPet):
 ⠀⠀⠀⠀⠀⠀⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠁⠂⠤⠄⢀⣀⣀⣀⣀⣀⣀⣀⣀⡀⠠
 
-              """)
+              """
         
     @staticmethod
-    def adult() -> None:
+    async def adult():
 
-        print(GARIS)
-        print(r"""
+        yield GARIS
+        yield r"""
 
                   ⣀⠤⠖⠒⠊⠑⠒⠒⠢⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠔⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠢⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -530,13 +513,13 @@ class Pou(VirtualPet):
 ⠀⠀⠀⠀⠀⠙⠒⠦⢤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⢀⣤⣠⠦⠷⠛⠉⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠛⠒⠲⠶⠶⠦⠴⠤⠦⠴⠦⠴⠤⠶⠴⠦⠾⠖⠛⠚⠋⠉⠁⠀⠀⠀⠀
 
-              """)
+              """
     
     @staticmethod
-    def elder() -> None:
+    async def elder():
 
-        print(GARIS)
-        print(r"""
+        yield GARIS
+        yield r"""
 
                   ⣀⠤⠖⠒⠊⠑⠒⠒⠢⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠔⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠢⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -560,4 +543,4 @@ class Pou(VirtualPet):
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠛⠒⠲⠶⠶⠦⠴⠤⠦⠴⠦⠴⠤⠶⠴⠦⠾⠖⠛⠚⠋⠉⠁⠀⠀⠀⠀
 
             Elder Pou: slower, wiser, and a bit grayer
-              """)
+              """

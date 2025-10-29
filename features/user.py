@@ -6,9 +6,29 @@ from random import randrange
 from typing import Dict
 from colorama import Fore, init
 init(autoreset=True)
+import asyncio
+from rich.progress import (
+    Progress,
+    TextColumn,
+    BarColumn,
+    TaskProgressColumn,
+    TimeRemainingColumn
+)
 
 GARIS = "─────────────────────────────────────────────────────────────────────────────────────────────────────"
 
+async def loading():
+    progress = Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        TimeRemainingColumn()
+    )
+    task = progress.add_task("Loading...", total=100)
+    with progress:
+        for _ in range(100):
+            progress.update(task, advance=1)
+            await asyncio.sleep(0.015)
 
 class User:
     users = {}

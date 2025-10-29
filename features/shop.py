@@ -1,8 +1,10 @@
 from .pet import VirtualPet
 from typing import List, Tuple
+from .user import loading
 from .formatter import GARIS
 from .user import User
 import time
+import asyncio
 from colorama import Fore, init
 init(autoreset=True)
 
@@ -89,7 +91,7 @@ class Shop:
     def _buy_category_and_index(self) -> tuple[str | None, int | None]:
         print(GARIS)
         print("🐼 : Hello, my lovely customer, welcome to our store!")
-        time.sleep(0.5)
+        asyncio.run(loading())
         print("\n🐼 : What do you want to buy?")
         print(GARIS)
         print("1. Food")
@@ -191,7 +193,7 @@ class Shop:
 
     def interact(self) -> None:
         print("\n🐼 : Hi, I'm Po Ping. I'll be your shopping assistant for today!")
-        time.sleep(0.5)
+        asyncio.run(loading())
         while True:
             print("\n🐼 : Here's list of options you can do!")
             # There will also be a sell item menu in here soon!
