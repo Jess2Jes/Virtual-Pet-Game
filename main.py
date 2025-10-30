@@ -33,7 +33,7 @@ class Main:
             print(GARIS)
 
             show_password = input(
-                "Would you like to show your password? (Y/N)\n"
+                "\nWould you like to show your password? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "
             ).capitalize().strip()
 
@@ -44,21 +44,12 @@ class Main:
                 print(self.game.format.format_username_box(
                     stats["username"], stats["password"], user.pets, True))
 
-            show_again = input(
-                "\nWould you like to clear your account info? (Y/N)\n"
-                "(Note: input other than Y and N will be considered as N): "
-            ).capitalize().strip()
-
-            if show_again == "Y":
+            repeat = input("\nWould you like to view again? (Y/N): ").capitalize().strip()
+            if repeat != "Y":
                 print()
                 asyncio.run(loading())
                 clear()
                 self._pet_zone_flow()
-                break  
-
-            repeat = input("\nWould you like to view again? (Y/N): ").capitalize().strip()
-            if repeat != "Y":
-                print("\n")
                 break  
             
         return True
@@ -80,7 +71,7 @@ class Main:
         
         return True
 
-    def select_pet(self) -> bool:
+    def select_pet(self) -> bool | object:
         if not self.current_user:
             print(Fore.RED + "\nPlease login first.\n")
             return True
@@ -183,8 +174,6 @@ class Main:
             ).capitalize().strip()
             if retry == "Y":
                 print("\n")
-                asyncio.run(loading())
-                clear()
                 continue
             print("\n")
             break
@@ -204,7 +193,7 @@ class Main:
             if username in User.users:
                 user = User.users[username]
                 if password != user.password:
-                    print(Fore.GREEN + "\nWrong Previous Password!\n")
+                    print(Fore.RED + "\nWrong Previous Password!\n")
                 else:
                     users_password = [user_id.password for user_id in User.users.values()]
                     if new_password not in users_password and new_password != password:
@@ -266,15 +255,14 @@ class Main:
             return None
 
 
-    def _show_time_and_days(self) -> bool:
+    def _show_time_and_days(self) -> None:
         hours = self.time()
         days = str(self.days())
         print(Fore.RESET + self.game.format.format_time_box(hours, days))
-        return True
 
     def _interact_with_selected_pet(self) -> bool:
         pet = self.select_pet()
-        if not pet:
+        if isinstance(pet, bool):
             return False
         if getattr(pet, "health", 1) > 0:
             self.interact_with_pet(pet, self.current_user)
@@ -286,14 +274,14 @@ class Main:
 
     def _show_selected_pet_stats(self) -> bool:
         pet = self.select_pet()
-        if pet:
+        if not isinstance(pet,bool):
             self.show_pet_stats(pet)
-        return True
-    
+        else:
+            return True
 
-    async def _show_pet_stage(self) -> bool:
+    async def _show_pet_stage(self) -> bool | None:
         pet = self.select_pet()
-        if not pet:
+        if isinstance(pet,bool):
             return False
         if getattr(pet, "health", 1) > 0:
             age = pet.get_age()
@@ -309,7 +297,7 @@ class Main:
             async for frame in result:
                 print(frame)
 
-            return True
+            return None
         else:
             print(Fore.RED + "\nYour pet has deceased... 🧦\n")
             return False
@@ -337,9 +325,10 @@ class Main:
         handler = handlers.get(choice, lambda: self._invalid_pet_zone_choice())
         result = handler()
         self.time_spend()
-        asyncio.run(loading())
-        clear()
-        return bool(result)
+        if (result):
+            return bool(result)
+        else:
+            return result
 
     def _auth_flow(self) -> None:
         while not self.current_user:
@@ -354,8 +343,13 @@ class Main:
             choice = self._pet_zone_menu()
             if choice is None:
                 continue
-            if not self._handle_pet_zone_choice(choice):
-                break
+            result = self._handle_pet_zone_choice(choice)
+            if not result is None:
+                if not result:
+                    break
+                else:
+                    asyncio.run(loading())
+                    clear()
 
     def run(self) -> None:
         print()
