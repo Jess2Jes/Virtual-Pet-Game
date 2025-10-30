@@ -99,7 +99,7 @@ class Shop:
         print(GARIS)
         cat = self._input_int("🐼 : Choose category (1-3): ")
         if cat not in (1, 2, 3):
-            print("\n🐼 : Please choose between 1-3 please...")
+            print(Fore.RED + "\n🐼 : Please choose between 1-3 please...")
             return None, None
 
         print()
@@ -129,7 +129,7 @@ class Shop:
             items = self._list_potion_items()
 
         if not (1 <= idx <= len(items)):
-            print("\n🐼 : Invalid item number.")
+            print(Fore.RED + "\n🐼 : Invalid item number.")
             return None
 
         return items[idx - 1][0]
@@ -156,7 +156,7 @@ class Shop:
         while True:
             amount = self._input_int("🐼 : How many do you want to buy? ")
             if amount is None or amount <= 0:
-                print("\n🐼 : Please input a positive number!")
+                print(Fore.RED + "\n🐼 : Please input a positive number!")
                 continue
             break
 
@@ -164,7 +164,7 @@ class Shop:
         total = price_per * amount
 
         if total > self.user.currency:
-            print(f"\n🐼 : Not enough amount to buy {name}!")
+            print(Fore.RED + f"\n🐼 : Not enough amount to buy {name}!")
             print(f"🐼 : Needed: Rp. {'{:,}'.format(total)}, You have: Rp. {'{:,}'.format(self.user.currency)}\n")
             return
 
@@ -205,7 +205,7 @@ class Shop:
 
             choice = self._input_int("🐼 : Choose (1-3): ")
             if choice is None:
-                print("\n🐼 : Please insert digit in choice input!")
+                print(Fore.RED + "\n🐼 : Please insert digit in choice input!")
                 continue
 
             actions = {
@@ -222,4 +222,4 @@ class Shop:
                 print()
                 action()
             else:
-                print("\n🐼 : Please choose between 1-3 please...")
+                print(Fore.RED + "\n🐼 : Please choose between 1-3 please...")
