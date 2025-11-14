@@ -86,8 +86,7 @@ class Game:
             flag, name, species = self.create_name()
 
             if (species and flag):
-                if not (any(animal.name == name or animal.type == species.type 
-                        for animal in User.current_user.pets)):
+                if not any(animal.name == name for animal in User.current_user.pets):
                     self.animal_list.append((species))
                     print(Fore.GREEN + f"\nCongratulations! You have successfully" 
                         f" give birth to {name}, the {species.type}!")
@@ -651,7 +650,7 @@ class Game:
                 print(Fore.RED + "\nPlease enter digit!\n")
                 continue
 
-            if choice == 8:
+            if (choice == 8) or (pet.health == 0):
                 print()
                 break
 
