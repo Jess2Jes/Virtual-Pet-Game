@@ -1,14 +1,34 @@
-# user.py
 from .pet import VirtualPet
 import math
-import string
 from random import randrange
 from typing import Dict
 from colorama import Fore, init
 init(autoreset=True)
+import asyncio
+import re
+from rich.progress import (
+    Progress,
+    TextColumn,
+    BarColumn,
+    TaskProgressColumn,
+    TimeRemainingColumn
+)
 
+valid_password = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$"
 GARIS = "─────────────────────────────────────────────────────────────────────────────────────────────────────"
 
+async def loading():
+    progress = Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        TimeRemainingColumn()
+    )
+    task = progress.add_task("Loading...", total=100)
+    with progress:
+        for _ in range(100):
+            progress.update(task, advance=1)
+            await asyncio.sleep(0.012)
 
 class User:
     users = {}
@@ -48,16 +68,12 @@ class User:
         return self.__password
 
     @password.setter
-    def password(self, new_password) -> None | int:
-        total_digit = sum(ch.isdigit() for ch in new_password)
-        total_symbol = sum(1 for ch in new_password if ch in string.punctuation)
-        total_letter = sum(ch.isalpha() for ch in new_password)
-
-        if (total_digit < 1 or total_letter < 8 or total_symbol < 2):
-            print(Fore.RED + "\nChange password operation unsuccessful!")
-            print(Fore.YELLOW + "(Password must contain at least 1 digit, 8 letters, and 2 symbols)")
-        else:
-            self.__password = new_password
+    def password(self, new_password: str):
+        if not re.match(valid_password, new_password):
+            print(Fore.RED + "Change password operation unsuccessful!")
+            print(Fore.YELLOW + "(Password must contain at least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char)")
+            return
+        self.__password = new_password
 
     def add_pet(self, pet: VirtualPet) -> None:
         self.pets.append(pet)
@@ -90,21 +106,11 @@ class User:
             print(Fore.RED + "Password cannot be the same as username!\n")
             return None
 
-        total_digit = sum(ch.isdigit() for ch in password)
-        total_symbol = sum(1 for ch in password if ch in string.punctuation)
-        total_letter = sum(ch.isalpha() for ch in password)
-
-        if total_digit < 1:
-            print(Fore.RED + "Password must contain at least 1 digit!\n")
-            print(GARIS)
-            return None
-        if total_symbol < 2:
-            print(Fore.RED + "Password must consist of at least 2 symbols!\n")
-            print(GARIS)
-            return None
-        if total_letter < 8:
-            print(Fore.RED + "Password must consist of at least 8 letters!\n")
-            print(GARIS)
+        if not re.match(valid_password, password):
+            print(Fore.RED + "Password is too weak!\n")
+            print(Fore.YELLOW + "(Password must contain at least 8 characters, "
+                                 "1 uppercase letter, 1 lowercase letter, "
+                                 "1 digit, and 1 special character)\n")
             return None
 
         new_user = cls(username, password)
