@@ -1,11 +1,12 @@
 from features.shop import Shop
 from features.game import Game
-from features.user import User
+from features.user import User, loading
 import sys
 from features.formatter import GARIS
 import os
-import time
+import asyncio
 from colorama import Fore, init
+
 init(autoreset=True)
 
 def clear():
@@ -32,7 +33,7 @@ class Main:
             print(GARIS)
 
             show_password = input(
-                "Would you like to show your password? (Y/N)\n"
+                "\nWould you like to show your password? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "
             ).capitalize().strip()
 
@@ -43,19 +44,12 @@ class Main:
                 print(self.game.format.format_username_box(
                     stats["username"], stats["password"], user.pets, True))
 
-            show_again = input(
-                "\nWould you like to clear your account info? (Y/N)\n"
-                "(Note: input other than Y and N will be considered as N): "
-            ).capitalize().strip()
-
-            if show_again == "Y":
-                clear()
-                self._pet_zone_flow()
-                break  
-
             repeat = input("\nWould you like to view again? (Y/N): ").capitalize().strip()
             if repeat != "Y":
-                print("\n")
+                print()
+                asyncio.run(loading())
+                clear()
+                self._pet_zone_flow()
                 break  
             
         return True
@@ -77,7 +71,7 @@ class Main:
         
         return True
 
-    def select_pet(self) -> bool:
+    def select_pet(self) -> bool | object:
         if not self.current_user:
             print(Fore.RED + "\nPlease login first.\n")
             return True
@@ -180,7 +174,6 @@ class Main:
             ).capitalize().strip()
             if retry == "Y":
                 print("\n")
-                clear()
                 continue
             print("\n")
             break
@@ -188,6 +181,8 @@ class Main:
     def _logout_flow(self) -> None:
         User._logout()
         self.current_user = User.current_user
+        asyncio.run(loading())
+        clear()
 
     def _change_password_flow(self) -> None:
         while True:
@@ -198,7 +193,7 @@ class Main:
             if username in User.users:
                 user = User.users[username]
                 if password != user.password:
-                    print(Fore.GREEN + "\nWrong Previous Password!\n")
+                    print(Fore.RED + "\nWrong Previous Password!\n")
                 else:
                     users_password = [user_id.password for user_id in User.users.values()]
                     if new_password not in users_password and new_password != password:
@@ -219,6 +214,7 @@ class Main:
             ).capitalize().strip()
             if retry == "Y":
                 print("\n")
+                asyncio.run(loading())
                 clear()
                 continue
             print("\n")
@@ -259,15 +255,14 @@ class Main:
             return None
 
 
-    def _show_time_and_days(self) -> bool:
+    def _show_time_and_days(self) -> None:
         hours = self.time()
         days = str(self.days())
         print(Fore.RESET + self.game.format.format_time_box(hours, days))
-        return True
 
     def _interact_with_selected_pet(self) -> bool:
         pet = self.select_pet()
-        if not pet:
+        if isinstance(pet, bool):
             return False
         if getattr(pet, "health", 1) > 0:
             self.interact_with_pet(pet, self.current_user)
@@ -279,25 +274,30 @@ class Main:
 
     def _show_selected_pet_stats(self) -> bool:
         pet = self.select_pet()
-        if pet:
+        if not isinstance(pet,bool):
             self.show_pet_stats(pet)
-        return True
+        else:
+            return True
 
-    def _show_pet_stage(self) -> bool:
+    async def _show_pet_stage(self) -> bool | None:
         pet = self.select_pet()
-        if not pet:
+        if isinstance(pet,bool):
             return False
         if getattr(pet, "health", 1) > 0:
             age = pet.get_age()
             if age < 1:
-                pet.baby()
+                result = pet.baby() 
             elif 1 <= age < 3:
-                pet.teen()
+                result = pet.teen()
             elif 3 <= age < 10:
-                pet.adult()
+                result = pet.adult()
             else:
-                pet.elder()
-            return True
+                result = pet.elder()
+
+            async for frame in result:
+                print(frame)
+
+            return None
         else:
             print(Fore.RED + "\nYour pet has deceased... 🧦\n")
             return False
@@ -318,14 +318,17 @@ class Main:
             3: lambda: self.create_pet(),
             4: lambda: self._interact_with_selected_pet(),
             5: lambda: self._show_selected_pet_stats(),
-            6: lambda: self._show_pet_stage(),
+            6: lambda: asyncio.run(self._show_pet_stage()),
             7: lambda: self._go_to_shop(),
             8: lambda: self._logout_flow(),
         }
         handler = handlers.get(choice, lambda: self._invalid_pet_zone_choice())
         result = handler()
         self.time_spend()
-        return bool(result)
+        if (result):
+            return bool(result)
+        else:
+            return result
 
     def _auth_flow(self) -> None:
         while not self.current_user:
@@ -340,16 +343,21 @@ class Main:
             choice = self._pet_zone_menu()
             if choice is None:
                 continue
-            if not self._handle_pet_zone_choice(choice):
-                break
+            result = self._handle_pet_zone_choice(choice)
+            if not result is None:
+                if not result:
+                    break
+                else:
+                    asyncio.run(loading())
+                    clear()
 
     def run(self) -> None:
         print()
         while True:
-            if not self.current_user:
+            if (not self.current_user):
                 self._auth_flow()
             else:
-                time.sleep(0.5)
+                asyncio.run(loading())
                 clear()
                 self._pet_zone_flow()
 

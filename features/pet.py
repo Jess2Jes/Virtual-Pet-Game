@@ -1,7 +1,7 @@
+from abc import ABC, abstractmethod
 from random import randrange
 from typing import Dict, Literal
 from .formatter import Formatter
-from .formatter import GARIS
 from colorama import Fore, init
 init(autoreset=True)
 
@@ -12,7 +12,55 @@ ADULT_POTION = "Adult Potion"
 
 PotionType = Literal["fat", "health", "energy", "age"]
 
-class VirtualPet:
+# Abstract Class
+class AbstractPet(ABC):
+
+    def __init__(self, name: str, age: float = 0.0, species: str = "Pet") -> None:
+        self.name: str = name
+        self.age: float = age
+        self.type: str = species
+
+    @abstractmethod
+    def get_mood(self) -> str:
+        """Return a short string describing the pet's mood (e.g., 'Happy', 'Sad')."""
+
+    @abstractmethod
+    def get_summary(self) -> str:
+        """Return a short health summary (e.g., 'Healthy', 'Critical')."""
+
+    @abstractmethod
+    def get_age_summary(self) -> str:
+        """Return a life stage summary (e.g., 'Baby', 'Adult')."""
+
+    @abstractmethod
+    def limit_stat(self) -> None:
+        """Clamp stats to allowed ranges (0..100 etc.)."""
+
+    @abstractmethod
+    def time_past(self) -> None:
+        """Advance internal time and change stats appropriately."""
+
+    @abstractmethod
+    def play(self) -> None:
+        """Play with the pet; modify stats accordingly."""
+
+    @abstractmethod
+    def feed(self, food: str) -> bool:
+        """Feed the pet with the given food key; return True if consumed."""
+
+    @abstractmethod
+    def bath(self, soap: str) -> bool:
+        """Bathe the pet with the given soap key; return True if applied."""
+
+    @abstractmethod
+    def health_care(self, potion: str) -> bool:
+        """Apply a potion to the pet; return True if used."""
+
+    @abstractmethod
+    def sleep(self, hours: int) -> None:
+        """Make the pet sleep for a number of hours; modify stats."""
+
+class VirtualPet(AbstractPet):
     FOOD_DEF: Dict[str, Dict[str, int | str]] = {
         "Kentucky Fried Chicken": {"emoji": "🍗", "hunger": 15, "happiness": 5, "price": 20000},
         "Ice Cream": {"emoji": "🍦", "hunger": 5, "happiness": 3, "price": 5000},

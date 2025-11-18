@@ -86,8 +86,7 @@ class Game:
             flag, name, species = self.create_name()
 
             if (species and flag):
-                if not (any(animal.name == name or animal.type == species.type 
-                        for animal in User.current_user.pets)):
+                if not any(animal.name == name for animal in User.current_user.pets):
                     self.animal_list.append((species))
                     print(Fore.GREEN + f"\nCongratulations! You have successfully" 
                         f" give birth to {name}, the {species.type}!")
@@ -405,6 +404,7 @@ class Game:
         # print("5. Hobbies")
         # print("6. Deep Subjects")
         # print("7. Favourite Movies")
+        print("3. That's enough about me")
         print(GARIS)
 
     def _music_topic(self, pet: VirtualPet, user: User) -> bool:
@@ -521,6 +521,11 @@ class Game:
         # --- In the future update, pet will remember its owner's fav food ---
 
         return True
+    
+    def _end_topic(self, pet: VirtualPet, user: User) -> None:
+        print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Okay, I have gotten to know you more, thanks for sharing yours!")
+        print(Fore.GREEN + f"{pet.name}'s happiness has increased by 10.\n")
+        pet.happiness += 10
 
     def _topic_conversation_menu(self, pet: VirtualPet, user: User) -> bool:
         while True:
@@ -534,10 +539,11 @@ class Game:
             actions = {
                 1: self._music_topic,
                 2: self._food_topic,
+                3: self._end_topic,
             }
             
             keep_talking = actions.get(topic, self._invalid_topic)(pet, user)
-            if not keep_talking:
+            if keep_talking is None:
                 break
 
     def _can_tell_joke(self, pet: VirtualPet) -> tuple[bool, str | None]:
@@ -601,7 +607,7 @@ class Game:
                 6: self._topic_goodbye,
             }
             keep_talking = actions.get(topic, self._invalid_topic)(pet, user)
-            if not keep_talking:
+            if not keep_talking and keep_talking is not None:
                 break
 
     def _stocks(self) -> dict:
@@ -644,7 +650,7 @@ class Game:
                 print(Fore.RED + "\nPlease enter digit!\n")
                 continue
 
-            if choice == 8:
+            if (choice == 8) or (pet.health == 0):
                 print()
                 break
 
