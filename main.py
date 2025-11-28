@@ -3,6 +3,7 @@ from features.game import Game
 from features.user import User, loading
 import sys
 from features.formatter import GARIS
+from features.minigame import engine
 import os
 import asyncio
 from colorama import Fore, init
@@ -19,6 +20,7 @@ class Main:
     def __init__(self):
         self.game = Game()           
         self.current_user = User.current_user
+        self._minigame_engine = engine()
 
     def _show_account_info(self, user: User) -> bool:
         while True:
@@ -53,7 +55,6 @@ class Main:
                 break  
             
         return True
-
 
     def create_pet(self) -> bool:
         if not self.current_user:
@@ -220,6 +221,71 @@ class Main:
             print("\n")
             break
 
+    def _play_minigame_flow(self) -> bool:
+        games = self._minigame_engine.list_games()
+        if not games:
+            print("\nNo minigames available.\n")
+            return
+
+        print("\n" + GARIS)
+        print("Minigames: ")
+        print(GARIS)
+        for i, name in enumerate(games, start=1):
+            print(f"{i}. --> {name}")
+        print(GARIS)
+        try:
+            idx = int(input("Choose a minigame number: ").strip())
+        except Exception:
+            print("Invalid choice.")
+            return
+        if not (1 <= idx <= len(games)):
+            print("Invalid choice.")
+            return
+        mg_name = games[idx - 1]
+
+        pet = None
+        if self.current_user.pets:
+            print(GARIS)
+            print("\nYour pets:")
+            for i, p in enumerate(self.current_user.pets, start=1):
+                try:
+                    age = getattr(p, "get_age", lambda: 0)()
+                except Exception:
+                    age = 0
+                print(f"{i}. {p.name} ({getattr(p, 'type', 'pet')}) - Age: {age:.1f}")
+            print(GARIS)
+            try:
+                choice = int(input("Choose pet number: ").strip())
+            except Exception:
+                print("Invalid!")
+                return
+            if (choice != 0):
+                if not (1 <= choice <= len(self.current_user.pets)):
+                    print("Invalid pet selection!")
+                    return
+                pet = self.current_user.pets[choice - 1]
+        else:
+            print(Fore.RED + "\nPlease create a pet first!")
+            return True
+
+        result = self._minigame_engine.play(mg_name, self.current_user, pet)
+        coins = int(result.get("currency", 0))
+        pet_happy = int(result.get("pet_happiness", 0))
+
+        if (coins):
+            self.current_user.currency += coins
+            self.current_user.limit_currency()
+            print(Fore.GREEN + f"\nYou received Rp. {'{:,}'.format(coins * 1000)}!\n")
+
+        if (pet and pet_happy):
+            try:
+                if hasattr(pet, "happiness"):
+                    happiness_increase = min(100, getattr(pet, "happiness", 0) + pet_happy)
+                    pet.happiness += happiness_increase
+            except Exception:
+                pass
+            print(Fore.GREEN + f"{pet.name}'s happiness has increased by {happiness_increase}.\n")
+
     def _exit_game(self) -> None:
         print(GARIS)
         sys.exit("Thank you for playing!\n")
@@ -246,7 +312,8 @@ class Main:
         print(Fore.YELLOW + "5. Pet stats")
         print(Fore.YELLOW + "6. Show Pets")
         print(Fore.YELLOW + "7. Go to shop")
-        print(Fore.RED + "8. Logout")
+        print(Fore.YELLOW + "8. Play Minigames")
+        print(Fore.RED + "9. Logout")
         print(Fore.MAGENTA + GARIS)
         try:
             return int(input(Fore.GREEN + "Choose (1-8): " + Fore.RESET).strip())
@@ -320,7 +387,8 @@ class Main:
             5: lambda: self._show_selected_pet_stats(),
             6: lambda: asyncio.run(self._show_pet_stage()),
             7: lambda: self._go_to_shop(),
-            8: lambda: self._logout_flow(),
+            8: lambda: self._play_minigame_flow(),
+            9: lambda: self._logout_flow()
         }
         handler = handlers.get(choice, lambda: self._invalid_pet_zone_choice())
         result = handler()
