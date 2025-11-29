@@ -71,7 +71,8 @@ class User:
     def password(self, new_password: str):
         if not re.match(valid_password, new_password):
             print(Fore.RED + "Change password operation unsuccessful!")
-            print(Fore.YELLOW + "(Password must contain at least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char)")
+            print(Fore.YELLOW + "Password must contain:")
+            print(Fore.YELLOW + "At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n")
             return
         self.__password = new_password
 
@@ -108,9 +109,8 @@ class User:
 
         if not re.match(valid_password, password):
             print(Fore.RED + "Password is too weak!\n")
-            print(Fore.YELLOW + "(Password must contain at least 8 characters, "
-                                 "1 uppercase letter, 1 lowercase letter, "
-                                 "1 digit, and 1 special character)\n")
+            print(Fore.YELLOW + "Password must contain:")
+            print(Fore.YELLOW + "At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n")
             return None
 
         new_user = cls(username, password)
