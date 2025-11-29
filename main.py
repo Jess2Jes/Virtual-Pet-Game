@@ -241,10 +241,15 @@ class Main:
         if not (1 <= idx <= len(games)):
             print("Invalid choice.")
             return
+        
+        if (idx == 4 and len(User.users) < 2):
+            print(Fore.RED + "\nNo other players available right now!")
+            return True
+
         mg_name = games[idx - 1]
 
         pet = None
-        if self.current_user.pets:
+        if (self.current_user.pets):
             print(GARIS)
             print("\nYour pets:")
             for i, p in enumerate(self.current_user.pets, start=1):
@@ -269,22 +274,24 @@ class Main:
             return True
 
         result = self._minigame_engine.play(mg_name, self.current_user, pet)
-        coins = int(result.get("currency", 0))
-        pet_happy = int(result.get("pet_happiness", 0))
+        
+        if (result):
+            coins = int(result.get("currency", 0))
+            pet_happy = int(result.get("pet_happiness", 0))
 
-        if (coins):
-            self.current_user.currency += coins
-            self.current_user.limit_currency()
-            print(Fore.GREEN + f"\nYou received Rp. {'{:,}'.format(coins * 1000)}!\n")
+            if (coins):
+                self.current_user.currency += coins
+                self.current_user.limit_currency()
+                print(Fore.GREEN + f"\nYou received Rp. {'{:,}'.format(coins * 1000)}!\n")
 
-        if (pet and pet_happy):
-            try:
-                if hasattr(pet, "happiness"):
-                    happiness_increase = min(100, getattr(pet, "happiness", 0) + pet_happy)
-                    pet.happiness += happiness_increase
-            except Exception:
-                pass
-            print(Fore.GREEN + f"{pet.name}'s happiness has increased by {happiness_increase}.\n")
+            if (pet and pet_happy):
+                try:
+                    if hasattr(pet, "happiness"):
+                        happiness_increase = min(100, getattr(pet, "happiness", 0) + pet_happy)
+                        pet.happiness += happiness_increase
+                except Exception:
+                    pass
+                print(Fore.GREEN + f"{pet.name}'s happiness has increased by {happiness_increase}.\n")
 
     def _exit_game(self) -> None:
         print(GARIS)
