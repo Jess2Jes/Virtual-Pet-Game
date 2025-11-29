@@ -6,6 +6,8 @@ from random import randint, choice, random
 import time
 import operator
 import os
+from .user import User
+from colorama import Fore, init
 
 def clear():
     os.system("cls" if os.name == "nt" else "clear")
@@ -121,12 +123,15 @@ class MathQuiz(MinigameStrategy):
             self.questions.append((a, op, b))
 
     def build_game(self):
-        print(f"\nYou will be asked {len(self.questions)} questions. Type your answer (must be an int): ")
+        print(Fore.YELLOW + f"\nYou will be asked {len(self.questions)} questions. Type your answer (must be an int): ")
         print(GARIS)
         self.start_time = time.time()
         user_answers = []
         for i, (a, op, b) in enumerate(self.questions, start=1):
-            ans = int(input(f"Q{i}: {a} {op} {b} = ").strip())
+            try:
+                ans = int(input(f"Q{i}: {a} {op} {b} = ").strip())
+            except ValueError:
+                ans = None
             user_answers.append(ans)
         self.end_time = time.time()
         return user_answers
@@ -162,7 +167,7 @@ class MathQuiz(MinigameStrategy):
         pet_happiness = correct
 
         print(f"\nResult: {correct}/{total} correct in {result["elapsed"]:.2f}s (accuracy {round(result["accuracy"] * 100)}%)")
-        print(f"You earned Rp. Rp. {'{:,}'.format(coins * 1000)} and your pet gains {pet_happiness} happiness.")
+        print(f"You earned Rp. {'{:,}'.format(coins * 1000)} and your pet gains {pet_happiness} happiness.")
         return {"currency": coins, "pet_happiness": pet_happiness}
     
     def play(self, player: Any, pet: Any) -> Dict[str, int]:
@@ -204,7 +209,7 @@ class TicTacToe(MinigameStrategy):
         print(GARIS)
     
     def build_question(self):
-        print("Choose the size of your Tic Tac Toe board!")
+        print(Fore.YELLOW + "Choose the size of your Tic Tac Toe board!")
         print(GARIS)
         print("1. 3 x 3 board")
         print("2. 4 x 4 board")
@@ -255,7 +260,7 @@ class TicTacToe(MinigameStrategy):
             elif (choice == "n"):
                 self.first = False
                 break
-            print("Please answer Y/N!")
+            print(Fore.RED + "Please answer Y/N!")
     
     def check_winner(self):
         counts = {}
@@ -330,16 +335,16 @@ class TicTacToe(MinigameStrategy):
             row -= 1
             col -= 1
         except ValueError:
-            print("Please input two numbers separated by space (e.g. '2 3').")
+            print(Fore.RED + "Please input two numbers separated by space (e.g. '2 3').")
             return None
         if (row < 0 or row > self.row_length):
-            print(f"Row number cannot be less than 1 or more than {self.row_length}!")
+            print(Fore.RED + f"Row number cannot be less than 1 or more than {self.row_length}!")
             return None
         if (col < 0 or col > self.col_length):
-            print(f"Column number cannot be less than 1 or more than {self.col_length}!")
+            print(Fore.RED + f"Column number cannot be less than 1 or more than {self.col_length}!")
             return None
         if ((row, col) not in self.available_moves()):
-            print("Cell has been placed with mark!")
+            print(Fore.YELLOW + "Cell has been placed with mark!")
             return None
         
         return row, col
@@ -542,7 +547,7 @@ class MemoryMatch(MinigameStrategy):
         print(f"Your response: {' '.join(result['response']) if result['response'] else '(none)'}")
         print(f"\nCorrect: {correct}/{total}")
         if (exact):
-            print("Perfect! Bonus awarded! 🎉")
+            print(Fore.GREEN + "Perfect! Bonus awarded! 🎉")
         print(f"You earned Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})\n")
         return {"currency": coins, "pet_happiness": pet_happiness}
 
@@ -555,6 +560,214 @@ class MemoryMatch(MinigameStrategy):
         result = self.evaluate(answer)
         return self.reward(result)
 
+class BattleContest(MinigameStrategy):
+    name = "Battle Tournament"
+
+    def setup(self, player, pet):
+        self.player = player
+        self.player_pet = pet
+        self.player_pet_stats = {
+            "strength": 15,
+            "agility": 10
+        }
+        self.current_round = 1
+        self.player_health = self.player_pet.health * 1000
+        self.player_won = 0
+        other_players_with_pets = list(filter(lambda user: user != self.player and user.pets, User.users.values()))
+        if (other_players_with_pets):
+            self.opponent = choice(other_players_with_pets)
+            self.opponent_pet = choice(self.opponent.pets)
+        else:
+            print(Fore.RED + "\nOther players currently doesn't have any pets yet!\n")
+            return False
+        self.opponent_health = self.opponent_pet.health * 1000
+        self.opponent_won = 0
+        self.opponent_pet_stats = {
+            "strength": 25,
+            "agility": 15
+        }
+        return True
+    
+    def display_menu(self):
+        print("\n" + GARIS)
+        print(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(GARIS)))
+        print(GARIS)
+        print("\n" + GARIS)
+        print(f"Your Pet: {self.player_pet.name}")
+        print(f"Health: {self.player_health}")
+        print(f"Strength: {self.player_pet_stats['strength']}")
+        print(f"Agility: {self.player_pet_stats['agility']}")
+        print('-' * len(GARIS))
+        
+        if (self.opponent_pet):
+            print(f"Opponent: {self.opponent_pet.name}")
+            print(f"Health: {self.opponent_health}")
+            print(f"Strength: {self.player_pet_stats['strength']}")
+            print(f"Agility: {self.player_pet_stats['agility']}")
+        
+        print(GARIS)
+        print("\nBattle Options:")
+        print(GARIS)
+        print("1. Attack 🗡️")
+        print("2. Defend 🛡️")
+        print("3. Special Move ✨")
+        print("4. Heal ❤️‍🩹")
+        print(GARIS)
+    
+    def get_input(self):
+        while True:
+            try:
+                choice = int(input("Choose your action (1-4): "))
+                if (1 <= choice <= 4):
+                    return choice
+                else:
+                    print(Fore.RED + "Please enter a number between 1-4!")
+            except ValueError:
+                print(Fore.RED + "Please enter a valid number!")
+    
+    def build_question(self) -> Any:
+        print("\n" + GARIS)
+        print("Battle Starting!")
+        print(GARIS)
+        print(f"{self.player_pet.name} VS {self.opponent_pet.name}")
+        print("Prepare for battle!")
+        time.sleep(2)
+
+    def build_game(self) -> Any:
+
+        while (self.opponent_health > 0 and self.player_health > 0):
+            self.display_menu()
+            player_choice = self.get_input()
+            
+            # Player's turn
+            if (player_choice == 1):
+                damage = (randint(5, 10) + self.player_pet_stats["strength"] // 3) * 300
+                self.opponent_health -= damage
+                print(f"\n{self.player_pet.name} attacks for {damage} damage ⚔️!")
+                
+            elif (player_choice == 2): 
+                defense_bonus = randint(2, 5) * 300
+                print(f"\n{self.player_pet.name} defends 🛡️!")
+                print(f"Damage reduction: {defense_bonus}")
+                
+            elif (player_choice == 3): 
+                if (self.current_round % 2 == 0):
+                    special_damage = (randint(10, 15) + self.player_pet_stats["strength"] // 2) * 600
+                    self.opponent_health -= special_damage
+                    print(f"\n{self.player_pet.name} uses special move for {special_damage} damage ✨!")
+                else:
+                    print(Fore.RED + "\nSpecial moves are locked in odd rounds!")
+                
+            elif (player_choice == 4): 
+                heal_amount = randint(8, 12) * 500
+                self.player_health += heal_amount
+                print(f"\n{self.player_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+            
+            # Opponent's turn
+            opponent_choice = randint(1, 4)
+            if (opponent_choice == 1): 
+                damage = (randint(4, 8) + self.opponent_pet_stats["strength"] // 3) * 300
+                self.player_health -= damage 
+                print(f"{self.opponent_pet.name} attacks for {damage} damage! ⚔️")
+                
+            elif (opponent_choice == 2):  
+                defense_bonus = randint(1, 4) * 300
+                print(f"{self.opponent_pet.name} defends 🛡️!")
+                print(f"Damage reduction: {defense_bonus}")
+                
+            elif (opponent_choice == 3):  
+                if (self.current_round % 2 != 0):
+                    special_damage = (randint(8, 12) + self.opponent_pet_stats["strength"] // 2) * 600
+                    self.player_health -= special_damage 
+                    print(f"{self.opponent_pet.name} uses special move for {special_damage} damage ✨!")
+                else:
+                    print(Fore.RED + "\nOpponent's special moves are restricted on even rounds!")
+                
+            elif (opponent_choice == 4): 
+                heal_amount = randint(6, 10) * 500
+                self.opponent_health += heal_amount 
+                print(f"{self.opponent_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+
+            self.current_round += 1
+            
+            print(f"\n{self.player_pet.name} Health: {max(0, self.player_health)}")
+            print(f"{self.opponent_pet.name} Health: {max(0, self.opponent_health)}")
+            print(GARIS)
+            time.sleep(1)
+
+        if (self.opponent_health <= 0):
+            print(f"{self.opponent_pet.name} was defeated 🎉!")
+            self.player_won += 1
+            self.current_round += 1
+
+        if (self.player_health <= 0):
+            print(f"{self.player_pet.name} was defeated 🎉!")
+            self.opponent_won += 1
+
+        if (self.player_health <= 0 and self.opponent_health <= 0):
+            print(f"It's a draw! 🤺")
+        
+        battle_result = {
+            "player_health": max(0, self.player_health),
+            "opponent_health": max(0, self.opponent_health),
+            "player_won": (self.player_won > self.opponent_won),
+            "rounds_played": self.current_round
+        }
+        
+        return battle_result
+
+    def evaluate(self, answer):
+        battle_result = answer
+        player_won = battle_result.get("player_won", False)
+        player_health = battle_result.get("player_health", 0)
+        opponent_health = battle_result.get("opponent_health", 0)
+
+        evaluation = {
+            "victory": player_won,
+            "player_health_remaining": player_health,
+            "opponent_health_remaining": opponent_health,
+            "performance_score": min(100, (player_health * 3) + (50 if player_won else 0)),
+            "battle_ended": (player_health <= 0 or opponent_health <= 0)
+        }
+        
+        return evaluation
+    
+    def reward(self, result):
+        victory = bool(result.get("victory", False))
+        performance_score = int(result.get("performance_score", 0))
+        player_health_remaining = int(result.get("player_health_remaining", 0))
+        
+        coins = 0
+        pet_happiness = 0
+        
+        if (victory):
+            coins = 20 + (performance_score // 10)
+            pet_happiness = 15 + (player_health_remaining // 5)
+            print(Fore.GREEN + f"🎉 VICTORY! {self.player_pet.name} won the battle!")
+        else:
+            coins = 5 + (performance_score // 20)
+            pet_happiness = 5 + (player_health_remaining // 10)
+            print(Fore.RED + f"💔 Defeat... {self.player_pet.name} was defeated.")
+        
+        print("\n" + GARIS)
+        print("BATTLE RESULTS")
+        print(GARIS)
+        print(f"Performance Score: {performance_score}/100")
+        print(f"Health Remaining: {player_health_remaining}")
+        print(f"Coins Earned: {'{:,}'.format(coins * 1000)}")
+        print(f"Pet Happiness: (+{pet_happiness})")
+        print(GARIS)
+        
+        return {"currency": coins, "pet_happiness": pet_happiness}
+
+    def play(self, player, pet):
+        res = self.setup(player, pet)
+        if (res):
+            self.build_question()
+            battle_result = self.build_game()
+            evaluation = self.evaluate(battle_result)
+            return self.reward(evaluation)
+    
 class MinigameEngine:
     def __init__(self):
         self._games = {}
@@ -577,4 +790,5 @@ def engine() -> MinigameEngine:
     engine.register(MathQuiz())
     engine.register(TicTacToe())
     engine.register(MemoryMatch())
+    engine.register(BattleContest())
     return engine
