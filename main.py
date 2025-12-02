@@ -5,6 +5,9 @@ import sys
 from features.formatter import GARIS
 from features.minigame import engine
 import os
+from typing import Dict, Any
+import datetime
+from features. save_manager import SaveManager
 import asyncio
 from colorama import Fore, init
 
@@ -21,6 +24,67 @@ class Main:
         self.game = Game()           
         self.current_user = User.current_user
         self._minigame_engine = engine()
+        self.save_manager = SaveManager.get_instance()  
+        self._load_all_users_from_saves()
+    
+    def _load_all_users_from_saves(self):
+        all_saves = self.save_manager._load_all_saves()
+        
+        for username, save_data in all_saves.items():
+            if username not in User.users:
+                user_data = save_data. get('user', {})
+                password_hash = user_data.get('password', '')
+                
+                user = User(username, password_hash)
+                
+                user.restore_from_memento(user_data)
+                
+                User.users[username] = user
+                
+    def _get_current_game_state(self) -> Dict[str, Any]:
+        """Get current game state for saving."""
+        if not self.current_user:
+            return {}
+        
+        user_data = self.current_user.create_memento()
+        
+        return {
+            'user': user_data,
+            'game': {
+                'day': self.game.day,
+                'spend': self.game.spend,
+                'clock': self.game.clock
+            }
+        }
+    
+    def _save_game(self) -> bool:
+        """Save current game state."""
+        print(f"🔍 DEBUG: Attempting to save for user: {self.current_user.username if self.current_user else 'None'}")  # ← ADD THIS
+        if not self.current_user:
+            print(Fore.RED + "\nNo user logged in!\n")
+            return False
+        
+        game_state = self._get_current_game_state()
+        return self.save_manager.save_game(self.current_user. username, game_state)
+    
+    def _load_game(self, username: str) -> bool:
+        """Load saved game state for user."""
+        game_state = self. save_manager.load_game(username)
+        
+        if not game_state:
+            return False
+        
+        # Restore user state
+        user_data = game_state.get('user', {})
+        self.current_user. restore_from_memento(user_data)
+        
+        # Restore game state
+        game_data = game_state.get('game', {})
+        self.game.day = game_data.get('day', 0)
+        self.game.spend = game_data.get('spend', 0)
+        self. game.clock = game_data. get('clock', datetime.datetime.now().hour)
+        
+        return True
 
     def _show_account_info(self, user: User) -> bool:
         while True:
@@ -38,6 +102,7 @@ class Main:
                 "\nWould you like to show your password? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "
             ).capitalize().strip()
+            clear()
 
             if show_password == "Y":
                 print(self.game.format.format_username_box(
@@ -151,6 +216,7 @@ class Main:
                 "Would you like to register again? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "
             ).capitalize().strip()
+            clear()
             if retry == "Y":
                 print("\n")
                 clear()
@@ -160,12 +226,19 @@ class Main:
 
     def _login_flow(self) -> None:
         while True:
-            username = input(INPUT_USERNAME).strip()
+            username = input(INPUT_USERNAME). strip()
             password = input(INPUT_PASSWORD).strip()
             auth = User.login(username, password)
             
             if auth is not None:
                 self.current_user = User.current_user
+                
+                print("\n💾 Checking for saved game...")
+                if self._load_game(username):
+                    print(Fore.GREEN + "✅ Previous game loaded!\n")
+                else:
+                    print(Fore. YELLOW + "ℹ️ Starting fresh game.\n")
+                
                 break
 
             print(GARIS)
@@ -173,6 +246,7 @@ class Main:
                 "Would you like to login again? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "
             ).capitalize().strip()
+            clear()
             if retry == "Y":
                 print("\n")
                 continue
@@ -180,6 +254,10 @@ class Main:
             break
     
     def _logout_flow(self) -> None:
+        if self.current_user:
+            print("\n💾 Saving your game...")
+            self._save_game()
+        
         User._logout()
         self.current_user = User.current_user
         asyncio.run(loading())
@@ -187,7 +265,7 @@ class Main:
 
     def _change_password_flow(self) -> None:
         while True:
-            username = input(INPUT_USERNAME). strip()
+            username = input(INPUT_USERNAME).strip()
             password = input(INPUT_PASSWORD).strip()
             new_password = input("Your New Password: ").strip()
             
@@ -197,7 +275,7 @@ class Main:
                     break
                 continue
             
-            user = User. users[username]
+            user = User.users[username]
             if self._is_valid_new_password(new_password, password):
                 user.password = new_password
                 print(Fore.GREEN + "\nPassword has been changed!\n" + Fore.RESET)
@@ -216,7 +294,7 @@ class Main:
             return False
         
         user = User.users[username]
-        if password != user.password:
+        if not User._check_password(password, user.password):
             print(Fore.RED + "\nWrong Previous Password!\n")
             return False
         
@@ -224,7 +302,7 @@ class Main:
 
     def _is_valid_new_password(self, new_password: str, old_password: str) -> bool:
         """Check if new password is valid (not used before and different from old)."""
-        users_password = [user_id. password for user_id in User. users.values()]
+        users_password = [user_id.password for user_id in User.users.values()]
         
         if new_password in users_password or new_password == old_password:
             print(Fore.RED + "\nPassword has been used / same as previous password!\n")
@@ -238,7 +316,7 @@ class Main:
             f"Would you like {action} again? (Y/N)\n"
             "(Note: input other than Y and N will be considered as N): "
         ).capitalize(). strip()
-        
+        clear()
         if retry == "Y":
             print("\n")
             asyncio.run(loading())
@@ -294,7 +372,7 @@ class Main:
 
     def _select_pet_for_minigame(self) -> object | None:
         """Let user select a pet for the minigame."""
-        if not self.current_user. pets:
+        if not self.current_user.pets:
             print(Fore. RED + "\nPlease create a pet first!")
             return None
         
@@ -305,7 +383,7 @@ class Main:
                 age = getattr(p, "get_age", lambda: 0)()
             except Exception:
                 age = 0
-            print(f"{i}.  {p.name} ({getattr(p, 'type', 'pet')}) - Age: {age:. 1f}")
+            print(f"{i}. {p.name} ({getattr(p, 'type', 'pet')}) - Age: {age:.1f}")
         print(GARIS)
         
         try:
@@ -353,6 +431,10 @@ class Main:
             pass
 
     def _exit_game(self) -> None:
+        if self.current_user:
+            print("\n💾 Saving your game before exit...")
+            self._save_game()
+        
         print(GARIS)
         sys.exit("Thank you for playing!\n")
 
@@ -371,18 +453,19 @@ class Main:
 
     def _pet_zone_menu(self) -> int | None:
         print(Fore.CYAN + "─" * 43 + " " + "PET ZONE" + " " + "─" * 48)
-        print(Fore.YELLOW + "1. Check time")
-        print(Fore.YELLOW + "2. Show account info")
-        print(Fore.YELLOW + "3. Create a new pet")
+        print(Fore. YELLOW + "1. Check time")
+        print(Fore. YELLOW + "2. Show account info")
+        print(Fore. YELLOW + "3. Create a new pet")
         print(Fore.YELLOW + "4. Interact with pet")
         print(Fore.YELLOW + "5. Pet stats")
-        print(Fore.YELLOW + "6. Show Pets")
-        print(Fore.YELLOW + "7. Go to shop")
-        print(Fore.YELLOW + "8. Play Minigames")
-        print(Fore.RED + "9. Logout")
-        print(Fore.MAGENTA + GARIS)
+        print(Fore. YELLOW + "6. Show Pets")
+        print(Fore. YELLOW + "7. Go to shop")
+        print(Fore. YELLOW + "8. Play Minigames")
+        print(Fore. GREEN + "9. 💾 Save Game")  
+        print(Fore. RED + "10. Logout")
+        print(Fore. MAGENTA + GARIS)
         try:
-            return int(input(Fore.GREEN + "Choose (1-8): " + Fore.RESET).strip())
+            return int(input(Fore.GREEN + "Choose (1-10): " + Fore.RESET).strip())
         except ValueError:
             print(Fore.RED + "\nPlease insert digit at choice input!\n")
             return None
@@ -448,17 +531,18 @@ class Main:
         handlers = {
             1: lambda: self._show_time_and_days(),
             2: lambda: self._show_account_info(self.current_user),
-            3: lambda: self.create_pet(),
+            3: lambda: self. create_pet(),
             4: lambda: self._interact_with_selected_pet(),
             5: lambda: self._show_selected_pet_stats(),
             6: lambda: asyncio.run(self._show_pet_stage()),
             7: lambda: self._go_to_shop(),
             8: lambda: self._play_minigame_flow(),
-            9: lambda: self._logout_flow()
+            9: lambda: self._save_game(),  
+            10: lambda: self._logout_flow()  
         }
         handler = handlers.get(choice, lambda: self._invalid_pet_zone_choice())
         result = handler()
-        self.time_spend()
+        self. time_spend()
         if (result):
             return bool(result)
         else:

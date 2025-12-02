@@ -6,6 +6,10 @@ from .user import User
 import asyncio
 from colorama import Fore, init
 init(autoreset=True)
+import os
+
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 OUT_OF_STOCK = "Out of Stock"
 
@@ -193,6 +197,7 @@ class Shop:
     def interact(self) -> None:
         print("\n🐼 : Hi, I'm Po Ping. I'll be your shopping assistant for today!")
         asyncio.run(loading())
+        clear()
         while True:
             print("\n🐼 : Here's list of options you can do!")
             # There will also be a sell item menu in here soon!
