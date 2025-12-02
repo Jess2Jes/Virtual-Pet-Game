@@ -59,7 +59,7 @@ class Main:
     def create_pet(self) -> bool:
         if not self.current_user:
             print(Fore.YELLOW + "\nPlease login or register first.\n")
-            return True
+            return False
 
         flag = self.game.create()
 
@@ -67,10 +67,10 @@ class Main:
             new_pet = self.game.animal_list[-1]  
             self.current_user.add_pet(new_pet)
             print(Fore.GREEN + f"\nYou adopted {new_pet.name} the {new_pet.type} {new_pet.emoji}!\n")
-        else:
-            print(Fore.RED + "Pet creation failed.\n")
+            return True
         
-        return True
+        print(Fore.RED + "Pet creation failed.\n")
+        return False
 
     def select_pet(self) -> bool | object:
         if not self.current_user:
@@ -419,7 +419,7 @@ class Main:
             if choice is None:
                 continue
             result = self._handle_pet_zone_choice(choice)
-            if not result is None:
+            if result is not None:
                 if not result:
                     break
                 else:
