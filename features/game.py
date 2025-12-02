@@ -46,7 +46,7 @@ class Game:
     def get_currency(user: User) -> int:
         return user.currency
     
-    def create_name(self) -> str:
+    def create_name(self) -> tuple[bool, str, str]:
         print(Fore.RESET + "\n" + GARIS)
         name = input("Name your pet: ").title().strip()
         flag, species = self.create_species(name)
@@ -411,9 +411,13 @@ class Game:
         
         if not self.conversations:
             print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I'm all out of topics right now! Sorry!")
-            return True
+            return False
         
         music_questions = [q for q in self.conversations if q["type"] == "Music Taste"]
+        
+        if not music_questions:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I don't have any music topics right now! Sorry!")
+            return False
         
         while True:
             random_music_topics = ch(music_questions)
@@ -475,9 +479,13 @@ class Game:
 
         if not self.conversations:
             print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I'm all out of topics right now! Sorry!")
-            return True
+            return False
         
         food_questions = [q for q in self.conversations if q["type"] == "Favourite Food/Drink"]
+        
+        if not food_questions:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I don't have any food topics right now! Sorry!")
+            return False
         
         while True:
             random_food_topics = ch(food_questions)

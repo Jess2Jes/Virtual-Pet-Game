@@ -705,7 +705,7 @@ class BattleContest(MinigameStrategy):
             self.opponent_won += 1
 
         if (self.player_health <= 0 and self.opponent_health <= 0):
-            print(f"It's a draw! 🤺")
+            print("It's a draw! 🤺")
         
         battle_result = {
             "player_health": max(0, self.player_health),
