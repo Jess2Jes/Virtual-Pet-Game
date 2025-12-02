@@ -470,7 +470,7 @@ class Game:
 
     def _handle_option_type(self, pet: VirtualPet, user: User, topic: dict, ans: str) -> None:
         """Handle music topics with option choices (e.g., Spotify usage)."""
-        first_option = topic. get("option")[0]
+        first_option = topic.get("option")[0]
         is_first_option = ans == first_option
         is_valid_option = ans in topic["option"]
         
@@ -501,51 +501,59 @@ class Game:
         food_questions = [q for q in self.conversations if q["type"] == "Favourite Food/Drink"]
         
         if not food_questions:
-            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I don't have any food topics right now! Sorry!")
+            print(Fore.CYAN + f"\n{pet.name} {pet. emoji} : I don't have any food topics right now! Sorry!")
             return False
         
-        while True:
-            random_food_topics = ch(food_questions)
-            
-            if (random_food_topics not in self.topics_used):
-                self.topics_used.append(random_food_topics)
-                break
-
-            if (all(food in self.topics_used for food in food_questions)):
-                break
+        random_food_topics = self._select_unused_topic(food_questions)
         
-        ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_food_topics.get("question","")}\n" + Fore.RESET).lower().strip()
+        ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_food_topics.get('question','')}\n" + Fore.RESET).lower().strip()
 
-        if (random_food_topics.get("option") is not None):
-
-            flag = True if ans == random_food_topics.get("option")[0] else False
-
-            if (ans in random_food_topics["option"] and random_food_topics.get("option")[0] == "sweet" and flag):
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Owh, so you like sweet. I think you'd love Belgian Chocolate!") 
-                User.current_user.food["Like_Sweet_Salty"] = ans
-            
-            elif (ans in random_food_topics["option"] and random_food_topics.get("option")[0] == "sweet" and not flag):
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Owh, so you like salty food. I think you'd love Egg and Toast!") 
-                User.current_user.food["Like_Sweet_Salty"] = ans
-
-            elif (ans in random_food_topics["option"] and random_food_topics.get("option")[0] == "y" and not flag):
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Well, International Food also tastes better!")
-                User.current_user.food["Inter_Trad_Food"] = ans
-            
-            elif (ans in random_food_topics["option"] and random_food_topics.get("option")[0] == "y" and flag):
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Our own country food is the best! I will give it a five star ⭐!")
-                User.current_user.food["Inter_Trad_Food"] = ans
-
+        if random_food_topics.get("option") is not None:
+            self._handle_food_option_type(pet, user, random_food_topics, ans)
         else:
-            if ("What is your favorite food?" in random_food_topics.get("question")):
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : That's great! My favourite food is {pet.fav_food}!")
-                User.current_user.food["Fav_Food"] = ans
-            else:
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I'm glad to hear that! Thanks for sharing.")
-            
-        # --- In the future update, pet will remember its owner's fav food ---
-
+            self._handle_food_free_response(pet, user, random_food_topics, ans)
+        
         return True
+
+    def _handle_food_option_type(self, pet: VirtualPet, user: User, topic: dict, ans: str) -> None:
+        """Handle food topics with option choices (sweet/salty, traditional/international)."""
+        first_option = topic.get("option")[0]
+        is_first_option = ans == first_option
+        is_valid_option = ans in topic["option"]
+        
+        if not is_valid_option:
+            return
+        
+        if first_option == "sweet":
+            self._handle_sweet_salty_preference(pet, ans, is_first_option)
+        elif first_option == "y":
+            self._handle_food_origin_preference(pet, ans, is_first_option)
+
+    def _handle_sweet_salty_preference(self, pet: VirtualPet, ans: str, is_sweet: bool) -> None:
+        """Handle sweet vs salty food preference."""
+        if is_sweet:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Owh, so you like sweet. I think you'd love Belgian Chocolate! ") 
+            User.current_user.food["Like_Sweet_Salty"] = ans
+        else:
+            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : Owh, so you like salty food. I think you'd love Egg and Toast!") 
+            User.current_user. food["Like_Sweet_Salty"] = ans
+
+    def _handle_food_origin_preference(self, pet: VirtualPet, ans: str, is_traditional: bool) -> None:
+        """Handle traditional vs international food preference."""
+        if is_traditional:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Our own country food is the best! I will give it a five star ⭐!")
+            User.current_user.food["Inter_Trad_Food"] = ans
+        else:
+            print(Fore.CYAN + f"\n{pet.name} {pet. emoji} : Well, International Food also tastes better!")
+            User.current_user. food["Inter_Trad_Food"] = ans
+
+    def _handle_food_free_response(self, pet: VirtualPet, user: User, topic: dict, ans: str) -> None:
+        """Handle free-form food responses."""
+        if "What is your favorite food?" in topic. get("question", ""):
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : That's great! My favourite food is {pet.fav_food}!")
+            User.current_user.food["Fav_Food"] = ans
+        else:
+            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : I'm glad to hear that!  Thanks for sharing.")
     
     def _end_topic(self, pet: VirtualPet, user: User) -> None:
         print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Okay, I have gotten to know you more, thanks for sharing yours!")
