@@ -187,39 +187,66 @@ class Main:
 
     def _change_password_flow(self) -> None:
         while True:
-            username = input(INPUT_USERNAME).strip()
+            username = input(INPUT_USERNAME). strip()
             password = input(INPUT_PASSWORD).strip()
             new_password = input("Your New Password: ").strip()
             
-            if username in User.users:
-                user = User.users[username]
-                if password != user.password:
-                    print(Fore.RED + "\nWrong Previous Password!\n")
-                else:
-                    users_password = [user_id.password for user_id in User.users.values()]
-                    if new_password not in users_password and new_password != password:
-                        user.password = new_password  
-                        print(Fore.GREEN + "\nPassword has been changed!\n" + Fore.RESET)
-                        input(Fore.YELLOW + "Press Enter to continue...")
-                        clear()
-                        break
-                    else:
-                        print(Fore.RED + "\nPassword has been used / same as previous password!\n")
-            else:
-                print(Fore.RED + "\nPlease create your own username/password first!\n")
-
-            print(GARIS)
-            retry = input(
-                "Would you like change password again? (Y/N)\n"
-                "(Note: input other than Y and N will be considered as N): "
-            ).capitalize().strip()
-            if retry == "Y":
-                print("\n")
-                asyncio.run(loading())
-                clear()
+            if not self._validate_user_credentials(username, password):
+                print(GARIS)
+                if not self._retry_prompt("change password"):
+                    break
                 continue
+            
+            user = User. users[username]
+            if self._is_valid_new_password(new_password, password):
+                user.password = new_password
+                print(Fore.GREEN + "\nPassword has been changed!\n" + Fore.RESET)
+                input(Fore.YELLOW + "Press Enter to continue...")
+                clear()
+                break
+            
+            print(GARIS)
+            if not self._retry_prompt("change password"):
+                break
+
+    def _validate_user_credentials(self, username: str, password: str) -> bool:
+        """Validate if username exists and password is correct."""
+        if username not in User.users:
+            print(Fore.RED + "\nPlease create your own username/password first!\n")
+            return False
+        
+        user = User.users[username]
+        if password != user.password:
+            print(Fore.RED + "\nWrong Previous Password!\n")
+            return False
+        
+        return True
+
+    def _is_valid_new_password(self, new_password: str, old_password: str) -> bool:
+        """Check if new password is valid (not used before and different from old)."""
+        users_password = [user_id. password for user_id in User. users.values()]
+        
+        if new_password in users_password or new_password == old_password:
+            print(Fore.RED + "\nPassword has been used / same as previous password!\n")
+            return False
+        
+        return True
+
+    def _retry_prompt(self, action: str) -> bool:
+        """Ask user if they want to retry an action."""
+        retry = input(
+            f"Would you like {action} again? (Y/N)\n"
+            "(Note: input other than Y and N will be considered as N): "
+        ).capitalize(). strip()
+        
+        if retry == "Y":
             print("\n")
-            break
+            asyncio.run(loading())
+            clear()
+            return True
+        
+        print("\n")
+        return False
 
     def _play_minigame_flow(self) -> bool:
         games = self._minigame_engine.list_games()
@@ -227,71 +254,103 @@ class Main:
             print("\nNo minigames available.\n")
             return False
 
+        idx = self._get_minigame_choice(games)
+        if idx is None:
+            return False
+        
+        if idx == 4 and len(User.users) < 2:
+            print(Fore. RED + "\nNo other players available right now!")
+            return True
+
+        mg_name = games[idx - 1]
+        pet = self._select_pet_for_minigame()
+        
+        if pet is None:
+            return True
+        
+        self._execute_minigame(mg_name, pet)
+        return True
+
+    def _get_minigame_choice(self, games: list) -> int | None:
+        """Display minigame menu and get user's choice."""
         print("\n" + GARIS)
         print("Minigames: ")
         print(GARIS)
         for i, name in enumerate(games, start=1):
             print(f"{i}. --> {name}")
         print(GARIS)
+        
         try:
             idx = int(input("Choose a minigame number: ").strip())
         except Exception:
             print("Invalid choice.")
-            return False
+            return None
+        
         if not (1 <= idx <= len(games)):
             print("Invalid choice.")
-            return False
+            return None
         
-        if (idx == 4 and len(User.users) < 2):
-            print(Fore.RED + "\nNo other players available right now!")
-            return True
+        return idx
 
-        mg_name = games[idx - 1]
-
-        pet = None
-        if (self.current_user.pets):
-            print(GARIS)
-            print("\nYour pets:")
-            for i, p in enumerate(self.current_user.pets, start=1):
-                try:
-                    age = getattr(p, "get_age", lambda: 0)()
-                except Exception:
-                    age = 0
-                print(f"{i}. {p.name} ({getattr(p, 'type', 'pet')}) - Age: {age:.1f}")
-            print(GARIS)
+    def _select_pet_for_minigame(self) -> object | None:
+        """Let user select a pet for the minigame."""
+        if not self.current_user. pets:
+            print(Fore. RED + "\nPlease create a pet first!")
+            return None
+        
+        print(GARIS)
+        print("\nYour pets:")
+        for i, p in enumerate(self.current_user.pets, start=1):
             try:
-                choice = int(input("Choose pet number: ").strip())
+                age = getattr(p, "get_age", lambda: 0)()
             except Exception:
-                print("Invalid!")
-                return False
-            if (choice != 0):
-                if not (1 <= choice <= len(self.current_user.pets)):
-                    print("Invalid pet selection!")
-                    return False
-                pet = self.current_user.pets[choice - 1]
-        else:
-            print(Fore.RED + "\nPlease create a pet first!")
-            return True
-
-        result = self._minigame_engine.play(mg_name, self.current_user, pet)
+                age = 0
+            print(f"{i}.  {p.name} ({getattr(p, 'type', 'pet')}) - Age: {age:. 1f}")
+        print(GARIS)
         
-        if (result):
-            coins = int(result.get("currency", 0))
-            pet_happy = int(result.get("pet_happiness", 0))
+        try:
+            choice = int(input("Choose pet number: ").strip())
+        except Exception:
+            print("Invalid!")
+            return None
+        
+        if choice == 0 or not (1 <= choice <= len(self.current_user.pets)):
+            print("Invalid pet selection!")
+            return None
+        
+        return self.current_user.pets[choice - 1]
 
-            if (coins):
-                self.current_user.currency += coins
-                self.current_user.limit_currency()
-                print(Fore.GREEN + f"\nYou received Rp. {'{:,}'.format(coins * 1000)}!\n")
+    def _execute_minigame(self, game_name: str, pet: object) -> None:
+        """Execute the minigame and award rewards."""
+        result = self._minigame_engine.play(game_name, self.current_user, pet)
+        
+        if not result:
+            return
+        
+        coins = int(result. get("currency", 0))
+        pet_happy = int(result.get("pet_happiness", 0))
+        
+        if coins:
+            self._award_currency(coins)
+        
+        if pet and pet_happy:
+            self._award_pet_happiness(pet, pet_happy)
 
-            if (pet and pet_happy):
-                try:
-                    if hasattr(pet, "happiness"):
-                        happiness_increase = min(100, getattr(pet, "happiness", 0) + pet_happy)
-                        pet.happiness += happiness_increase
-                except Exception:
-                    pass
+    def _award_currency(self, coins: int) -> None:
+        """Award currency to the current user."""
+        self.current_user.currency += coins
+        self.current_user.limit_currency()
+        print(Fore.GREEN + f"\nYou received Rp.  {'{:,}'.format(coins * 1000)}!\n")
+
+    def _award_pet_happiness(self, pet: object, happiness: int) -> None:
+        """Award happiness to the pet."""
+        try:
+            if hasattr(pet, "happiness"):
+                happiness_increase = min(100, getattr(pet, "happiness", 0) + happiness)
+                pet.happiness += happiness_increase
                 print(Fore.GREEN + f"{pet.name}'s happiness has increased by {happiness_increase}.\n")
+        except Exception:
+            pass
 
     def _exit_game(self) -> None:
         print(GARIS)
