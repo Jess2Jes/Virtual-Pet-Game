@@ -264,36 +264,60 @@ class TicTacToe(MinigameStrategy):
     
     def check_winner(self):
         counts = {}
+        
+        # Check all four directions
+        self._check_horizontal_wins(counts)
+        self._check_vertical_wins(counts)
+        self._check_diagonal_wins(counts)
+        self._check_anti_diagonal_wins(counts)
+        
+        return counts
 
-        ## checks for horizontal mark
+    def _check_horizontal_wins(self, counts: dict) -> None:
+        """Check for horizontal winning sequences."""
         for row in range(self.row_length):
             for col in range(self.row_length - self.win_length + 1):
                 first = self.board[row][col]
-                if (first != " ") and (all(self.board[row][col + offset] == first for offset in range(self.win_length))):
+                if self._is_winning_sequence(row, col, 0, 1, first):
                     counts[first] = counts.get(first, 0) + 1
-        
-        ## checks for vertical mark
+
+    def _check_vertical_wins(self, counts: dict) -> None:
+        """Check for vertical winning sequences."""
         for col in range(self.row_length):
             for row in range(self.row_length - self.win_length + 1):
                 first = self.board[row][col]
-                if (first != " ") and (all(self.board[row + offset][col] == first for offset in range(self.win_length))):
+                if self._is_winning_sequence(row, col, 1, 0, first):
                     counts[first] = counts.get(first, 0) + 1
-        
-        ## checks for diagonal mark
-        for row in range(self.row_length - self.win_length + 1):
-            for col in range(self.row_length - self.win_length + 1):
+
+    def _check_diagonal_wins(self, counts: dict) -> None:
+        """Check for diagonal winning sequences (top-left to bottom-right)."""
+        for row in range(self.row_length - self. win_length + 1):
+            for col in range(self. row_length - self.win_length + 1):
                 first = self.board[row][col]
-                if (first != " ") and (all(self.board[row + offset][col + offset] == first for offset in range(self.win_length))):
+                if self._is_winning_sequence(row, col, 1, 1, first):
                     counts[first] = counts.get(first, 0) + 1
-        
-        ## checks for anti-diagonal mark
-        for row in range(self.row_length - self.win_length + 1):
-            for col in range(self.win_length - 1, self.col_length):
+
+    def _check_anti_diagonal_wins(self, counts: dict) -> None:
+        """Check for anti-diagonal winning sequences (top-right to bottom-left)."""
+        for row in range(self.row_length - self. win_length + 1):
+            for col in range(self. win_length - 1, self.col_length):
                 first = self.board[row][col]
-                if (first != " ") and (all(self.board[row + offset][col - offset] == first for offset in range(self.win_length))):
+                if self._is_winning_sequence(row, col, 1, -1, first):
                     counts[first] = counts.get(first, 0) + 1
+
+    def _is_winning_sequence(self, start_row: int, start_col: int, 
+                            row_delta: int, col_delta: int, mark: str) -> bool:
+        """Check if there's a winning sequence starting from given position."""
+        if mark == " ":
+            return False
         
-        return counts
+        for offset in range(self.win_length):
+            row = start_row + offset * row_delta
+            col = start_col + offset * col_delta
+            if self.board[row][col] != mark:
+                return False
+        
+        return True
             
     def make_move(self, row, col, mark):
         if (0 <= row < self.row_length) and (0 <= col < self.col_length) and (self.board[row][col] == " "):
@@ -365,33 +389,50 @@ class TicTacToe(MinigameStrategy):
     
     def build_game(self):
         player_turn = self.first
+        
         while True:
             self.render_board()
+            
             if player_turn:
-                move = None
-                while (move is None):
-                    move = self.player_move()
-                row, col = move
-                self.make_move(row, col, self.player_mark)
+                self._execute_player_turn()
             else:
-                row, col = self.pet_move()
-                self.make_move(row, col, self.pet_mark)
-                print(f"Pet placed '{self.pet_mark}' at at (row-{row + 1} col-{col + 1}).")
-
-            if (self.win_length <= 4 and self.row_length < 4):
-                if (self.check_winner()):
-                    self.render_board()
-                    self.winner = self.count_sequence()
-                    break
-            else:
-                if (not self.available_moves()):
-                    self.render_board()
-                    self.winner = self.count_sequence()
-                    break
-
+                self._execute_pet_turn()
+            
+            if self._check_game_over():
+                break
+            
             player_turn = not player_turn
         
         return {"winner": self.winner}
+
+    def _execute_player_turn(self) -> None:
+        """Handle the player's turn."""
+        move = None
+        while move is None:
+            move = self.player_move()
+        row, col = move
+        self.make_move(row, col, self.player_mark)
+
+    def _execute_pet_turn(self) -> None:
+        """Handle the pet's turn."""
+        row, col = self.pet_move()
+        self.make_move(row, col, self.pet_mark)
+        print(f"Pet placed '{self.pet_mark}' at at (row-{row + 1} col-{col + 1}).")
+
+    def _check_game_over(self) -> bool:
+        """Check if the game has ended and set the winner."""
+        if self. win_length <= 4 and self.row_length < 4:
+            if self.check_winner():
+                self.render_board()
+                self.winner = self.count_sequence()
+                return True
+        else:
+            if not self.available_moves():
+                self.render_board()
+                self.winner = self.count_sequence()
+                return True
+        
+        return False
     
     def evaluate(self, summary):
         winner = summary.get("winner")
@@ -634,78 +675,18 @@ class BattleContest(MinigameStrategy):
         time.sleep(2)
 
     def build_game(self) -> Any:
-
-        while (self.opponent_health > 0 and self.player_health > 0):
+        while self.opponent_health > 0 and self.player_health > 0:
             self.display_menu()
             player_choice = self.get_input()
             
-            # Player's turn
-            if (player_choice == 1):
-                damage = (randint(5, 10) + self.player_pet_stats["strength"] // 3) * 300
-                self.opponent_health -= damage
-                print(f"\n{self.player_pet.name} attacks for {damage} damage ⚔️!")
-                
-            elif (player_choice == 2): 
-                defense_bonus = randint(2, 5) * 300
-                print(f"\n{self.player_pet.name} defends 🛡️!")
-                print(f"Damage reduction: {defense_bonus}")
-                
-            elif (player_choice == 3): 
-                if (self.current_round % 2 == 0):
-                    special_damage = (randint(10, 15) + self.player_pet_stats["strength"] // 2) * 600
-                    self.opponent_health -= special_damage
-                    print(f"\n{self.player_pet.name} uses special move for {special_damage} damage ✨!")
-                else:
-                    print(Fore.RED + "\nSpecial moves are locked in odd rounds!")
-                
-            elif (player_choice == 4): 
-                heal_amount = randint(8, 12) * 500
-                self.player_health += heal_amount
-                print(f"\n{self.player_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+            self._execute_player_action(player_choice)
+            self._execute_opponent_action()
             
-            # Opponent's turn
-            opponent_choice = randint(1, 4)
-            if (opponent_choice == 1): 
-                damage = (randint(4, 8) + self.opponent_pet_stats["strength"] // 3) * 300
-                self.player_health -= damage 
-                print(f"{self.opponent_pet.name} attacks for {damage} damage! ⚔️")
-                
-            elif (opponent_choice == 2):  
-                defense_bonus = randint(1, 4) * 300
-                print(f"{self.opponent_pet.name} defends 🛡️!")
-                print(f"Damage reduction: {defense_bonus}")
-                
-            elif (opponent_choice == 3):  
-                if (self.current_round % 2 != 0):
-                    special_damage = (randint(8, 12) + self.opponent_pet_stats["strength"] // 2) * 600
-                    self.player_health -= special_damage 
-                    print(f"{self.opponent_pet.name} uses special move for {special_damage} damage ✨!")
-                else:
-                    print(Fore.RED + "\nOpponent's special moves are restricted on even rounds!")
-                
-            elif (opponent_choice == 4): 
-                heal_amount = randint(6, 10) * 500
-                self.opponent_health += heal_amount 
-                print(f"{self.opponent_pet.name} heals for {heal_amount} health ❤️‍🩹!")
-
+            self._display_health_status()
             self.current_round += 1
-            
-            print(f"\n{self.player_pet.name} Health: {max(0, self.player_health)}")
-            print(f"{self.opponent_pet.name} Health: {max(0, self.opponent_health)}")
-            print(GARIS)
             time.sleep(1)
-
-        if (self.opponent_health <= 0):
-            print(f"{self.opponent_pet.name} was defeated 🎉!")
-            self.player_won += 1
-            self.current_round += 1
-
-        if (self.player_health <= 0):
-            print(f"{self.player_pet.name} was defeated 🎉!")
-            self.opponent_won += 1
-
-        if (self.player_health <= 0 and self.opponent_health <= 0):
-            print("It's a draw! 🤺")
+        
+        self._determine_battle_outcome()
         
         battle_result = {
             "player_health": max(0, self.player_health),
@@ -715,6 +696,104 @@ class BattleContest(MinigameStrategy):
         }
         
         return battle_result
+
+    def _execute_player_action(self, choice: int) -> None:
+        """Execute the player's chosen action."""
+        if choice == 1:
+            self._player_attack()
+        elif choice == 2:
+            self._player_defend()
+        elif choice == 3:
+            self._player_special_move()
+        elif choice == 4:
+            self._player_heal()
+
+    def _execute_opponent_action(self) -> None:
+        """Execute the opponent's action."""
+        opponent_choice = randint(1, 4)
+        
+        if opponent_choice == 1:
+            self._opponent_attack()
+        elif opponent_choice == 2:
+            self._opponent_defend()
+        elif opponent_choice == 3:
+            self._opponent_special_move()
+        elif opponent_choice == 4:
+            self._opponent_heal()
+
+    def _player_attack(self) -> None:
+        """Player attacks the opponent."""
+        damage = (randint(5, 10) + self.player_pet_stats["strength"] // 3) * 300
+        self.opponent_health -= damage
+        print(f"\n{self.player_pet. name} attacks for {damage} damage ⚔️!")
+
+    def _player_defend(self) -> None:
+        """Player defends."""
+        defense_bonus = randint(2, 5) * 300
+        print(f"\n{self.player_pet.name} defends 🛡️!")
+        print(f"Damage reduction: {defense_bonus}")
+
+    def _player_special_move(self) -> None:
+        """Player uses special move (only on even rounds)."""
+        if self. current_round % 2 == 0:
+            special_damage = (randint(10, 15) + self.player_pet_stats["strength"] // 2) * 600
+            self.opponent_health -= special_damage
+            print(f"\n{self.player_pet.name} uses special move for {special_damage} damage ✨!")
+        else:
+            print(Fore.RED + "\nSpecial moves are locked in odd rounds!")
+
+    def _player_heal(self) -> None:
+        """Player heals."""
+        heal_amount = randint(8, 12) * 500
+        self.player_health += heal_amount
+        print(f"\n{self.player_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+
+    def _opponent_attack(self) -> None:
+        """Opponent attacks the player."""
+        damage = (randint(4, 8) + self.opponent_pet_stats["strength"] // 3) * 300
+        self.player_health -= damage
+        print(f"{self.opponent_pet.name} attacks for {damage} damage!  ⚔️")
+
+    def _opponent_defend(self) -> None:
+        """Opponent defends."""
+        defense_bonus = randint(1, 4) * 300
+        print(f"{self.opponent_pet. name} defends 🛡️!")
+        print(f"Damage reduction: {defense_bonus}")
+
+    def _opponent_special_move(self) -> None:
+        """Opponent uses special move (only on odd rounds)."""
+        if self. current_round % 2 != 0:
+            special_damage = (randint(8, 12) + self.opponent_pet_stats["strength"] // 2) * 600
+            self.player_health -= special_damage
+            print(f"{self.opponent_pet.name} uses special move for {special_damage} damage ✨!")
+        else:
+            print(Fore. RED + "\nOpponent's special moves are restricted on even rounds!")
+
+    def _opponent_heal(self) -> None:
+        """Opponent heals."""
+        heal_amount = randint(6, 10) * 500
+        self.opponent_health += heal_amount
+        print(f"{self.opponent_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+
+    def _display_health_status(self) -> None:
+        """Display current health for both pets."""
+        print(f"\n{self.player_pet.name} Health: {max(0, self.player_health)}")
+        print(f"{self.opponent_pet.name} Health: {max(0, self. opponent_health)}")
+        print(GARIS)
+
+    def _determine_battle_outcome(self) -> None:
+        """Determine and display the battle outcome."""
+        if self.opponent_health <= 0:
+            print(f"{self.opponent_pet.name} was defeated 🎉!")
+            self.player_won += 1
+            self.current_round += 1
+        
+        if self.player_health <= 0:
+            print(f"{self.player_pet.name} was defeated 🎉!")
+            self.opponent_won += 1
+        
+        if self.player_health <= 0 and self.opponent_health <= 0:
+            print("It's a draw! 🤺")
 
     def evaluate(self, answer):
         battle_result = answer
