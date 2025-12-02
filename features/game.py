@@ -410,70 +410,87 @@ class Game:
     def _music_topic(self, pet: VirtualPet, user: User) -> bool:
         
         if not self.conversations:
-            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I'm all out of topics right now! Sorry!")
+            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : I'm all out of topics right now! Sorry!")
             return False
         
         music_questions = [q for q in self.conversations if q["type"] == "Music Taste"]
         
         if not music_questions:
-            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I don't have any music topics right now! Sorry!")
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I don't have any music topics right now!  Sorry!")
             return False
         
-        while True:
-            random_music_topics = ch(music_questions)
-            
-            if (random_music_topics not in self.topics_used):
-                self.topics_used.append(random_music_topics)
-                break
-            
-            if (all(music in self.topics_used for music in music_questions)):
-                break
+        random_music_topics = self._select_unused_topic(music_questions)
         
-        ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_music_topics.get("question","")}\n" \
-                    f"{random_music_topics.get("choose","")}" + Fore.RESET).lower().strip()
+        ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_music_topics. get('question','')}\n" \
+                    f"{random_music_topics.get('choose','')}" + Fore.RESET). lower(). strip()
 
-        like_topic = False if "dislike" in random_music_topics.get("question") else True
+        like_topic = "dislike" not in random_music_topics.get("question", "")
 
-        if (random_music_topics.get("answer", None) is not None):
-
-            if (ans in random_music_topics["answer"] and like_topic):
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : So, that's your fav! Mine is {pet.music_taste}.")
-                User.current_user.music["Fav_Music"] = ans
-
-            elif (ans in random_music_topics["answer"] and not like_topic):
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : So, that's not your cup of tea, Mine is {pet.dislike_music}.")
-                User.current_user.music["Dislike_Music"] = ans
-
-            else:
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Not sure I've ever heard that genre, but thanks for telling me!")
-                User.current_user.music["Fav_Music" if like_topic else "Dislike_Music"] = ans
+        if random_music_topics.get("answer") is not None:
+            self._handle_answer_type(pet, user, random_music_topics, ans, like_topic)
         
-        elif (random_music_topics.get("option", None) is not None):
-
-            hear_spotify = True if ans == random_music_topics.get("option")[0] else False
-            
-            if (ans in random_music_topics["option"] and not hear_spotify):
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : You should try it now! They had added your fav music playlist there!") 
-                User.current_user.music["Have_Used_Spotify"] = True
-
-            else:
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Have you heard your new fav music playlist come out there? Go check it now!")
-                User.current_user.music["Have_Used_Spotify"] = False
+        elif random_music_topics.get("option") is not None:
+            self._handle_option_type(pet, user, random_music_topics, ans)
         
         else:
-            list_ans = [x.strip() for x in ans.split(",")]
-
-            if (len(list_ans) == 3):
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Owh! Mine is {", ".join(pet.songs)}.")
-                User.current_user.music["Fav_Songs"] = list_ans
-
-            else:
-                print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I agree too. That song almost break my heart.")
-                User.current_user.music["Fav_Lyrics"] = list_ans[0]
+            self._handle_list_type(pet, user, ans)
         
-        # --- In the future update, pet will remember its owner's fav music ---
-
         return True
+
+    def _select_unused_topic(self, questions: list) -> dict:
+        """Select a random topic that hasn't been used yet."""
+        while True:
+            random_topic = ch(questions)
+            
+            if random_topic not in self.topics_used:
+                self.topics_used.append(random_topic)
+                break
+            
+            if all(q in self.topics_used for q in questions):
+                break
+        
+        return random_topic
+
+    def _handle_answer_type(self, pet: VirtualPet, user: User, topic: dict, ans: str, like_topic: bool) -> None:
+        """Handle music topics with answer validation."""
+        is_valid_answer = ans in topic["answer"]
+        
+        if is_valid_answer and like_topic:
+            print(Fore. CYAN + f"\n{pet. name} {pet.emoji} : So, that's your fav!  Mine is {pet.music_taste}.")
+            User.current_user.music["Fav_Music"] = ans
+        
+        elif is_valid_answer and not like_topic:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : So, that's not your cup of tea, Mine is {pet.dislike_music}.")
+            User.current_user.music["Dislike_Music"] = ans
+        
+        else:
+            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : Not sure I've ever heard that genre, but thanks for telling me!")
+            key = "Fav_Music" if like_topic else "Dislike_Music"
+            User. current_user.music[key] = ans
+
+    def _handle_option_type(self, pet: VirtualPet, user: User, topic: dict, ans: str) -> None:
+        """Handle music topics with option choices (e.g., Spotify usage)."""
+        first_option = topic. get("option")[0]
+        is_first_option = ans == first_option
+        is_valid_option = ans in topic["option"]
+        
+        if is_valid_option and not is_first_option:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : You should try it now! They had added your fav music playlist there! ") 
+            User.current_user.music["Have_Used_Spotify"] = True
+        else:
+            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : Have you heard your new fav music playlist come out there?  Go check it now!")
+            User.current_user.music["Have_Used_Spotify"] = False
+
+    def _handle_list_type(self, pet: VirtualPet, user: User, ans: str) -> None:
+        """Handle music topics that expect list answers (songs or lyrics)."""
+        list_ans = [x. strip() for x in ans.split(",")]
+        
+        if len(list_ans) == 3:
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Owh!  Mine is {', '.join(pet.songs)}.")
+            User.current_user.music["Fav_Songs"] = list_ans
+        else:
+            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : I agree too.  That song almost break my heart.")
+            User.current_user.music["Fav_Lyrics"] = list_ans[0]
 
     def _food_topic(self, pet: VirtualPet, user: User) -> bool:
 
