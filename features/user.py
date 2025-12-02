@@ -55,7 +55,7 @@ class User:
     
     @staticmethod
     def _check_password(password: str, hashed: str) -> bool:
-        return bcrypt. checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+        return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
     @property
     def currency(self) -> int:
