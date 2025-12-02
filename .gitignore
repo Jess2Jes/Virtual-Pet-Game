@@ -1,6 +1,34 @@
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
+*$py.class
 *.so
+. Python
+env/
+venv/
+ENV/
+. venv
+
+# IDE
+.vscode/
+. idea/
+*.swp
+*. swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Game Save Files
+saves/
+*.json.bak
+*.save
+
+# Logs
+*.log
+
+# Distribution
+dist/
+build/
+*.egg-info/
