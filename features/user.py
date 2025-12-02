@@ -25,11 +25,11 @@ async def loading():
         TaskProgressColumn(),
         TimeRemainingColumn()
     )
-    task = progress.add_task("Loading.. .", total=100)
+    task = progress.add_task("Loading.. .", total=150)
     with progress:
-        for _ in range(100):
+        for _ in range(150):
             progress.update(task, advance=1)
-            await asyncio.sleep(0.012)
+            await asyncio.sleep(0.01)
 
 class User:
     users = {}

@@ -90,7 +90,6 @@ class Main:
         while True:
             stats = {
                 "username": user.username,
-                "password": user.password,
                 "pets": len(user.pets)
             }
 
@@ -98,18 +97,8 @@ class Main:
             print(Fore.YELLOW + "ACCOUNT INFORMATION".center(len(GARIS)) + Fore.RESET)
             print(GARIS)
 
-            show_password = input(
-                "\nWould you like to show your password? (Y/N)\n"
-                "(Note: input other than Y and N will be considered as N): "
-            ).capitalize().strip()
-            clear()
-
-            if show_password == "Y":
-                print(self.game.format.format_username_box(
-                    stats["username"], stats["password"], user.pets, False))
-            else:
-                print(self.game.format.format_username_box(
-                    stats["username"], stats["password"], user.pets, True))
+            print(self.game.format.format_username_box(
+                    stats["username"], user.pets))
 
             repeat = input("\nWould you like to view again? (Y/N): ").capitalize().strip()
             if repeat != "Y":
@@ -418,7 +407,7 @@ class Main:
         """Award currency to the current user."""
         self.current_user.currency += coins
         self.current_user.limit_currency()
-        print(Fore.GREEN + f"\nYou received Rp.  {'{:,}'.format(coins * 1000)}!\n")
+        print(Fore.GREEN + f"\nYou received Rp. {'{:,}'.format(coins * 1000)}!\n")
 
     def _award_pet_happiness(self, pet: object, happiness: int) -> None:
         """Award happiness to the pet."""

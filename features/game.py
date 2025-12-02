@@ -390,7 +390,7 @@ class Game:
             pet.generosity += 1
             return True  
 
-        print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Sorry, can't give you anymore... 😔")
+        print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Sorry, can't give you anymore... 😔\n")
         return False  
 
     
@@ -416,13 +416,13 @@ class Game:
         music_questions = [q for q in self.conversations if q["type"] == "Music Taste"]
         
         if not music_questions:
-            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I don't have any music topics right now!  Sorry!")
+            print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : I don't have any music topics right now! Sorry!")
             return False
         
         random_music_topics = self._select_unused_topic(music_questions)
         
         ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_music_topics. get('question','')}\n" \
-                    f"{random_music_topics.get('choose','')}" + Fore.RESET). lower(). strip()
+                    f"{random_music_topics.get('choose','')}" + Fore.RESET).lower().strip()
 
         like_topic = "dislike" not in random_music_topics.get("question", "")
 
@@ -456,7 +456,7 @@ class Game:
         is_valid_answer = ans in topic["answer"]
         
         if is_valid_answer and like_topic:
-            print(Fore. CYAN + f"\n{pet. name} {pet.emoji} : So, that's your fav!  Mine is {pet.music_taste}.")
+            print(Fore. CYAN + f"\n{pet. name} {pet.emoji} : So, that's your fav! Mine is {pet.music_taste}.")
             User.current_user.music["Fav_Music"] = ans
         
         elif is_valid_answer and not like_topic:
@@ -483,13 +483,13 @@ class Game:
 
     def _handle_list_type(self, pet: VirtualPet, user: User, ans: str) -> None:
         """Handle music topics that expect list answers (songs or lyrics)."""
-        list_ans = [x. strip() for x in ans.split(",")]
+        list_ans = [x.strip() for x in ans.split(",")]
         
         if len(list_ans) == 3:
             print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Owh!  Mine is {', '.join(pet.songs)}.")
             User.current_user.music["Fav_Songs"] = list_ans
         else:
-            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : I agree too.  That song almost break my heart.")
+            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : I agree too. That song almost break my heart.")
             User.current_user.music["Fav_Lyrics"] = list_ans[0]
 
     def _food_topic(self, pet: VirtualPet, user: User) -> bool:
@@ -553,7 +553,7 @@ class Game:
             print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : That's great! My favourite food is {pet.fav_food}!")
             User.current_user.food["Fav_Food"] = ans
         else:
-            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : I'm glad to hear that!  Thanks for sharing.")
+            print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : I'm glad to hear that! Thanks for sharing.")
     
     def _end_topic(self, pet: VirtualPet, user: User) -> None:
         print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Okay, I have gotten to know you more, thanks for sharing yours!")
