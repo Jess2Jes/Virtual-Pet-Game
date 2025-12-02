@@ -9,6 +9,8 @@ import os
 from .user import User
 from colorama import Fore, init
 
+init(autoreset=True)
+
 def clear():
     os.system("cls" if os.name == "nt" else "clear")
 
@@ -195,7 +197,7 @@ class TicTacToe(MinigameStrategy):
         self.winner = None
         self.difficulty = 1
         self.win_length = 3
-
+    
     def display_menu(self):
         print("\n" + GARIS)
         print("⭕ Tic Tac Toe ✖️")
@@ -227,8 +229,8 @@ class TicTacToe(MinigameStrategy):
             self.win_length = 4
         else:
             length = 5
-            self.win_length = 4
-
+            self.win_length = 3
+        
         self.row_length = length
         self.col_length = length
         self.board = [[" " for _ in range(self.col_length)] for _ in range(self.row_length)]
@@ -335,21 +337,150 @@ class TicTacToe(MinigameStrategy):
         return None
     
     def pet_move(self):
-        # Pet's trying to win the game
+
+        if (len(self.available_moves()) == self.row_length * self.col_length):
+            center = (self.row_length // 2, self.col_length // 2)
+            if (center in self.available_moves()):
+                return center
+            
+            corners = [(0,0), (0, self.col_length - 1), (self.row_length - 1, 0), (self.row_length - 1, self.col_length - 1)]
+            for corner in corners:
+                if (corner in self.available_moves()):
+                    return corner
+        
         win = self.winning_move(self.pet_mark)
         if (win):
             return win
-        # Block player's winning move
+        
         block = self.winning_move(self.player_mark)
         if (block):
             return block
+        
+        fork_move = self.fork_move(self.pet_mark)
+        if (fork_move):
+            return fork_move
+        
+        block_fork = self.fork_move(self.player_mark)
+        if (block_fork):
+            return block_fork
+        
         center = (self.row_length // 2, self.col_length // 2)
         if (center in self.available_moves()):
             return center
-        # Randomly select available move
-        moves = self.available_moves()
-        return choice(moves)
+        
+        corners = [(0,0), (0, self.col_length - 1), (self.row_length - 1, 0), (self.row_length - 1, self.col_length - 1)]
+        for corner in corners:
+            if (corner in self.available_moves()):
+                return corner
+            
+        if (self.row_length >= 4):
+            edges = []
+
+            for c in range(1, self.col_length - 1):
+                if ((0, c) in self.available_moves()):
+                    edges.append((0,c))
+                if ((self.row_length - 1, c) in self.available_moves()):
+                    edges.append((self.row_length - 1, c))
+
+            for r in range(1, self.row_length - 1):
+                if ((r, 0) in self.available_moves()):
+                    edges.append((r, 0))
+                if ((r, self.col_length - 1) in self.available_moves()):
+                    edges.append((r, self.col_length - 1))
+        
+            if (edges):
+                best_edge = self.best_edge(edges)
+                if (best_edge):
+                    return best_edge
+        
+        return choice(self.available_moves())
     
+    def fork_move(self, mark):
+        best_move = None
+        max_forks = 0
+
+        for move in self.available_moves():
+            self.board[move[0]][move[1]] = mark
+
+            fork_count = 0
+            for test_move in self.available_moves():
+                self.board[test_move[0]][test_move[1]] = mark
+                wins = self.check_winner()
+                
+                if (wins.get(mark, 0) > 0):
+                    fork_count += 1
+                
+                self.board[test_move[0]][test_move[1]] = " "
+            
+            self.board[move[0]][move[1]] = " "
+        
+            if (fork_count > max_forks):
+                max_forks = fork_count
+                best_move = move
+        
+        if (max_forks >= 2):
+            return best_move
+        
+        return None
+
+    def best_edge(self, edges):
+
+        if (self.row_length == 4):
+
+            best_score = -1
+            best_edge = None
+
+            for edge in edges:
+                row_distance = abs(edge[0] - (self.row_length // 2))
+                col_distance = abs(edge[0] - (self.col_length // 2))
+
+                score = 2 - (row_distance + col_distance)
+
+                self.board[edge[0]][edge[1]] = self.pet_mark
+                likely_wins = 0
+                
+                for test_move in self.available_moves():
+                    self.board[test_move[0]][test_move[1]] = self.pet_mark 
+                    wins = self.check_winner()
+                    
+                    if (wins.get(self.pet_mark, 0) > 0):
+                        likely_wins += 1
+                    self.board[test_move[0]][test_move[1]] = " "
+                
+                self.board[edge[0]][edge[1]] = " "
+
+                score += likely_wins * 0.5
+
+                if (score > best_score):
+                    best_score = score
+                    best_edge = edge
+        
+            return best_edge
+
+        elif (self.row_length == 5):
+            best_edge = None
+
+            for edge in edges:
+                self.board[edge[0]][edge[1]] = self.pet_mark
+                winning_move = self.winning_move(self.pet_mark)
+                self.board[edge[0]][edge[1]] = " "
+                
+                if (winning_move):
+                    return edge
+                
+                center_distance = float('inf')
+
+                for edge in edges:
+                    distance = abs(edge[0] - 2) + abs(edge[1] - 2)
+                    
+                    if (distance < center_distance):
+                        center_distance = distance
+                        best_edge = edge
+            
+            return best_edge
+        
+        return edges[0] if edges else None
+
     def player_move(self):
         print("\n" + GARIS)
         print("It's your turn! Pick your cell now!")
@@ -421,13 +552,15 @@ class TicTacToe(MinigameStrategy):
 
     def _check_game_over(self) -> bool:
         """Check if the game has ended and set the winner."""
-        if self. win_length <= 4 and self.row_length < 4:
+
+        if (self.win_length <= 4) and (self.row_length < 4):
             if self.check_winner():
                 self.render_board()
                 self.winner = self.count_sequence()
                 return True
-        else:
-            if not self.available_moves():
+            
+        if (self.row_length >= 3):
+            if (not self.available_moves()):
                 self.render_board()
                 self.winner = self.count_sequence()
                 return True
@@ -627,6 +760,10 @@ class BattleContest(MinigameStrategy):
             "strength": 25,
             "agility": 15
         }
+        self.player_heal_count = 0
+        self.player_heal_limit = 3
+        self.opponent_heal_count = 0
+        self.opponent_heal_limit = 5
         return True
     
     def display_menu(self):
@@ -682,7 +819,6 @@ class BattleContest(MinigameStrategy):
             self._execute_player_action(player_choice)
             self._execute_opponent_action()
             
-            self._display_health_status()
             self.current_round += 1
             time.sleep(1)
         
@@ -725,7 +861,7 @@ class BattleContest(MinigameStrategy):
         """Player attacks the opponent."""
         damage = (randint(5, 10) + self.player_pet_stats["strength"] // 3) * 300
         self.opponent_health -= damage
-        print(f"\n{self.player_pet. name} attacks for {damage} damage ⚔️!")
+        print(f"\n{self.player_pet.name} attacks for {damage} damage ⚔️!")
 
     def _player_defend(self) -> None:
         """Player defends."""
@@ -735,7 +871,7 @@ class BattleContest(MinigameStrategy):
 
     def _player_special_move(self) -> None:
         """Player uses special move (only on even rounds)."""
-        if self. current_round % 2 == 0:
+        if (self.current_round % 2 == 0):
             special_damage = (randint(10, 15) + self.player_pet_stats["strength"] // 2) * 600
             self.opponent_health -= special_damage
             print(f"\n{self.player_pet.name} uses special move for {special_damage} damage ✨!")
@@ -744,15 +880,19 @@ class BattleContest(MinigameStrategy):
 
     def _player_heal(self) -> None:
         """Player heals."""
-        heal_amount = randint(8, 12) * 500
-        self.player_health += heal_amount
-        print(f"\n{self.player_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+        if (self.player_heal_count < self.player_heal_limit):
+            heal_amount = randint(8, 12) * 500
+            self.player_health += heal_amount
+            print(f"\n{self.player_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+            self.player_heal_count += 1
+        else:
+            print(Fore.RED + "\nYou already healed 3 times!")
 
     def _opponent_attack(self) -> None:
         """Opponent attacks the player."""
         damage = (randint(4, 8) + self.opponent_pet_stats["strength"] // 3) * 300
         self.player_health -= damage
-        print(f"{self.opponent_pet.name} attacks for {damage} damage!  ⚔️")
+        print(f"{self.opponent_pet.name} attacks for {damage} damage ⚔️!")
 
     def _opponent_defend(self) -> None:
         """Opponent defends."""
@@ -762,7 +902,7 @@ class BattleContest(MinigameStrategy):
 
     def _opponent_special_move(self) -> None:
         """Opponent uses special move (only on odd rounds)."""
-        if self. current_round % 2 != 0:
+        if (self.current_round % 2 != 0):
             special_damage = (randint(8, 12) + self.opponent_pet_stats["strength"] // 2) * 600
             self.player_health -= special_damage
             print(f"{self.opponent_pet.name} uses special move for {special_damage} damage ✨!")
@@ -771,15 +911,13 @@ class BattleContest(MinigameStrategy):
 
     def _opponent_heal(self) -> None:
         """Opponent heals."""
-        heal_amount = randint(6, 10) * 500
-        self.opponent_health += heal_amount
-        print(f"{self.opponent_pet.name} heals for {heal_amount} health ❤️‍🩹!")
-
-    def _display_health_status(self) -> None:
-        """Display current health for both pets."""
-        print(f"\n{self.player_pet.name} Health: {max(0, self.player_health)}")
-        print(f"{self.opponent_pet.name} Health: {max(0, self. opponent_health)}")
-        print(GARIS)
+        if (self.opponent_heal_count < self.opponent_heal_limit):
+            heal_amount = randint(6, 10) * 500
+            self.opponent_health += heal_amount
+            print(f"{self.opponent_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+            self.opponent_heal_count += 1
+        else:
+            print(Fore. RED + "\nOpponent's healing ability are restricted to 5 times only!")
 
     def _determine_battle_outcome(self) -> None:
         """Determine and display the battle outcome."""

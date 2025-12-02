@@ -15,15 +15,13 @@ class Formatter:
         else:
             return text[:self.max_len - 3] + "..."
     
-    def format_username_box(self, username: str, password: str, pets: int, set: bool) -> str:
+    def format_username_box(self, username: str, pets: int) -> str:
 
         max_length = self.max_length
         
         lines = [
             self.truncate("USER STATUS"),
             self.truncate(f"Logged in as : {username}"),
-            self.truncate(f"Current Password : {'*' * len(password)}") if set == True else \
-            self.truncate(f"Current Password : {password}"),
             self.truncate(f"Number of pets: {len(pets)}")
         ]
 
