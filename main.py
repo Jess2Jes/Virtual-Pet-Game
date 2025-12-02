@@ -225,7 +225,7 @@ class Main:
         games = self._minigame_engine.list_games()
         if not games:
             print("\nNo minigames available.\n")
-            return
+            return False
 
         print("\n" + GARIS)
         print("Minigames: ")
@@ -237,10 +237,10 @@ class Main:
             idx = int(input("Choose a minigame number: ").strip())
         except Exception:
             print("Invalid choice.")
-            return
+            return False
         if not (1 <= idx <= len(games)):
             print("Invalid choice.")
-            return
+            return False
         
         if (idx == 4 and len(User.users) < 2):
             print(Fore.RED + "\nNo other players available right now!")
@@ -263,11 +263,11 @@ class Main:
                 choice = int(input("Choose pet number: ").strip())
             except Exception:
                 print("Invalid!")
-                return
+                return False
             if (choice != 0):
                 if not (1 <= choice <= len(self.current_user.pets)):
                     print("Invalid pet selection!")
-                    return
+                    return False
                 pet = self.current_user.pets[choice - 1]
         else:
             print(Fore.RED + "\nPlease create a pet first!")
