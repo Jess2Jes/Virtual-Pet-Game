@@ -267,7 +267,6 @@ class TicTacToe(MinigameStrategy):
     def check_winner(self):
         counts = {}
         
-        # Check all four directions
         self._check_horizontal_wins(counts)
         self._check_vertical_wins(counts)
         self._check_diagonal_wins(counts)
@@ -336,64 +335,84 @@ class TicTacToe(MinigameStrategy):
                 return row, col
         return None
     
+    def _center(self):
+        return (self.row_length // 2, self.col_length // 2)
+
+    def _corners(self):
+        return [
+            (0, 0),
+            (0, self.col_length - 1),
+            (self.row_length - 1, 0),
+            (self.row_length - 1, self.col_length - 1),
+        ]
+
+    def _first_available(self, positions, available_set):
+        for pos in positions:
+            if pos in available_set:
+                return pos
+        return None
+
+    def _edge_positions(self):
+        edges = []
+        for c in range(1, self.col_length - 1):
+            edges.append((0, c))
+            edges.append((self.row_length - 1, c))
+        for r in range(1, self.row_length - 1):
+            edges.append((r, 0))
+            edges.append((r, self.col_length - 1))
+        return edges
+
     def pet_move(self):
+        available = set(self.available_moves())
 
-        if (len(self.available_moves()) == self.row_length * self.col_length):
-            center = (self.row_length // 2, self.col_length // 2)
-            if (center in self.available_moves()):
+        if len(available) == self.row_length * self.col_length:
+            center = self._center()
+            if center in available:
                 return center
-            
-            corners = [(0,0), (0, self.col_length - 1), (self.row_length - 1, 0), (self.row_length - 1, self.col_length - 1)]
-            for corner in corners:
-                if (corner in self.available_moves()):
-                    return corner
-        
-        win = self.winning_move(self.pet_mark)
-        if (win):
-            return win
-        
-        block = self.winning_move(self.player_mark)
-        if (block):
-            return block
-        
-        fork_move = self.fork_move(self.pet_mark)
-        if (fork_move):
-            return fork_move
-        
-        block_fork = self.fork_move(self.player_mark)
-        if (block_fork):
-            return block_fork
-        
-        center = (self.row_length // 2, self.col_length // 2)
-        if (center in self.available_moves()):
-            return center
-        
-        corners = [(0,0), (0, self.col_length - 1), (self.row_length - 1, 0), (self.row_length - 1, self.col_length - 1)]
-        for corner in corners:
-            if (corner in self.available_moves()):
+            corner = self._first_available(self._corners(), available)
+            if corner:
                 return corner
-            
-        if (self.row_length >= 4):
-            edges = []
 
-            for c in range(1, self.col_length - 1):
-                if ((0, c) in self.available_moves()):
-                    edges.append((0,c))
-                if ((self.row_length - 1, c) in self.available_moves()):
-                    edges.append((self.row_length - 1, c))
+        # Win if possible
+        win = self.winning_move(self.pet_mark)
+        if win:
+            return win
 
-            for r in range(1, self.row_length - 1):
-                if ((r, 0) in self.available_moves()):
-                    edges.append((r, 0))
-                if ((r, self.col_length - 1) in self.available_moves()):
-                    edges.append((r, self.col_length - 1))
-        
-            if (edges):
+        # Block opponent win
+        block = self.winning_move(self.player_mark)
+        if block:
+            return block
+
+        # Create a fork if possible
+        fork_move = self.fork_move(self.pet_mark)
+        if fork_move:
+            return fork_move
+
+        # Block opponent fork
+        block_fork = self.fork_move(self.player_mark)
+        if block_fork:
+            return block_fork
+
+        # Take center if available
+        center = self._center()
+        if center in available:
+            return center
+
+        # Take a corner if available
+        corner = self._first_available(self._corners(), available)
+        if corner:
+            return corner
+
+        # On larger boards prefer the best edge
+        if self.row_length >= 4:
+            edges = [e for e in self._edge_positions() if e in available]
+            if edges:
                 best_edge = self.best_edge(edges)
-                if (best_edge):
+                if best_edge:
                     return best_edge
-        
-        return choice(self.available_moves())
+
+        # Fallback: random available move
+        return choice(list(available))
     
     def fork_move(self, mark):
         best_move = None
@@ -424,62 +443,96 @@ class TicTacToe(MinigameStrategy):
         return None
 
     def best_edge(self, edges):
+        """Select the best edge position based on board size heuristics."""
+        if not edges:
+            return None
 
-        if (self.row_length == 4):
+        if self.row_length == 4:
+            return self._best_edge_four(edges)
 
-            best_score = -1
-            best_edge = None
+        if self.row_length == 5:
+            return self._best_edge_five(edges)
 
-            for edge in edges:
-                row_distance = abs(edge[0] - (self.row_length // 2))
-                col_distance = abs(edge[0] - (self.col_length // 2))
+        return edges[0] if edges else None
 
-                score = 2 - (row_distance + col_distance)
 
-                self.board[edge[0]][edge[1]] = self.pet_mark
-                likely_wins = 0
-                
-                for test_move in self.available_moves():
-                    self.board[test_move[0]][test_move[1]] = self.pet_mark 
-                    wins = self.check_winner()
-                    
-                    if (wins.get(self.pet_mark, 0) > 0):
-                        likely_wins += 1
-                    self.board[test_move[0]][test_move[1]] = " "
-                
-                self.board[edge[0]][edge[1]] = " "
+    def _best_edge_four(self, edges):
+        """Evaluate edges for 4x4 board and pick the highest scoring one."""
+        best_score = float("-inf")
+        best_edge = None
 
-                score += likely_wins * 0.5
+        for edge in edges:
+            base = self._base_score_for_edge(edge)
+            likely_wins = self._count_likely_wins_if_mark(edge, self.pet_mark)
+            score = base + likely_wins * 0.5
 
-                if (score > best_score):
-                    best_score = score
-                    best_edge = edge
-        
-            return best_edge
+            if score > best_score:
+                best_score = score
+                best_edge = edge
 
-        elif (self.row_length == 5):
-            best_edge = None
+        return best_edge
 
-            for edge in edges:
+
+    def _best_edge_five(self, edges):
+        """For 5x5 board, prefer an immediate winning edge, otherwise the edge closest to center."""
+        # First: if any edge immediately creates a winning move, take it.
+        for edge in edges:
+            try:
                 self.board[edge[0]][edge[1]] = self.pet_mark
                 winning_move = self.winning_move(self.pet_mark)
+            finally:
                 self.board[edge[0]][edge[1]] = " "
-                
-                if (winning_move):
-                    return edge
-                
-                center_distance = float('inf')
 
-                for edge in edges:
-                    distance = abs(edge[0] - 2) + abs(edge[1] - 2)
-                    
-                    if (distance < center_distance):
-                        center_distance = distance
-                        best_edge = edge
-            
-            return best_edge
-        
-        return edges[0] if edges else None
+            if winning_move:
+                return edge
+
+        # Otherwise: choose the edge with minimal Manhattan distance to center (2,2)
+        center_r = (self.row_length - 1) // 2
+        center_c = (self.col_length - 1) // 2
+
+        best_edge = None
+        best_dist = float("inf")
+        for edge in edges:
+            dist = abs(edge[0] - center_r) + abs(edge[1] - center_c)
+            if dist < best_dist:
+                best_dist = dist
+                best_edge = edge
+
+        return best_edge
+
+
+    def _base_score_for_edge(self, edge):
+        """Compute base proximity score for an edge position."""
+        row_distance = abs(edge[0] - (self.row_length // 2))
+        col_distance = abs(edge[1] - (self.col_length // 2))
+        return 2 - (row_distance + col_distance)
+
+
+    def _count_likely_wins_if_mark(self, edge, mark):
+        """
+        Simulate placing `mark` at `edge`, then count how many next-moves would
+        lead to an immediate win for that mark. Board state is restored.
+        """
+        likely_wins = 0
+        try:
+            # place the mark at the edge
+            self.board[edge[0]][edge[1]] = mark
+            # snapshot of available moves after placing the edge
+            moves = list(self.available_moves())
+
+            for test_move in moves:
+                try:
+                    self.board[test_move[0]][test_move[1]] = mark
+                    wins = self.check_winner()
+                    if wins.get(mark, 0) > 0:
+                        likely_wins += 1
+                finally:
+                    self.board[test_move[0]][test_move[1]] = " "
+        finally:
+            # restore the edge
+            self.board[edge[0]][edge[1]] = " "
+
+        return likely_wins
 
     def player_move(self):
         print("\n" + GARIS)
