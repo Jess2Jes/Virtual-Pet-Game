@@ -427,13 +427,13 @@ class Game:
         like_topic = "dislike" not in random_music_topics.get("question", "")
 
         if random_music_topics.get("answer") is not None:
-            self._handle_answer_type(pet, user, random_music_topics, ans, like_topic)
+            self._handle_answer_type(pet, random_music_topics, ans, like_topic)
         
         elif random_music_topics.get("option") is not None:
-            self._handle_option_type(pet, user, random_music_topics, ans)
+            self._handle_option_type(pet, random_music_topics, ans)
         
         else:
-            self._handle_list_type(pet, user, ans)
+            self._handle_list_type(pet, ans)
         
         return True
 
@@ -509,9 +509,9 @@ class Game:
         ans = input(Fore.CYAN + f"\n{pet.name} {pet.emoji} : {random_food_topics.get('question','')}\n" + Fore.RESET).lower().strip()
 
         if random_food_topics.get("option") is not None:
-            self._handle_food_option_type(pet, user, random_food_topics, ans)
+            self._handle_food_option_type(pet, random_food_topics, ans)
         else:
-            self._handle_food_free_response(pet, user, random_food_topics, ans)
+            self._handle_food_free_response(pet, random_food_topics, ans)
         
         return True
 
@@ -547,7 +547,7 @@ class Game:
             print(Fore.CYAN + f"\n{pet.name} {pet. emoji} : Well, International Food also tastes better!")
             User.current_user. food["Inter_Trad_Food"] = ans
 
-    def _handle_food_free_response(self, pet: VirtualPet, user: User, topic: dict, ans: str) -> None:
+    def _handle_food_free_response(self, pet: VirtualPet, topic: dict, ans: str) -> None:
         """Handle free-form food responses."""
         if "What is your favorite food?" in topic. get("question", ""):
             print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : That's great! My favourite food is {pet.fav_food}!")
