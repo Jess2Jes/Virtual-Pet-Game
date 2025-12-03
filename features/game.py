@@ -451,7 +451,7 @@ class Game:
         
         return random_topic
 
-    def _handle_answer_type(self, pet: VirtualPet, user: User, topic: dict, ans: str, like_topic: bool) -> None:
+    def _handle_answer_type(self, pet: VirtualPet, topic: dict, ans: str, like_topic: bool) -> None:
         """Handle music topics with answer validation."""
         is_valid_answer = ans in topic["answer"]
         
@@ -468,7 +468,7 @@ class Game:
             key = "Fav_Music" if like_topic else "Dislike_Music"
             User. current_user.music[key] = ans
 
-    def _handle_option_type(self, pet: VirtualPet, user: User, topic: dict, ans: str) -> None:
+    def _handle_option_type(self, pet: VirtualPet, topic: dict, ans: str) -> None:
         """Handle music topics with option choices (e.g., Spotify usage)."""
         first_option = topic.get("option")[0]
         is_first_option = ans == first_option
@@ -481,7 +481,7 @@ class Game:
             print(Fore. CYAN + f"\n{pet.name} {pet.emoji} : Have you heard your new fav music playlist come out there?  Go check it now!")
             User.current_user.music["Have_Used_Spotify"] = False
 
-    def _handle_list_type(self, pet: VirtualPet, user: User, ans: str) -> None:
+    def _handle_list_type(self, pet: VirtualPet, ans: str) -> None:
         """Handle music topics that expect list answers (songs or lyrics)."""
         list_ans = [x.strip() for x in ans.split(",")]
         
@@ -515,7 +515,7 @@ class Game:
         
         return True
 
-    def _handle_food_option_type(self, pet: VirtualPet, user: User, topic: dict, ans: str) -> None:
+    def _handle_food_option_type(self, pet: VirtualPet, topic: dict, ans: str) -> None:
         """Handle food topics with option choices (sweet/salty, traditional/international)."""
         first_option = topic.get("option")[0]
         is_first_option = ans == first_option
