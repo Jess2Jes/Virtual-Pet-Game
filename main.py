@@ -237,9 +237,7 @@ class Main:
             ).capitalize().strip()
             clear()
             if retry == "Y":
-                print("\n")
                 continue
-            print("\n")
             break
     
     def _logout_flow(self) -> None:
