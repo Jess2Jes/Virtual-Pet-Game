@@ -551,21 +551,13 @@ class TicTacToe(MinigameStrategy):
         print(f"Pet placed '{self.pet_mark}' at at (row-{row + 1} col-{col + 1}).")
 
     def _check_game_over(self) -> bool:
-        """Check if the game has ended and set the winner."""
-
-        if (self.win_length <= 4) and (self.row_length < 4):
-            if self.check_winner():
+        if self.row_length >= 3 or ((self.win_length <= 4) and (self.row_length < 4)):
+            if self.check_winner() or not self.available_moves():
                 self.render_board()
                 self.winner = self.count_sequence()
                 return True
-            
-        if (self.row_length >= 3):
-            if (not self.available_moves()):
-                self.render_board()
-                self.winner = self.count_sequence()
-                return True
-        
         return False
+
     
     def evaluate(self, summary):
         winner = summary.get("winner")
