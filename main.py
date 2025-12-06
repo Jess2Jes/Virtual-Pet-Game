@@ -9,7 +9,6 @@ import datetime
 from features.save_manager import SaveManager
 import asyncio
 from colorama import Fore, init
-import re
 
 init(autoreset=True)
 
