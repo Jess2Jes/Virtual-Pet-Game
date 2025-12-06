@@ -229,7 +229,7 @@ class TicTacToe(MinigameStrategy):
             self.win_length = 4
         else:
             length = 5
-            self.win_length = 3
+            self.win_length = 4
         
         self.row_length = length
         self.col_length = length
@@ -638,6 +638,7 @@ class TicTacToe(MinigameStrategy):
             print("\nYou lose.. 🥲")
         print("Your pet is having fun playing with you!")
         print(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
+        print(Fore.GREEN + f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉")
         return {"currency": coins, "pet_happiness": pet_happiness}
     
     def play(self, player: Any, pet: Any) -> Dict[str, int]:
@@ -656,7 +657,6 @@ class MemoryMatch(MinigameStrategy):
     def load_words(self):
         with open("datas/words.txt") as word_file:
             words = list(word_file.read().split())
-        
         return words
 
     def setup(self, player, pet):
@@ -910,7 +910,7 @@ class BattleContest(MinigameStrategy):
 
     def _player_defend(self) -> None:
         """Player defends."""
-        defense_bonus = randint(2, 5) * 300
+        defense_bonus = randint(2, 5) * 3000
         print(f"\n{self.player_pet.name} defends 🛡️!")
         print(f"Damage reduction: {defense_bonus}")
 
@@ -941,7 +941,7 @@ class BattleContest(MinigameStrategy):
 
     def _opponent_defend(self) -> None:
         """Opponent defends."""
-        defense_bonus = randint(1, 4) * 300
+        defense_bonus = randint(1, 4) * 3000
         print(f"{self.opponent_pet. name} defends 🛡️!")
         print(f"Damage reduction: {defense_bonus}")
 
@@ -1004,11 +1004,11 @@ class BattleContest(MinigameStrategy):
         
         if (victory):
             coins = 20 + (performance_score // 10)
-            pet_happiness = 15 + (player_health_remaining // 5)
+            pet_happiness = 15 + ((player_health_remaining - 1000) // 5)
             print(Fore.GREEN + f"🎉 VICTORY! {self.player_pet.name} won the battle!")
         else:
             coins = 5 + (performance_score // 20)
-            pet_happiness = 5 + (player_health_remaining // 10)
+            pet_happiness = 5 + ((player_health_remaining - 1000) // 10)
             print(Fore.RED + f"💔 Defeat... {self.player_pet.name} was defeated.")
         
         print("\n" + GARIS)
