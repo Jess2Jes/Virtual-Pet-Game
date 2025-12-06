@@ -557,7 +557,7 @@ class Game:
     
     def _end_topic(self, pet: VirtualPet, user: User) -> None:
         print(Fore.CYAN + f"\n{pet.name} {pet.emoji} : Okay, I have gotten to know you more, thanks for sharing yours!")
-        print(Fore.GREEN + f"{pet.name}'s happiness has increased by 10.\n")
+        print(Fore.GREEN + f"{pet.name}'s happiness has increased by 10.")
         pet.happiness += 10
 
     def _topic_conversation_menu(self, pet: VirtualPet, user: User) -> bool:

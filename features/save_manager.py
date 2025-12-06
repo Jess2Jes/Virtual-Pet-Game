@@ -1,5 +1,4 @@
 # features/save_manager.py
-
 import json
 from typing import Dict, Any, Optional
 from datetime import datetime
@@ -46,11 +45,11 @@ class SaveManager:
             with open(self.save_file, 'w', encoding='utf-8') as f:
                 json.dump(all_saves, f, indent=4, ensure_ascii=False)
             
-            print(f"✅ Game saved successfully for {username}!")
+            print(f"\n✅ Game saved successfully for {username}!")
             return True
             
         except Exception as e:
-            print(f"❌ Error saving game: {e}")
+            print(f"\n❌ Error saving game: {e}")
             return False
     
     def load_game(self, username: str) -> Optional[Dict[str, Any]]:
@@ -59,10 +58,10 @@ class SaveManager:
             all_saves = self._load_all_saves()
             
             if username in all_saves:
-                print(f"✅ Game loaded successfully for {username}!")
+                print(f"\n✅ Game loaded successfully for {username}!")
                 return all_saves[username]
             else:
-                print(f"⚠️ No save file found for {username}.")
+                print(f"\n⚠️ No save file found for {username}.")
                 return None
                 
         except Exception as e:
@@ -80,14 +79,14 @@ class SaveManager:
                 with open(self.save_file, 'w', encoding='utf-8') as f:
                     json.dump(all_saves, f, indent=4, ensure_ascii=False)
                 
-                print(f"✅ Save deleted for {username}!")
+                print(f"\n✅ Save deleted for {username}!")
                 return True
             else:
-                print(f"⚠️ No save found for {username}.")
+                print(f"\n⚠️ No save found for {username}.")
                 return False
                 
         except Exception as e:
-            print(f"❌ Error deleting save: {e}")
+            print(f"\n❌ Error deleting save: {e}")
             return False
     
     def list_saves(self) -> list:

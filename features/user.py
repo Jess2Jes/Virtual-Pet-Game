@@ -109,7 +109,7 @@ class User:
     def register(cls, username: str, password: str) -> None | int:
         print()
         if username in cls.users:
-            print(Fore.RED + "This username has already signed in!\n")
+            print(Fore.RED + "This username has already existed!\n")
             return None
         if username.strip(). lower() in password.strip().lower():
             print(Fore.RED + "Password cannot be the same as username!\n")
