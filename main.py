@@ -9,7 +9,6 @@ import datetime
 from features.save_manager import SaveManager
 import asyncio
 from colorama import Fore, init
-import re
 
 init(autoreset=True)
 
@@ -274,10 +273,9 @@ class Main:
                 "(Note: input other than Y and N will be considered as N): "
             ).capitalize().strip()
             clear()
-            if retry == "Y":
-                continue
-            break
-    
+            if retry != "Y":
+                break
+
     def _logout_flow(self) -> None:
         if self.facade.current_user:
             print("\n💾 Saving your game...")
