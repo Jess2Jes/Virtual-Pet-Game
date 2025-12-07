@@ -1,28 +1,78 @@
-# Formatter : untuk tabel pet stats, pet after care stats, account info dan timezone
+# Formatter : for pet stats table, pet after-care stats, account info and timezone
 from typing import Dict
 
-GARIS = "─"*101
+"""
+formatter.py
+
+Provides a small ASCII-box formatter used by the Virtual Pet Game.
+
+This module contains:
+- GARIS: a horizontal line constant used elsewhere in the application.
+- Formatter: helper class to render consistent boxed text displays for:
+    - user status (username, number of pets)
+    - time status (current time, days passed)
+    - individual pet upgrade/status displays (various stat combinations)
+    - full pet status box with many stats
+
+Notes:
+- The original implementation included Indonesian comments; those have been translated
+  to English and additional docstrings were added for clarity. No runtime logic was changed.
+"""
+
+GARIS = "─" * 101
+
+
 class Formatter:
+    """
+    Formatter for rendering ASCII-styled boxed information.
+
+    Typical usage:
+        f = Formatter()
+        box = f.format_status_box(stats_dict)
+        print(box)
+
+    Attributes:
+        max_length: running maximum width used when building boxes (initially 0).
+        max_len: hard character limit for truncated lines (default: 55).
+    """
+
     def __init__(self):
         self.max_length = 0
         self.max_len = 55
 
-    def truncate(self, text: str) -> str:  # maksimal panjang teks
-        ''' Membuat fungsi truncate untuk memotong teks agar tidak terlalu panjang
-            sehingga tidak merusak tampilan baris dalam box'''
+    def truncate(self, text: str) -> str:
+        """
+        Truncate text to a safe maximum length so it doesn't break the visual layout.
+
+        Args:
+            text: input string to truncate.
+
+        Returns:
+            The original text if shorter than max_len, otherwise a truncated string
+            with an ellipsis appended.
+        """
         if len(text) <= self.max_len:
             return text
         else:
-            return text[:self.max_len - 3] + "..."
-    
-    def format_username_box(self, username: str, pets: int) -> str:
+            return text[: self.max_len - 3] + "..."
 
+    def format_username_box(self, username: str, pets: int) -> str:
+        """
+        Create a boxed "USER STATUS" block displaying the logged-in username and number of pets.
+
+        Args:
+            username: the username to display.
+            pets: a collection (or length) representing the user's pets; code uses len(pets).
+
+        Returns:
+            A multi-line string containing an ASCII box.
+        """
         max_length = self.max_length
-        
+
         lines = [
             self.truncate("USER STATUS"),
             self.truncate(f"Logged in as : {username}"),
-            self.truncate(f"Number of pets: {len(pets)}")
+            self.truncate(f"Number of pets: {len(pets)}"),
         ]
 
         for line in lines:
@@ -34,24 +84,33 @@ class Formatter:
         box += f"├{'─' * max_length}┤\n"
 
         for line in lines[1:]:
-            if (line != lines[-1]):
+            if line != lines[-1]:
                 box += f"│{line.ljust(max_length)}│\n"
                 box += f"├{'─' * max_length}┤\n"
             else:
                 box += f"│{line.ljust(max_length)}│\n"
-        
-        box += f"└{'─' * max_length}┘\n"
-            
-        return box
-        
-    def format_time_box(self, hours: str, days: str) -> str:
 
+        box += f"└{'─' * max_length}┘\n"
+
+        return box
+
+    def format_time_box(self, hours: str, days: str) -> str:
+        """
+        Create a boxed "TIME STATUS" block showing the current time and days passed.
+
+        Args:
+            hours: human-readable current time.
+            days: number of days passed as string.
+
+        Returns:
+            Multi-line ASCII box string.
+        """
         max_length = self.max_length
 
         lines = [
             self.truncate("TIME STATUS"),
             self.truncate(f"Current Time : {hours}"),
-            self.truncate(f"Days Passed  : {days}")
+            self.truncate(f"Days Passed  : {days}"),
         ]
 
         for line in lines:
@@ -63,57 +122,67 @@ class Formatter:
         box += f"├{'─' * max_length}┤\n"
 
         for line in lines[1:]:
-            if (line != lines[-1]):
+            if line != lines[-1]:
                 box += f"│{line.ljust(max_length)}│\n"
                 box += f"├{'─' * max_length}┤\n"
             else:
                 box += f"│{line.ljust(max_length)}│\n"
-        
+
         box += f"└{'─' * max_length}┘\n"
-            
+
         return box
 
     def format_upgrade_stats(self, pet, stats: Dict) -> str:
+        """
+        Format a small status box for a pet after an upgrade or care action.
 
+        The function chooses which stats to display depending on how many keys are present
+        in the provided stats dictionary (3 or 4 or other combinations).
+
+        Args:
+            pet: an object representing the pet, expected to have attributes used below
+                 (e.g., pet.fat, pet.health, pet.energy, pet.age, pet.hunger, pet.happiness, pet.sanity).
+            stats: a dict describing which stats are relevant for this display (keys control layout).
+
+        Returns:
+            Multi-line ASCII box string showing the chosen stats.
+        """
         max_length = self.max_length
 
         title = self.truncate(f"{pet.name}'s Status")
 
-        if (len(stats.keys()) == 4):
+        if len(stats.keys()) == 4:
             lines = [
                 self.truncate(f"Fat        : {pet.fat}"),
                 self.truncate(f"Health     : {pet.health}"),
                 self.truncate(f"Energy     : {pet.energy}"),
-                self.truncate(f"Age        : {pet.age}")
+                self.truncate(f"Age        : {pet.age}"),
             ]
 
-        elif (len(stats.keys()) == 3):
+        elif len(stats.keys()) == 3:
 
-            if (("fat", "hunger", "happiness") == tuple(stats.keys())):
+            if ("fat", "hunger", "happiness") == tuple(stats.keys()):
                 lines = [
                     self.truncate(f"Hunger     : {pet.hunger}"),
                     self.truncate(f"Happiness  : {pet.happiness}"),
-                    self.truncate(f"Fat        : {pet.fat}")
-                ] 
-                
+                    self.truncate(f"Fat        : {pet.fat}"),
+                ]
+
             else:
                 lines = [
                     self.truncate(f"Hunger     : {pet.hunger}"),
                     self.truncate(f"Happiness  : {pet.happiness}"),
-                    self.truncate(f"Energy     : {pet.energy}")
+                    self.truncate(f"Energy     : {pet.energy}"),
                 ]
 
         else:
-            if (("sanity", "happiness") == tuple(stats.keys())):
+            if ("sanity", "happiness") == tuple(stats.keys()):
                 lines = [
                     self.truncate(f"Sanity     : {pet.sanity}"),
-                    self.truncate(f"Happiness  : {pet.happiness}")
+                    self.truncate(f"Happiness  : {pet.happiness}"),
                 ]
             else:
-                lines = [
-                    self.truncate(f"Energy: {pet.energy}"),
-                    self.truncate(f"Hunger: {pet.hunger}")
-                ]
+                lines = [self.truncate(f"Energy: {pet.energy}"), self.truncate(f"Hunger: {pet.hunger}")]
 
         for line in lines:
             max_length = max(max_length, len(title), len(line) + 5)
@@ -125,50 +194,50 @@ class Formatter:
 
         for line in lines:
             box += f"│{line.ljust(max_length)}│\n"
-        
+
         box += f"└{'─' * max_length}┘\n"
 
         return box
 
     def format_status_box(self, stats: Dict[str, str]) -> str:
+        """
+        Create a full pet status box showing multiple attributes.
 
+        The function builds a list of lines from the stats dict, then computes the
+        maximum line length to align all rows inside a consistent ASCII box.
+
+        Args:
+            stats: dictionary containing pet attributes. Expected keys include:
+                'name', 'type', 'age', 'hunger', 'fat', 'sanity', 'happiness',
+                'energy', 'health', 'mood', 'summary', 'age_summary'.
+
+        Returns:
+            Multi-line ASCII box string representing the pet's current status.
+        """
         max_length = self.max_length
 
         lines = [
             self.truncate(f"{stats['name']}, the {stats['type']}"),
             self.truncate(f"Age        : {stats['age']}"),
             self.truncate(f"Hunger     : {stats['hunger']}"),
-            self.truncate(f"Fat        : {stats['fat']}"),      
+            self.truncate(f"Fat        : {stats['fat']}"),
             self.truncate(f"Sanity     : {stats['sanity']}"),
             self.truncate(f"Happy      : {stats['happiness']}"),
             self.truncate(f"Energy     : {stats['energy']}"),
             self.truncate(f"Health     : {stats['health']}"),
             self.truncate(f"Mood       : {stats['mood']}"),
             self.truncate(f"Status     : {stats['summary']}"),
-            self.truncate(f"Age Status : {stats['age_summary']}")
+            self.truncate(f"Age Status : {stats['age_summary']}"),
         ]
-        ''' Cari panjang teks terpanjang di dalam list lines.
-            max_length akan menyimpan nilai panjang terbesar.
-
-            Contoh:
-            lines = [
-                "Mochi the Cat",          # length = 13
-                "Age        : 2",         # length = 14
-                "Hunger     : 90",        # length = 15
-                "Fat        : 0",         # length = 14
-                "Sanity     : 50",        # length = 15
-                "Happy      : 100",       # length = 16
-                "Energy     : 52",        # length = 15
-                "Health     : 20",        # length = 15
-                "Mood       : Happy",     # length = 18
-                "Status     : Critical",  # length = 21
-                "Age Status : Teen",      # length = 17
-            ]
-
-            Hasil:
-            max_length = 21
-            (semua baris box akan disesuaikan dengan lebar 21) 
-        '''
+        # Find the longest text length in the lines list and use it for box width.
+        # Example lengths:
+        #   "Mochi the Cat"           -> 13
+        #   "Age        : 2"          -> 14
+        #   "Hunger     : 90"         -> 15
+        #   "Happy      : 100"        -> 16
+        #   "Mood       : Happy"      -> 18
+        #   "Status     : Critical"   -> 21
+        # The max_length becomes 21 in that example and all box lines are aligned to width 21.
 
         for line in lines:
             max_length = max(max_length, len(line))
@@ -184,4 +253,3 @@ class Formatter:
         box += f"└{'─' * max_length}┘\n"
 
         return box
-
