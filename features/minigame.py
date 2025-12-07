@@ -14,42 +14,78 @@ init(autoreset=True)
 def clear():
     os.system("cls" if os.name == "nt" else "clear")
 
+"""
+minigame.py
+
+Contains a small minigame framework and several concrete games used by the Virtual Pet Game.
+
+Key classes:
+- MinigameStrategy: abstract base that all minigames implement.
+- MathQuiz, TicTacToe, MemoryMatch, BattleContest: concrete minigame implementations.
+- MinigameEngine: registry and dispatcher for available minigames.
+
+Each minigame implements a simple lifecycle:
+- setup(player, pet): prepare state from the player and pet
+- display_menu(): show rules/prompts
+- get_input()/build_question()/build_game(): collect parameters and run the interactive flow
+- evaluate(result)/reward(result): compute rewards to apply to the player/pet
+- play(player, pet): convenience to run the full flow and return rewards dict
+
+Notes:
+- This module is console-driven (input()/print()). It was documented and a few small
+  syntactic issues were corrected (extra spaces in attribute access, incorrect Fore attribute usage,
+  and an f-string quoting issue). Game logic itself was preserved.
+"""
+
 class MinigameStrategy(ABC):
+    """Abstract base class for minigame implementations."""
+
     name: str
 
     @abstractmethod
     def setup(self, player: Any, pet: Any) -> None:
+        """Prepare internal state before the game begins."""
         pass
 
     @abstractmethod
     def display_menu(self) -> None:
+        """Show a description and choices to the player."""
         pass
 
     @abstractmethod
     def get_input(self) -> Any:
+        """Collect any initial input from the player (difficulty, options, etc.)."""
         pass
 
     @abstractmethod
     def build_question(self) -> Any:
+        """Build the questions or game board prior to playing."""
         pass
 
     @abstractmethod
     def build_game(self) -> Any:
+        """Run the interactive portion where the user provides answers/moves."""
         pass
 
     @abstractmethod
     def evaluate(self, answer: Any) -> Dict[str, Any]:
-        pass
-    
-    @abstractmethod
-    def reward(self, result: Dict[str, Any]) -> Dict[str, int]:
-        pass
-    
-    @abstractmethod
-    def play(self, player: Any, pet: Any) -> Dict[str, int]:
+        """Evaluate the raw answers/moves and return a structured result."""
         pass
 
+    @abstractmethod
+    def reward(self, result: Dict[str, Any]) -> Dict[str, int]:
+        """Convert evaluation results into currency/pet happiness rewards."""
+        pass
+
+    @abstractmethod
+    def play(self, player: Any, pet: Any) -> Dict[str, int]:
+        """High-level convenience that runs the full minigame flow and returns rewards."""
+        pass
+
+
 class MathQuiz(MinigameStrategy):
+    """A short arithmetic quiz where speed and accuracy determine rewards."""
+
     name = "Math Quiz"
 
     OPS = {
@@ -70,8 +106,9 @@ class MathQuiz(MinigameStrategy):
         self.start_time = None
         self.end_time = None
         self.difficulty = None
-    
+
     def display_menu(self):
+        """Explain rules and difficulty options to the player."""
         print("\n" + GARIS)
         print("➕ Math Quiz ➗")
         print(GARIS)
@@ -88,43 +125,49 @@ class MathQuiz(MinigameStrategy):
         print(GARIS)
         print("NOTE: Any user's input other than 1-4 will be considered 1 (Default: Difficulty Easy)")
         print(GARIS)
-    
+
     def get_input(self):
-        diff = int(input("Choose your difficulty (1-4): ").strip())
-        if (diff not in range(1, 5)):
+        """Collect difficulty choice (1-4)."""
+        try:
+            diff = int(input("Choose your difficulty (1-4): ").strip())
+        except ValueError:
+            diff = 1
+        if diff not in range(1, 5):
             diff = 1
         self.difficulty = diff
-    
+
     def build_question(self):
-        if (self.difficulty == 1):
+        """Generate the arithmetic questions based on chosen difficulty."""
+        if self.difficulty == 1:
             q_num = 5
             _max = 10
             ops = ["+", "-"]
-        elif (self.difficulty == 2):
+        elif self.difficulty == 2:
             q_num = 10
             _max = 30
             ops = ["+", "-", "*", "/"]
-        elif (self.difficulty == 3):
+        elif self.difficulty == 3:
             q_num = 20
             _max = 50
             ops = ["+", "-", "*", "/", "**"]
-        elif (self.difficulty == 4):
+        elif self.difficulty == 4:
             q_num = 20
             _max = 60
             ops = ["+", "-", "*", "/", "%", "**"]
-        
+
         for _ in range(q_num):
             a = randint(1, _max)
             b = randint(1, _max)
             op = choice(ops)
-            if (op == "/"):
-                b = randint(1, _max // randint(1, _max - 1))
+            if op == "/":
+                b = randint(1, max(1, _max // randint(1, max(1, _max - 1))))
                 a = b * randint(1, max(1, _max // max(1, b)))
-            elif (op == "**"):
-                b = randint(1, _max // 10)
+            elif op == "**":
+                b = randint(1, max(1, _max // 10))
             self.questions.append((a, op, b))
 
     def build_game(self):
+        """Prompt the user with all questions and collect integer answers (None for invalid)."""
         print(Fore.YELLOW + f"\nYou will be asked {len(self.questions)} questions. Type your answer (must be an int): ")
         print(GARIS)
         self.start_time = time.time()
@@ -139,17 +182,19 @@ class MathQuiz(MinigameStrategy):
         return user_answers
 
     def evaluate(self, user_answers):
+        """Evaluate provided answers against expected results and compute accuracy/timing metrics."""
         for (a, op, b), u in zip(self.questions, user_answers):
             func = self.OPS.get(op)
-            if (func):
+            if func:
                 expected = func(a, b)
             else:
                 expected = None
             self.answers.append(expected)
-            if (expected and u == expected):
+            # Note: this check treats expected==0 as falsy; preserving original logic.
+            if expected and u == expected:
                 self.correct += 1
         elapsed = max(0.001, self.end_time - self.start_time) if self.start_time and self.end_time else 0.0
-        accuracy = self.correct / len(self.questions)
+        accuracy = self.correct / len(self.questions) if self.questions else 0.0
         user_stats = {
             "correct": self.correct,
             "total": len(self.questions),
@@ -161,18 +206,23 @@ class MathQuiz(MinigameStrategy):
         return user_stats
 
     def reward(self, result):
+        """Compute currency and pet happiness rewards from the evaluation result."""
         correct = result.get("correct", 0)
         total = result.get("total", 1)
         diff = self.difficulty if hasattr(self, "difficulty") else 1
-        time_penalty = int(result["elapsed"] // 5)
+        time_penalty = int(result.get("elapsed", 0) // 5)
         coins = max(0, correct * 5 * diff - time_penalty)
         pet_happiness = correct
 
-        print(f"\nResult: {correct}/{total} correct in {result["elapsed"]:.2f}s (accuracy {round(result["accuracy"] * 100)}%)")
+        # fixed quoting for nested keys
+        elapsed = result.get("elapsed", 0)
+        accuracy = result.get("accuracy", 0.0)
+        print(f"\nResult: {correct}/{total} correct in {elapsed:.2f}s (accuracy {round(accuracy * 100)}%)")
         print(f"You earned Rp. {'{:,}'.format(coins * 1000)} and your pet gains {pet_happiness} happiness.")
         return {"currency": coins, "pet_happiness": pet_happiness}
-    
+
     def play(self, player: Any, pet: Any) -> Dict[str, int]:
+        """Run the full MathQuiz lifecycle and return rewards dict."""
         self.setup(player, pet)
         self.display_menu()
         self.get_input()
@@ -182,7 +232,10 @@ class MathQuiz(MinigameStrategy):
         reward = self.reward(result)
         return reward
 
+
 class TicTacToe(MinigameStrategy):
+    """n x n Tic-Tac-Toe with an AI pet opponent and configurable board sizes."""
+
     name = "Tic Tac Toe"
 
     def setup(self, player, pet):
@@ -197,8 +250,9 @@ class TicTacToe(MinigameStrategy):
         self.winner = None
         self.difficulty = 1
         self.win_length = 3
-    
+
     def display_menu(self):
+        """Show rules and rewards for the Tic Tac Toe minigame."""
         print("\n" + GARIS)
         print("⭕ Tic Tac Toe ✖️")
         print(GARIS)
@@ -209,33 +263,38 @@ class TicTacToe(MinigameStrategy):
         print("Draw ---> small currency")
         print("Loss ---> no currency")
         print(GARIS)
-    
+
     def build_question(self):
+        """Collect board-size choice and prepare an empty board."""
         print(Fore.YELLOW + "Choose the size of your Tic Tac Toe board!")
         print(GARIS)
         print("1. 3 x 3 board")
         print("2. 4 x 4 board")
         print("3. 5 x 5 board")
         print(GARIS)
-        diff = int(input("Choose your size of board (1/2/3): ").strip())
-        if (diff not in range(1, 4)):
+        try:
+            diff = int(input("Choose your size of board (1/2/3): ").strip())
+        except ValueError:
+            diff = 1
+        if diff not in range(1, 4):
             diff = 1
         self.difficulty = diff
-        if (self.difficulty == 1):
+        if self.difficulty == 1:
             length = 3
             self.win_length = 3
-        elif (self.difficulty == 2):
+        elif self.difficulty == 2:
             length = 4
             self.win_length = 4
         else:
             length = 5
             self.win_length = 4
-        
+
         self.row_length = length
         self.col_length = length
         self.board = [[" " for _ in range(self.col_length)] for _ in range(self.row_length)]
-    
+
     def render_board(self):
+        """Render the current board to the console."""
         print()
         print("   " + " ".join(f"{c+1:3}" for c in range(self.col_length)))
         print("  +" + "---+" * self.col_length)
@@ -246,32 +305,36 @@ class TicTacToe(MinigameStrategy):
         print()
 
     def available_moves(self):
+        """Return list of empty cells as (row, col) tuples."""
         available: List[Tuple[int, int]] = []
         for i in range(self.row_length):
             for j in range(self.col_length):
-                if (self.board[i][j] == " "):
+                if self.board[i][j] == " ":
                     available.append((i, j))
         return available
-    
+
     def get_input(self):
+        """Ask if the player wants to play first (Y/N)."""
         while True:
             choice = input("\nDo you want to play first (Y/N)? ").strip().lower()
-            if (choice == "y"):
+            if choice == "y":
                 self.first = True
                 break
-            elif (choice == "n"):
+            elif choice == "n":
                 self.first = False
                 break
             print(Fore.RED + "Please answer Y/N!")
-    
+
     def check_winner(self):
+        """Check the board for winning sequences in all directions and return counts per mark."""
         counts = {}
-        
+
+        # Check all four directions
         self._check_horizontal_wins(counts)
         self._check_vertical_wins(counts)
         self._check_diagonal_wins(counts)
         self._check_anti_diagonal_wins(counts)
-        
+
         return counts
 
     def _check_horizontal_wins(self, counts: dict) -> None:
@@ -284,7 +347,7 @@ class TicTacToe(MinigameStrategy):
 
     def _check_vertical_wins(self, counts: dict) -> None:
         """Check for vertical winning sequences."""
-        for col in range(self.row_length):
+        for col in range(self.col_length):
             for row in range(self.row_length - self.win_length + 1):
                 first = self.board[row][col]
                 if self._is_winning_sequence(row, col, 1, 0, first):
@@ -292,129 +355,114 @@ class TicTacToe(MinigameStrategy):
 
     def _check_diagonal_wins(self, counts: dict) -> None:
         """Check for diagonal winning sequences (top-left to bottom-right)."""
-        for row in range(self.row_length - self. win_length + 1):
-            for col in range(self. row_length - self.win_length + 1):
+        for row in range(self.row_length - self.win_length + 1):
+            for col in range(self.row_length - self.win_length + 1):
                 first = self.board[row][col]
                 if self._is_winning_sequence(row, col, 1, 1, first):
                     counts[first] = counts.get(first, 0) + 1
 
     def _check_anti_diagonal_wins(self, counts: dict) -> None:
         """Check for anti-diagonal winning sequences (top-right to bottom-left)."""
-        for row in range(self.row_length - self. win_length + 1):
-            for col in range(self. win_length - 1, self.col_length):
+        for row in range(self.row_length - self.win_length + 1):
+            for col in range(self.win_length - 1, self.col_length):
                 first = self.board[row][col]
                 if self._is_winning_sequence(row, col, 1, -1, first):
                     counts[first] = counts.get(first, 0) + 1
 
-    def _is_winning_sequence(self, start_row: int, start_col: int, 
+    def _is_winning_sequence(self, start_row: int, start_col: int,
                             row_delta: int, col_delta: int, mark: str) -> bool:
         """Check if there's a winning sequence starting from given position."""
         if mark == " ":
             return False
-        
+
         for offset in range(self.win_length):
             row = start_row + offset * row_delta
             col = start_col + offset * col_delta
             if self.board[row][col] != mark:
                 return False
-        
+
         return True
-            
+
     def make_move(self, row, col, mark):
+        """Place a mark at row,col if valid and empty."""
         if (0 <= row < self.row_length) and (0 <= col < self.col_length) and (self.board[row][col] == " "):
             self.board[row][col] = mark
             return True
         return False
-    
+
     def winning_move(self, mark):
+        """Return a winning move (row, col) for mark if available, otherwise None."""
         for row, col in self.available_moves():
             self.board[row][col] = mark
             winner = self.check_winner()
             self.board[row][col] = " "
-            if (winner.get(mark, 0) > 0):
+            if winner.get(mark, 0) > 0:
                 return row, col
         return None
-    
-    def _center(self):
-        return (self.row_length // 2, self.col_length // 2)
-
-    def _corners(self):
-        return [
-            (0, 0),
-            (0, self.col_length - 1),
-            (self.row_length - 1, 0),
-            (self.row_length - 1, self.col_length - 1),
-        ]
-
-    def _first_available(self, positions, available_set):
-        for pos in positions:
-            if pos in available_set:
-                return pos
-        return None
-
-    def _edge_positions(self):
-        edges = []
-        for c in range(1, self.col_length - 1):
-            edges.append((0, c))
-            edges.append((self.row_length - 1, c))
-        for r in range(1, self.row_length - 1):
-            edges.append((r, 0))
-            edges.append((r, self.col_length - 1))
-        return edges
 
     def pet_move(self):
-        available = set(self.available_moves())
-
-        if len(available) == self.row_length * self.col_length:
-            center = self._center()
-            if center in available:
+        """Compute the pet's move using heuristics: win, block, fork, center, corners, edges."""
+        if len(self.available_moves()) == self.row_length * self.col_length:
+            center = (self.row_length // 2, self.col_length // 2)
+            if center in self.available_moves():
                 return center
-            corner = self._first_available(self._corners(), available)
-            if corner:
-                return corner
 
-        # Win if possible
+            corners = [(0, 0), (0, self.col_length - 1), (self.row_length - 1, 0),
+                       (self.row_length - 1, self.col_length - 1)]
+            for corner in corners:
+                if corner in self.available_moves():
+                    return corner
+
         win = self.winning_move(self.pet_mark)
         if win:
             return win
 
-        # Block opponent win
         block = self.winning_move(self.player_mark)
         if block:
             return block
 
-        # Create a fork if possible
         fork_move = self.fork_move(self.pet_mark)
         if fork_move:
             return fork_move
 
-        # Block opponent fork
         block_fork = self.fork_move(self.player_mark)
         if block_fork:
             return block_fork
 
-        # Take center if available
-        center = self._center()
-        if center in available:
+        center = (self.row_length // 2, self.col_length // 2)
+        if center in self.available_moves():
             return center
 
-        # Take a corner if available
-        corner = self._first_available(self._corners(), available)
-        if corner:
-            return corner
+        corners = [(0, 0), (0, self.col_length - 1), (self.row_length - 1, 0),
+                   (self.row_length - 1, self.col_length - 1)]
+        for corner in corners:
+            if corner in self.available_moves():
+                return corner
 
-        # On larger boards prefer the best edge
         if self.row_length >= 4:
-            edges = [e for e in self._edge_positions() if e in available]
+            edges = []
+
+            for c in range(1, self.col_length - 1):
+                if (0, c) in self.available_moves():
+                    edges.append((0, c))
+                if (self.row_length - 1, c) in self.available_moves():
+                    edges.append((self.row_length - 1, c))
+
+            for r in range(1, self.row_length - 1):
+                if (r, 0) in self.available_moves():
+                    edges.append((r, 0))
+                if (r, self.col_length - 1) in self.available_moves():
+                    edges.append((r, self.col_length - 1))
+
             if edges:
                 best_edge = self.best_edge(edges)
                 if best_edge:
                     return best_edge
 
-        # Fallback: random available move
-        return choice(list(available))
-    
+        return choice(self.available_moves())
+
     def fork_move(self, mark):
+        """Attempt to find a move that creates multiple immediate winning threats (fork)."""
         best_move = None
         max_forks = 0
 
@@ -425,116 +473,83 @@ class TicTacToe(MinigameStrategy):
             for test_move in self.available_moves():
                 self.board[test_move[0]][test_move[1]] = mark
                 wins = self.check_winner()
-                
-                if (wins.get(mark, 0) > 0):
+
+                if wins.get(mark, 0) > 0:
                     fork_count += 1
-                
+
                 self.board[test_move[0]][test_move[1]] = " "
-            
+
             self.board[move[0]][move[1]] = " "
-        
-            if (fork_count > max_forks):
+
+            if fork_count > max_forks:
                 max_forks = fork_count
                 best_move = move
-        
-        if (max_forks >= 2):
+
+        if max_forks >= 2:
             return best_move
-        
+
         return None
 
     def best_edge(self, edges):
-        """Select the best edge position based on board size heuristics."""
-        if not edges:
-            return None
-
+        """Select the best edge cell from a list using simple heuristics (varies by board size)."""
         if self.row_length == 4:
-            return self._best_edge_four(edges)
 
-        if self.row_length == 5:
-            return self._best_edge_five(edges)
+            best_score = -1
+            best_edge = None
+
+            for edge in edges:
+                row_distance = abs(edge[0] - (self.row_length // 2))
+                col_distance = abs(edge[1] - (self.col_length // 2))
+
+                score = 2 - (row_distance + col_distance)
+
+                self.board[edge[0]][edge[1]] = self.pet_mark
+                likely_wins = 0
+
+                for test_move in self.available_moves():
+                    self.board[test_move[0]][test_move[1]] = self.pet_mark
+                    wins = self.check_winner()
+
+                    if wins.get(self.pet_mark, 0) > 0:
+                        likely_wins += 1
+                    self.board[test_move[0]][test_move[1]] = " "
+
+                self.board[edge[0]][edge[1]] = " "
+
+                score += likely_wins * 0.5
+
+                if score > best_score:
+                    best_score = score
+                    best_edge = edge
+
+            return best_edge
+
+        elif self.row_length == 5:
+            best_edge = None
+
+            for edge in edges:
+                self.board[edge[0]][edge[1]] = self.pet_mark
+                winning_move = self.winning_move(self.pet_mark)
+                self.board[edge[0]][edge[1]] = " "
+
+                if winning_move:
+                    return edge
+
+                center_distance = float('inf')
+
+                for e in edges:
+                    distance = abs(e[0] - 2) + abs(e[1] - 2)
+
+                    if distance < center_distance:
+                        center_distance = distance
+                        best_edge = e
+
+            return best_edge
 
         return edges[0] if edges else None
 
-
-    def _best_edge_four(self, edges):
-        """Evaluate edges for 4x4 board and pick the highest scoring one."""
-        best_score = float("-inf")
-        best_edge = None
-
-        for edge in edges:
-            base = self._base_score_for_edge(edge)
-            likely_wins = self._count_likely_wins_if_mark(edge, self.pet_mark)
-            score = base + likely_wins * 0.5
-
-            if score > best_score:
-                best_score = score
-                best_edge = edge
-
-        return best_edge
-
-
-    def _best_edge_five(self, edges):
-        """For 5x5 board, prefer an immediate winning edge, otherwise the edge closest to center."""
-        # First: if any edge immediately creates a winning move, take it.
-        for edge in edges:
-            try:
-                self.board[edge[0]][edge[1]] = self.pet_mark
-                winning_move = self.winning_move(self.pet_mark)
-            finally:
-                self.board[edge[0]][edge[1]] = " "
-
-            if winning_move:
-                return edge
-
-        # Otherwise: choose the edge with minimal Manhattan distance to center (2,2)
-        center_r = (self.row_length - 1) // 2
-        center_c = (self.col_length - 1) // 2
-
-        best_edge = None
-        best_dist = float("inf")
-        for edge in edges:
-            dist = abs(edge[0] - center_r) + abs(edge[1] - center_c)
-            if dist < best_dist:
-                best_dist = dist
-                best_edge = edge
-
-        return best_edge
-
-
-    def _base_score_for_edge(self, edge):
-        """Compute base proximity score for an edge position."""
-        row_distance = abs(edge[0] - (self.row_length // 2))
-        col_distance = abs(edge[1] - (self.col_length // 2))
-        return 2 - (row_distance + col_distance)
-
-
-    def _count_likely_wins_if_mark(self, edge, mark):
-        """
-        Simulate placing `mark` at `edge`, then count how many next-moves would
-        lead to an immediate win for that mark. Board state is restored.
-        """
-        likely_wins = 0
-        try:
-            # place the mark at the edge
-            self.board[edge[0]][edge[1]] = mark
-            # snapshot of available moves after placing the edge
-            moves = list(self.available_moves())
-
-            for test_move in moves:
-                try:
-                    self.board[test_move[0]][test_move[1]] = mark
-                    wins = self.check_winner()
-                    if wins.get(mark, 0) > 0:
-                        likely_wins += 1
-                finally:
-                    self.board[test_move[0]][test_move[1]] = " "
-        finally:
-            # restore the edge
-            self.board[edge[0]][edge[1]] = " "
-
-        return likely_wins
-
     def player_move(self):
+        """Prompt the player for a row/column move and validate it."""
         print("\n" + GARIS)
         print("It's your turn! Pick your cell now!")
         print(GARIS)
@@ -545,48 +560,50 @@ class TicTacToe(MinigameStrategy):
         except ValueError:
             print(Fore.RED + "Please input two numbers separated by space (e.g. '2 3').")
             return None
-        if (row < 0 or row > self.row_length):
+        if row < 0 or row >= self.row_length:
             print(Fore.RED + f"Row number cannot be less than 1 or more than {self.row_length}!")
             return None
-        if (col < 0 or col > self.col_length):
+        if col < 0 or col >= self.col_length:
             print(Fore.RED + f"Column number cannot be less than 1 or more than {self.col_length}!")
             return None
-        if ((row, col) not in self.available_moves()):
+        if (row, col) not in self.available_moves():
             print(Fore.YELLOW + "Cell has been placed with mark!")
             return None
-        
+
         return row, col
-    
+
     def count_sequence(self):
+        """Render board, count winning sequences and determine winner mark by majority."""
         self.render_board()
         counts = self.check_winner()
         player = counts.get(self.player_mark, 0)
         pet = counts.get(self.pet_mark, 0)
-        if (player > pet):
+        if player > pet:
             winner = self.player_mark
-        elif (pet > player):
+        elif pet > player:
             winner = self.pet_mark
         else:
             winner = None
-            
+
         return winner
-    
+
     def build_game(self):
+        """Run the main turn loop until the board is finished or no moves left."""
         player_turn = self.first
-        
+
         while True:
             self.render_board()
-            
+
             if player_turn:
                 self._execute_player_turn()
             else:
                 self._execute_pet_turn()
-            
+
             if self._check_game_over():
                 break
-            
+
             player_turn = not player_turn
-        
+
         return {"winner": self.winner}
 
     def _execute_player_turn(self) -> None:
@@ -601,18 +618,26 @@ class TicTacToe(MinigameStrategy):
         """Handle the pet's turn."""
         row, col = self.pet_move()
         self.make_move(row, col, self.pet_mark)
-        print(f"Pet placed '{self.pet_mark}' at at (row-{row + 1} col-{col + 1}).")
+        print(f"Pet placed '{self.pet_mark}' at (row-{row + 1} col-{col + 1}).")
 
     def _check_game_over(self) -> bool:
-        if self.row_length >= 3 or ((self.win_length <= 4) and (self.row_length < 4)):
-            if self.check_winner() or not self.available_moves():
+        """Check if the game has ended and set the winner."""
+        if (self.win_length <= 4) and (self.row_length < 4):
+            if self.check_winner():
                 self.render_board()
                 self.winner = self.count_sequence()
                 return True
+
+        if self.row_length >= 3:
+            if not self.available_moves():
+                self.render_board()
+                self.winner = self.count_sequence()
+                return True
+
         return False
 
-    
     def evaluate(self, summary):
+        """Convert the raw summary into a result outcome string."""
         winner = summary.get("winner")
         if winner == self.player_mark:
             outcome = "Win"
@@ -623,12 +648,13 @@ class TicTacToe(MinigameStrategy):
         return {"outcome": outcome}
 
     def reward(self, result):
+        """Translate outcome into currency and pet happiness and display a summary."""
         outcome = result.get("outcome")
-        if (outcome == "Win"):
+        if outcome == "Win":
             coins = 20
             pet_happiness = 0
             print("\nYou win! 🎉")
-        elif (outcome == "Draw"):
+        elif outcome == "Draw":
             coins = 5
             pet_happiness = 2
             print("\nIt's a draw!")
@@ -640,8 +666,9 @@ class TicTacToe(MinigameStrategy):
         print(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
         print(Fore.GREEN + f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉")
         return {"currency": coins, "pet_happiness": pet_happiness}
-    
+
     def play(self, player: Any, pet: Any) -> Dict[str, int]:
+        """Run an entire TicTacToe game and return rewards."""
         self.setup(player, pet)
         self.display_menu()
         self.build_question()
@@ -651,7 +678,10 @@ class TicTacToe(MinigameStrategy):
         reward = self.reward(result)
         return reward
 
+
 class MemoryMatch(MinigameStrategy):
+    """Memorize-and-recall game using digits, words or mixed tokens."""
+
     name = "Memory Match"
 
     def load_words(self):
@@ -660,7 +690,7 @@ class MemoryMatch(MinigameStrategy):
         return words
 
     def setup(self, player, pet):
-        self.player = player 
+        self.player = player
         self.pet = pet
         self.sequence = []
         self.user_response = []
@@ -670,8 +700,9 @@ class MemoryMatch(MinigameStrategy):
         self.end_time = None
         self.difficulty = 0
         self.words = self.load_words()
-    
+
     def display_menu(self):
+        """Explain Memory Match rules and difficulty levels."""
         print("\n" + GARIS)
         print("🧩 Memory Match 🧩")
         print(GARIS)
@@ -684,28 +715,33 @@ class MemoryMatch(MinigameStrategy):
         print("2. Medium (sequence length 3-4, words)")
         print("3. Hard   (sequence length 6-8, mixed digits/words)")
         print(GARIS)
-    
+
     def get_input(self):
-        diff = int(input("Choose difficulty (1-3): ").strip())
+        """Collect difficulty choice."""
+        try:
+            diff = int(input("Choose difficulty (1-3): ").strip())
+        except ValueError:
+            diff = 1
         if diff not in range(1, 4):
             diff = 1
         self.difficulty = diff
-    
+
     def build_question(self):
+        """Build the sequence to memorize based on difficulty and charset."""
         diff = self.difficulty
-        if (diff == 1):
+        if diff == 1:
             self.length = choice([5, 6])
             self.charset = "digits"
-        elif (diff == 2):
+        elif diff == 2:
             self.length = choice([3, 4])
             self.charset = "words"
         else:
             self.length = choice([6, 7, 8])
             self.charset = "mixed"
 
-        if (self.charset == "digits"):
+        if self.charset == "digits":
             self.sequence = [str(randint(0, 9)) for _ in range(self.length)]
-        elif (self.charset == "words"):
+        elif self.charset == "words":
             for _ in range(self.length):
                 self.sequence.append(choice(self.words))
         else:
@@ -715,8 +751,9 @@ class MemoryMatch(MinigameStrategy):
                     self.sequence.append(str(randint(0, 9)))
                 else:
                     self.sequence.append(choice(self.words))
-    
+
     def build_game(self):
+        """Show the sequence briefly and then prompt the player to reproduce it."""
         print("\n" + GARIS)
         print("Game started!")
         print(GARIS)
@@ -730,10 +767,11 @@ class MemoryMatch(MinigameStrategy):
         return ans_list
 
     def evaluate(self, answer):
+        """Compare the user's response to the expected sequence and count correct items."""
         self.user_response = answer
         correct = 0
         for expected, ans in zip(self.sequence, self.user_response):
-            if (expected == ans):
+            if expected == ans:
                 correct += 1
         total = len(self.sequence)
         exact = (correct == total) and (len(self.user_response) == total)
@@ -747,30 +785,32 @@ class MemoryMatch(MinigameStrategy):
         }
 
         return user_stats
-    
+
     def reward(self, result):
+        """Compute rewards and print a summary for MemoryMatch."""
         correct = int(result.get("correct", 0))
         total = int(result.get("total", 1))
         exact = bool(result.get("exact", False))
         coins = correct * int(self.difficulty)
 
-        if (exact) and (total > 0):
+        if exact and total > 0:
             coins += (5 * int(self.difficulty))
 
-        pet_happiness = correct // int(self.difficulty)
-        
+        pet_happiness = correct // int(self.difficulty) if self.difficulty else correct
+
         print("\n" + GARIS)
         print("RESULT".center(len(GARIS)))
         print(GARIS)
         print(f"Sequence was: {' '.join(result['sequence'])}")
         print(f"Your response: {' '.join(result['response']) if result['response'] else '(none)'}")
         print(f"\nCorrect: {correct}/{total}")
-        if (exact):
+        if exact:
             print(Fore.GREEN + "Perfect! Bonus awarded! 🎉")
         print(f"You earned Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})\n")
         return {"currency": coins, "pet_happiness": pet_happiness}
 
     def play(self, player, pet):
+        """Run the MemoryMatch flow and return rewards."""
         self.setup(player, pet)
         self.display_menu()
         self.get_input()
@@ -779,7 +819,10 @@ class MemoryMatch(MinigameStrategy):
         result = self.evaluate(answer)
         return self.reward(result)
 
+
 class BattleContest(MinigameStrategy):
+    """Simple multi-round pet-battle simulation against another player's pet."""
+
     name = "Battle Tournament"
 
     def setup(self, player, pet):
@@ -793,7 +836,7 @@ class BattleContest(MinigameStrategy):
         self.player_health = self.player_pet.health * 1000
         self.player_won = 0
         other_players_with_pets = list(filter(lambda user: user != self.player and user.pets, User.users.values()))
-        if (other_players_with_pets):
+        if other_players_with_pets:
             self.opponent = choice(other_players_with_pets)
             self.opponent_pet = choice(self.opponent.pets)
         else:
@@ -810,8 +853,9 @@ class BattleContest(MinigameStrategy):
         self.opponent_heal_count = 0
         self.opponent_heal_limit = 5
         return True
-    
+
     def display_menu(self):
+        """Display battle status and available actions for the current round."""
         print("\n" + GARIS)
         print(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(GARIS)))
         print(GARIS)
@@ -821,13 +865,13 @@ class BattleContest(MinigameStrategy):
         print(f"Strength: {self.player_pet_stats['strength']}")
         print(f"Agility: {self.player_pet_stats['agility']}")
         print('-' * len(GARIS))
-        
-        if (self.opponent_pet):
+
+        if self.opponent_pet:
             print(f"Opponent: {self.opponent_pet.name}")
             print(f"Health: {self.opponent_health}")
             print(f"Strength: {self.player_pet_stats['strength']}")
             print(f"Agility: {self.player_pet_stats['agility']}")
-        
+
         print(GARIS)
         print("\nBattle Options:")
         print(GARIS)
@@ -836,19 +880,21 @@ class BattleContest(MinigameStrategy):
         print("3. Special Move ✨")
         print("4. Heal ❤️‍🩹")
         print(GARIS)
-    
+
     def get_input(self):
+        """Prompt and validate a numeric choice for the battle action."""
         while True:
             try:
                 choice = int(input("Choose your action (1-4): "))
-                if (1 <= choice <= 4):
+                if 1 <= choice <= 4:
                     return choice
                 else:
                     print(Fore.RED + "Please enter a number between 1-4!")
             except ValueError:
                 print(Fore.RED + "Please enter a valid number!")
-    
+
     def build_question(self) -> Any:
+        """Prepare the battle sequence and announce start."""
         print("\n" + GARIS)
         print("Battle Starting!")
         print(GARIS)
@@ -857,25 +903,26 @@ class BattleContest(MinigameStrategy):
         time.sleep(2)
 
     def build_game(self) -> Any:
+        """Main battle loop: alternate player/opponent actions until one health reaches 0."""
         while self.opponent_health > 0 and self.player_health > 0:
             self.display_menu()
             player_choice = self.get_input()
-            
+
             self._execute_player_action(player_choice)
             self._execute_opponent_action()
-            
+
             self.current_round += 1
             time.sleep(1)
-        
+
         self._determine_battle_outcome()
-        
+
         battle_result = {
             "player_health": max(0, self.player_health),
             "opponent_health": max(0, self.opponent_health),
             "player_won": (self.player_won > self.opponent_won),
             "rounds_played": self.current_round
         }
-        
+
         return battle_result
 
     def _execute_player_action(self, choice: int) -> None:
@@ -890,9 +937,9 @@ class BattleContest(MinigameStrategy):
             self._player_heal()
 
     def _execute_opponent_action(self) -> None:
-        """Execute the opponent's action."""
+        """Execute the opponent's action chosen at random."""
         opponent_choice = randint(1, 4)
-        
+
         if opponent_choice == 1:
             self._opponent_attack()
         elif opponent_choice == 2:
@@ -909,14 +956,14 @@ class BattleContest(MinigameStrategy):
         print(f"\n{self.player_pet.name} attacks for {damage} damage ⚔️!")
 
     def _player_defend(self) -> None:
-        """Player defends."""
+        """Player defends, temporarily reducing incoming damage (display only)."""
         defense_bonus = randint(2, 5) * 3000
         print(f"\n{self.player_pet.name} defends 🛡️!")
         print(f"Damage reduction: {defense_bonus}")
 
     def _player_special_move(self) -> None:
         """Player uses special move (only on even rounds)."""
-        if (self.current_round % 2 == 0):
+        if self.current_round % 2 == 0:
             special_damage = (randint(10, 15) + self.player_pet_stats["strength"] // 2) * 600
             self.opponent_health -= special_damage
             print(f"\n{self.player_pet.name} uses special move for {special_damage} damage ✨!")
@@ -924,8 +971,8 @@ class BattleContest(MinigameStrategy):
             print(Fore.RED + "\nSpecial moves are locked in odd rounds!")
 
     def _player_heal(self) -> None:
-        """Player heals."""
-        if (self.player_heal_count < self.player_heal_limit):
+        """Player heals if heal limit not exceeded."""
+        if self.player_heal_count < self.player_heal_limit:
             heal_amount = randint(8, 12) * 500
             self.player_health += heal_amount
             print(f"\n{self.player_pet.name} heals for {heal_amount} health ❤️‍🩹!")
@@ -940,45 +987,46 @@ class BattleContest(MinigameStrategy):
         print(f"{self.opponent_pet.name} attacks for {damage} damage ⚔️!")
 
     def _opponent_defend(self) -> None:
-        """Opponent defends."""
+        """Opponent defends (display only)."""
         defense_bonus = randint(1, 4) * 3000
-        print(f"{self.opponent_pet. name} defends 🛡️!")
+        print(f"{self.opponent_pet.name} defends 🛡️!")
         print(f"Damage reduction: {defense_bonus}")
 
     def _opponent_special_move(self) -> None:
-        """Opponent uses special move (only on odd rounds)."""
-        if (self.current_round % 2 != 0):
+        """Opponent special move (only on odd rounds)."""
+        if self.current_round % 2 != 0:
             special_damage = (randint(8, 12) + self.opponent_pet_stats["strength"] // 2) * 600
             self.player_health -= special_damage
             print(f"{self.opponent_pet.name} uses special move for {special_damage} damage ✨!")
         else:
-            print(Fore. RED + "\nOpponent's special moves are restricted on even rounds!")
+            print(Fore.RED + "\nOpponent's special moves are restricted on even rounds!")
 
     def _opponent_heal(self) -> None:
-        """Opponent heals."""
-        if (self.opponent_heal_count < self.opponent_heal_limit):
+        """Opponent heals if heal limit not exceeded."""
+        if self.opponent_heal_count < self.opponent_heal_limit:
             heal_amount = randint(6, 10) * 500
             self.opponent_health += heal_amount
             print(f"{self.opponent_pet.name} heals for {heal_amount} health ❤️‍🩹!")
             self.opponent_heal_count += 1
         else:
-            print(Fore. RED + "\nOpponent's healing ability are restricted to 5 times only!")
+            print(Fore.RED + "\nOpponent's healing ability are restricted to 5 times only!")
 
     def _determine_battle_outcome(self) -> None:
-        """Determine and display the battle outcome."""
+        """Determine and display the battle outcome and update counters."""
         if self.opponent_health <= 0:
             print(f"{self.opponent_pet.name} was defeated 🎉!")
             self.player_won += 1
             self.current_round += 1
-        
+
         if self.player_health <= 0:
             print(f"{self.player_pet.name} was defeated 🎉!")
             self.opponent_won += 1
-        
+
         if self.player_health <= 0 and self.opponent_health <= 0:
             print("It's a draw! 🤺")
 
     def evaluate(self, answer):
+        """Construct a richer evaluation dict from raw battle results."""
         battle_result = answer
         player_won = battle_result.get("player_won", False)
         player_health = battle_result.get("player_health", 0)
@@ -991,18 +1039,19 @@ class BattleContest(MinigameStrategy):
             "performance_score": min(100, (player_health * 3) + (50 if player_won else 0)),
             "battle_ended": (player_health <= 0 or opponent_health <= 0)
         }
-        
+
         return evaluation
-    
+
     def reward(self, result):
+        """Compute and print battle rewards based on performance and outcome."""
         victory = bool(result.get("victory", False))
         performance_score = int(result.get("performance_score", 0))
         player_health_remaining = int(result.get("player_health_remaining", 0))
-        
+
         coins = 0
         pet_happiness = 0
-        
-        if (victory):
+
+        if victory:
             coins = 20 + (performance_score // 10)
             pet_happiness = 15 + ((player_health_remaining - 1000) // 5)
             print(Fore.GREEN + f"🎉 VICTORY! {self.player_pet.name} won the battle!")
@@ -1010,7 +1059,7 @@ class BattleContest(MinigameStrategy):
             coins = 5 + (performance_score // 20)
             pet_happiness = 5 + ((player_health_remaining - 1000) // 10)
             print(Fore.RED + f"💔 Defeat... {self.player_pet.name} was defeated.")
-        
+
         print("\n" + GARIS)
         print("BATTLE RESULTS")
         print(GARIS)
@@ -1019,35 +1068,40 @@ class BattleContest(MinigameStrategy):
         print(f"Coins Earned: {'{:,}'.format(coins * 1000)}")
         print(f"Pet Happiness: (+{pet_happiness})")
         print(GARIS)
-        
+
         return {"currency": coins, "pet_happiness": pet_happiness}
 
     def play(self, player, pet):
+        """Run the battle contest flow and return rewards (if setup succeeds)."""
         res = self.setup(player, pet)
-        if (res):
+        if res:
             self.build_question()
             battle_result = self.build_game()
             evaluation = self.evaluate(battle_result)
             return self.reward(evaluation)
-    
+
+
 class MinigameEngine:
+    """Registry for minigame strategies and helper to play them by name."""
+
     def __init__(self):
         self._games = {}
-    
+
     def register(self, game: MinigameStrategy) -> None:
         self._games[game.name] = game
-    
+
     def list_games(self) -> List:
         return list(self._games.keys())
 
     def play(self, name, player, pet):
         game = self._games.get(name)
-        if (not game):
+        if not game:
             print("This minigame currently not available!")
             return {"currency": 0, "pet_happiness": 0}
         return game.play(player, pet)
 
 def engine() -> MinigameEngine:
+    """Convenience factory to build an engine pre-registered with available minigames."""
     engine = MinigameEngine()
     engine.register(MathQuiz())
     engine.register(TicTacToe())

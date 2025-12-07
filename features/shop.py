@@ -13,18 +13,51 @@ def clear():
 
 OUT_OF_STOCK = "Out of Stock"
 
+"""
+shop.py
+
+Console-driven Shop UI for the Virtual Pet Game.
+
+Responsibilities:
+- Present catalogs for food, soap, and potion items.
+- Allow the player to purchase items (checks currency and updates inventory).
+- Show the player's current currency.
+- Provide a simple interactive loop (interact) used by the higher-level game flows.
+
+Notes:
+- Item definitions and prices are sourced from VirtualPet.{FOOD_DEF, SOAP_DEF, POTION_DEF}.
+- The Shop expects a User instance with attributes: currency, inventory, add_item, limit_currency.
+- All behavior is preserved; this update only adds documentation and small clarifying comments.
+"""
+
 class Shop:
+    """
+    Shopping assistant for a specific user.
+
+    The Shop instance is constructed with a User object and operates on that user's
+    currency and inventory.
+    """
     def __init__(self, user: User):
+        """
+        Args:
+            user: the User instance who is shopping.
+        """
         self.user = user
 
     @staticmethod
     def _input_int(prompt: str):
+        """
+        Read an integer from stdin and return it; return None on invalid input.
+
+        This central helper keeps input parsing consistent across the shop UI.
+        """
         try:
             return int(input(prompt))
         except ValueError:
             return None
 
     def show_currency(self) -> None:
+        """Print the user's current currency with a small friendly message."""
         print(GARIS)
         money = self.user.currency
         if money >= 1000:
@@ -35,36 +68,40 @@ class Shop:
         print(GARIS + "\n")
 
     def _list_food_items(self) -> List[Tuple[str, str, int, int, int]]:
+        """Return a list of tuples describing available food items (name, emoji, price, qty, index)."""
         inv = self.user.inventory["food"]
         items: List[Tuple[str, str, int, int, int]] = []
         for i, (name, data) in enumerate(VirtualPet.FOOD_DEF.items(), start=1):
-            emoji = data["emoji"]  
-            price = int(data["price"])  
+            emoji = data["emoji"]
+            price = int(data["price"])
             qty = inv.get(name, 0)
             items.append((name, emoji, price, qty, i))
         return items
 
     def _list_soap_items(self) -> List[Tuple[str, str, int, int, int]]:
+        """Return a list of soap items (name, emoji, price, qty, index)."""
         inv = self.user.inventory["soap"]
         items: List[Tuple[str, str, int, int, int]] = []
         for i, (name, data) in enumerate(VirtualPet.SOAP_DEF.items(), start=1):
-            emoji = data["emoji"]  
-            price = int(data["price"])  
+            emoji = data["emoji"]
+            price = int(data["price"])
             qty = inv.get(name, 0)
             items.append((name, emoji, price, qty, i))
         return items
 
     def _list_potion_items(self) -> List[Tuple[str, str, int, int, int]]:
+        """Return a list of potion items (name, emoji, price, qty, index)."""
         inv = self.user.inventory["potion"]
         items: List[Tuple[str, str, int, int, int]] = []
         for i, (name, data) in enumerate(VirtualPet.POTION_DEF.items(), start=1):
-            emoji = data["emoji"]  
-            price = int(data["price"])  
+            emoji = data["emoji"]
+            price = int(data["price"])
             qty = inv.get(name, 0)
             items.append((name, emoji, price, qty, i))
         return items
 
     def catalog_food(self) -> None:
+        """Print the formatted food catalog to the console."""
         print(GARIS)
         print("FOOD CATALOG")
         print(GARIS)
@@ -74,6 +111,7 @@ class Shop:
         print(GARIS + "\n")
 
     def catalog_soap(self) -> None:
+        """Print the formatted soap catalog to the console."""
         print(GARIS)
         print("SOAP CATALOG")
         print(GARIS)
@@ -83,6 +121,7 @@ class Shop:
         print(GARIS + "\n")
 
     def catalog_potion(self) -> None:
+        """Print the formatted potion catalog to the console."""
         print(GARIS)
         print("POTION CATALOG")
         print(GARIS)
@@ -92,6 +131,11 @@ class Shop:
         print(GARIS + "\n")
 
     def _buy_category_and_index(self) -> tuple[str | None, int | None]:
+        """
+        Interactively ask the user which category they want to buy from and return
+        the category key plus the selected item index (1-based). Returns (None, None)
+        on invalid selection.
+        """
         print(GARIS)
         print("🐼 : Hello, my lovely customer, welcome to our store!")
         asyncio.run(loading())
@@ -122,12 +166,17 @@ class Shop:
             return "potion", idx
 
     def _resolve_item_by_index(self, category: str, idx: int) -> str | None:
+        """
+        Resolve the item name by the user-visible index within the chosen category.
+
+        Returns None on invalid index.
+        """
         if idx is None:
             return None
-        
-        if (category == "food"):
+
+        if category == "food":
             items = self._list_food_items()
-        elif (category == "soap"):
+        elif category == "soap":
             items = self._list_soap_items()
         else:
             items = self._list_potion_items()
@@ -139,6 +188,7 @@ class Shop:
         return items[idx - 1][0]
 
     def _price_for_category(self, category: str, name: str) -> int:
+        """Return the price of a named item for the given category."""
         if category == "food":
             return int(VirtualPet.FOOD_DEF[name]["price"])
         elif category == "soap":
@@ -147,9 +197,17 @@ class Shop:
             return int(VirtualPet.POTION_DEF[name]["price"])
 
     def _add_stock(self, category: str, name: str, amount: int) -> None:
+        """Add amount of item to the user's inventory via the User API."""
         self.user.add_item(category, name, amount)
 
     def _buy_flow(self) -> None:
+        """
+        Complete purchase flow:
+         - choose category and item
+         - ask quantity
+         - verify affordability
+         - deduct currency and add to inventory
+        """
         category, idx = self._buy_category_and_index()
         if category is None or idx is None:
             return
@@ -172,6 +230,7 @@ class Shop:
             print(f"🐼 : Needed: Rp. {'{:,}'.format(total)}, You have: Rp. {'{:,}'.format(self.user.currency)}\n")
             return
 
+        # Deduct currency and add items to inventory
         self.user.currency = self.user.currency - total
         self.user.limit_currency()
         self._add_stock(category, name, amount)
@@ -195,6 +254,14 @@ class Shop:
             print(f"🐼 : Total money left: Rp. {money_left}\n")
 
     def interact(self) -> None:
+        """
+        Top-level shop interaction loop displayed to the user.
+
+        Options:
+         1 - Buy Item
+         2 - Show Current Currency
+         3 - Exit
+        """
         print("\n🐼 : Hi, I'm Po Ping. I'll be your shopping assistant for today!")
         asyncio.run(loading())
         clear()
