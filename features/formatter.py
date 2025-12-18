@@ -40,21 +40,22 @@ class Formatter:
         self.max_length = 0
         self.max_len = 55
 
-    def truncate(self, text: str) -> str:
+    def truncate(self, text: str, max_len: int, ellipsis: str = "...", strip: bool = False) -> str:
         """
-        Truncate text to a safe maximum length so it doesn't break the visual layout.
-
-        Args:
-            text: input string to truncate.
-
-        Returns:
-            The original text if shorter than max_len, otherwise a truncated string
-            with an ellipsis appended.
+        Truncate a string to a maximum length, appending an ellipsis if truncated.
+        
+        Parameters:
+        - text: string to truncate
+        - max_len: maximum total length including ellipsis
+        - ellipsis: string to append if truncated
+        - strip: whether to strip trailing whitespace before adding ellipsis
         """
-        if len(text) <= self.max_len:
+        if len(text) <= max_len:
             return text
-        else:
-            return text[: self.max_len - 3] + "..."
+        truncated = text[:max_len - len(ellipsis)]
+        if strip:
+            truncated = truncated.rstrip()
+        return truncated + ellipsis
 
     def format_username_box(self, username: str, pets: int) -> str:
         """
@@ -70,9 +71,9 @@ class Formatter:
         max_length = self.max_length
 
         lines = [
-            self.truncate("USER STATUS"),
-            self.truncate(f"Logged in as : {username}"),
-            self.truncate(f"Number of pets: {len(pets)}"),
+            self.truncate("USER STATUS", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Logged in as : {username}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Number of pets: {len(pets)}", self.max_len, ellipsis="", strip=False),
         ]
 
         for line in lines:
@@ -108,9 +109,9 @@ class Formatter:
         max_length = self.max_length
 
         lines = [
-            self.truncate("TIME STATUS"),
-            self.truncate(f"Current Time : {hours}"),
-            self.truncate(f"Days Passed  : {days}"),
+            self.truncate("TIME STATUS", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Current Time : {hours}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Days Passed  : {days}", self.max_len, ellipsis="", strip=False),
         ]
 
         for line in lines:
@@ -149,41 +150,40 @@ class Formatter:
         """
         max_length = self.max_length
 
-        title = self.truncate(f"{pet.name}'s Status")
+        title = self.truncate(f"{pet.name}'s Status", self.max_len, ellipsis="", strip=False)
 
         if len(stats.keys()) == 4:
             lines = [
-                self.truncate(f"Fat        : {pet.fat}"),
-                self.truncate(f"Health     : {pet.health}"),
-                self.truncate(f"Energy     : {pet.energy}"),
-                self.truncate(f"Age        : {pet.age}"),
+                self.truncate(f"Fat        : {pet.fat}", self.max_len, ellipsis="", strip=False),
+                self.truncate(f"Health     : {pet.health}", self.max_len, ellipsis="", strip=False),
+                self.truncate(f"Energy     : {pet.energy}", self.max_len, ellipsis="", strip=False),
+                self.truncate(f"Age        : {pet.age}", self.max_len, ellipsis="", strip=False),
             ]
 
         elif len(stats.keys()) == 3:
 
             if ("fat", "hunger", "happiness") == tuple(stats.keys()):
                 lines = [
-                    self.truncate(f"Hunger     : {pet.hunger}"),
-                    self.truncate(f"Happiness  : {pet.happiness}"),
-                    self.truncate(f"Fat        : {pet.fat}"),
+                    self.truncate(f"Hunger     : {pet.hunger}", self.max_len, ellipsis="", strip=False),
+                    self.truncate(f"Happiness  : {pet.happiness}", self.max_len, ellipsis="", strip=False),
+                    self.truncate(f"Fat        : {pet.fat}", self.max_len, ellipsis="", strip=False),
                 ]
 
             else:
                 lines = [
-                    self.truncate(f"Hunger     : {pet.hunger}"),
-                    self.truncate(f"Happiness  : {pet.happiness}"),
-                    self.truncate(f"Energy     : {pet.energy}"),
+                    self.truncate(f"Hunger     : {pet.hunger}", self.max_len, ellipsis="", strip=False),
+                    self.truncate(f"Happiness  : {pet.happiness}", self.max_len, ellipsis="", strip=False),
+                    self.truncate(f"Energy     : {pet.energy}", self.max_len, ellipsis="", strip=False),
                 ]
 
         else:
             if ("sanity", "happiness") == tuple(stats.keys()):
                 lines = [
-                    self.truncate(f"Sanity     : {pet.sanity}"),
-                    self.truncate(f"Happiness  : {pet.happiness}"),
+                    self.truncate(f"Sanity     : {pet.sanity}", self.max_len, ellipsis="", strip=False),
+                    self.truncate(f"Happiness  : {pet.happiness}", self.max_len, ellipsis="", strip=False),
                 ]
             else:
-                lines = [self.truncate(f"Energy: {pet.energy}"), self.truncate(f"Hunger: {pet.hunger}")]
-
+                lines = [self.truncate(f"Energy: {pet.energy}", self.max_len, ellipsis="", strip=False), self.truncate(f"Hunger: {pet.hunger}", self.max_len, ellipsis="", strip=False)]
         for line in lines:
             max_length = max(max_length, len(title), len(line) + 5)
 
@@ -217,17 +217,17 @@ class Formatter:
         max_length = self.max_length
 
         lines = [
-            self.truncate(f"{stats['name']}, the {stats['type']}"),
-            self.truncate(f"Age        : {stats['age']}"),
-            self.truncate(f"Hunger     : {stats['hunger']}"),
-            self.truncate(f"Fat        : {stats['fat']}"),
-            self.truncate(f"Sanity     : {stats['sanity']}"),
-            self.truncate(f"Happy      : {stats['happiness']}"),
-            self.truncate(f"Energy     : {stats['energy']}"),
-            self.truncate(f"Health     : {stats['health']}"),
-            self.truncate(f"Mood       : {stats['mood']}"),
-            self.truncate(f"Status     : {stats['summary']}"),
-            self.truncate(f"Age Status : {stats['age_summary']}"),
+            self.truncate(f"{stats['name']}, the {stats['type']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Age        : {stats['age']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Hunger     : {stats['hunger']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Fat        : {stats['fat']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Sanity     : {stats['sanity']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Happy      : {stats['happiness']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Energy     : {stats['energy']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Health     : {stats['health']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Mood       : {stats['mood']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Status     : {stats['summary']}", self.max_len, ellipsis="", strip=False),
+            self.truncate(f"Age Status : {stats['age_summary']}", self.max_len, ellipsis="", strip=False),
         ]
         # Find the longest text length in the lines list and use it for box width.
         # Example lengths:
