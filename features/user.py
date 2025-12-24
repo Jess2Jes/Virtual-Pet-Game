@@ -1,9 +1,5 @@
 from .pet import VirtualPet
 import math
-from random import randrange
-from typing import Dict, Any, Optional
-from colorama import Fore, init
-init(autoreset=True)
 import asyncio
 import re
 import bcrypt
@@ -14,6 +10,11 @@ from rich.progress import (
     TaskProgressColumn,
     TimeRemainingColumn
 )
+from random import randrange
+from typing import Dict, Any, Optional
+from colorama import Fore, init
+init(autoreset=True)
+
 
 """
 user.py
