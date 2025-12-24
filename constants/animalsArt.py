@@ -50,7 +50,7 @@ class DragonArt(AnimalArtProtocol):
     adult = adult_dragon
     elder = elder_dragon
     
-class PouArt(AnimalArtProtocol) -> str: 
+class PouArt(AnimalArtProtocol): 
     """
     Contains ASCII art representations of pous.
     """
