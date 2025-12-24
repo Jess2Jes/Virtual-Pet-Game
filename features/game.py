@@ -1,10 +1,11 @@
 import datetime
 from random import randrange, choice as ch
-from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
-from .formatter import Formatter, GARIS
-from .user import User
 from colorama import Fore, init
 import json
+from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
+from .formatter import Formatter
+from constants.configs import GARIS, NO_STOCK, FOOD_DEF, SOAP_DEF, POTION_DEF
+from .user import User
 init(autoreset=True)
 
 """
@@ -194,7 +195,7 @@ class Game:
         for idx, (key, v) in enumerate(defs.items(), start=1):
             emoji = str(v["emoji"])
             qty = inv.get(key, 0)
-            stock_text = f"{qty}" if qty > 0 else f"{Fore.RED}Out of stock{Fore.RESET}"
+            stock_text = f"{qty}" if qty > 0 else f"{Fore.RED}{NO_STOCK}{Fore.RESET}"
             if is_food:
                 print(f"{idx}. {key} {emoji} (Hunger: {v['hunger']}, Happiness: {v['happiness']}, Available: {stock_text})")
             elif is_soap:
@@ -234,13 +235,13 @@ class Game:
             return
         inv = user.inventory["food"]
         if inv.get(choice, 0) <= 0:
-            print(Fore.RED + f"\n{choice} is out of stock. Buy more in the shop before feeding.\n")
+            print(Fore.RED + f"\n{choice} is {NO_STOCK}. Buy more in the shop before feeding.\n")
             return
         used = pet.feed(choice)
         if used:
             user.consume_item("food", choice, 1)
             remaining = user.inventory["food"][choice]
-            emoji = str(VirtualPet.FOOD_DEF[choice]["emoji"])
+            emoji = str(FOOD_DEF[choice]["emoji"])
             print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     @staticmethod
@@ -299,13 +300,13 @@ class Game:
             return
         inv = user.inventory["soap"]
         if inv.get(choice, 0) <= 0:
-            print(Fore.RED + f"\n{choice} is out of stock. Buy more in the shop before bathing.\n")
+            print(Fore.RED + f"\n{choice} is {NO_STOCK}. Buy more in the shop before bathing.\n")
             return
         used = pet.bath(choice)
         if used:
             user.consume_item("soap", choice, 1)
             remaining = user.inventory["soap"][choice]
-            emoji = str(VirtualPet.SOAP_DEF[choice]["emoji"])
+            emoji = str(SOAP_DEF[choice]["emoji"])
             print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     @staticmethod
@@ -327,13 +328,13 @@ class Game:
             return
         inv = user.inventory["potion"]
         if inv.get(choice, 0) <= 0:
-            print(Fore.RED + f"\n{choice} is out of stock. Buy more in the shop before using.\n")
+            print(Fore.RED + f"\n{choice} is {NO_STOCK}. Buy more in the shop before using.\n")
             return
         used = pet.health_care(choice)
         if used:
             user.consume_item("potion", choice, 1)
             remaining = user.inventory["potion"][choice]
-            emoji = str(VirtualPet.POTION_DEF[choice]["emoji"])
+            emoji = str(POTION_DEF[choice]["emoji"])
             print(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     def _sleep(self, pet: VirtualPet, user: User) -> None:
@@ -710,9 +711,9 @@ class Game:
     def _stocks(self) -> dict:
         """Return a mapping of stock menu keys to display metadata."""
         return {
-            1: ["List of Foods:", VirtualPet.FOOD_DEF, "food"],
-            3: ["List of Soaps:", VirtualPet.SOAP_DEF, "soap"],
-            4: ["List of Potions:", VirtualPet.POTION_DEF, "potion"],
+            1: ["List of Foods:", FOOD_DEF, "food"],
+            3: ["List of Soaps:", SOAP_DEF, "soap"],
+            4: ["List of Potions:", POTION_DEF, "potion"],
         }
 
     def _actions(self):

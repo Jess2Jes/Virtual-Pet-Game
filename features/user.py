@@ -1,4 +1,3 @@
-from .pet import VirtualPet
 import math
 import asyncio
 import re
@@ -10,9 +9,11 @@ from rich.progress import (
     TaskProgressColumn,
     TimeRemainingColumn
 )
+from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF
 from random import randrange
 from typing import Dict, Any, Optional
 from colorama import Fore, init
+from .pet import VirtualPet
 init(autoreset=True)
 
 
@@ -36,7 +37,6 @@ Notes:
 
 # Regular expression for strong passwords:
 valid_password = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$"
-GARIS = "─" * 101
 
 
 async def loading():
@@ -86,9 +86,9 @@ class User:
 
         # Initialize inventory from VirtualPet definitions (default quantity 3)
         self.inventory: Dict[str, Dict[str, int]] = {
-            "food": dict.fromkeys(VirtualPet.FOOD_DEF.keys(), 3),
-            "soap": dict.fromkeys(VirtualPet.SOAP_DEF.keys(), 3),
-            "potion": dict.fromkeys(VirtualPet.POTION_DEF.keys(), 3),
+            "food": dict.fromkeys(FOOD_DEF.keys(), 3),
+            "soap": dict.fromkeys(SOAP_DEF.keys(), 3),
+            "potion": dict.fromkeys(POTION_DEF.keys(), 3),
         }
 
     @staticmethod

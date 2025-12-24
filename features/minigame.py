@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Tuple
-from .formatter import GARIS
+from constants.configs import GARIS
 from abc import ABC, abstractmethod
 from random import randint, choice, random
 import time
