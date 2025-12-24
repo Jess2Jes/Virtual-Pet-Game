@@ -7,7 +7,6 @@ formatter.py
 Provides a small ASCII-box formatter used by the Virtual Pet Game.
 
 This module contains:
-- GARIS: a horizontal line constant used elsewhere in the application.
 - Formatter: helper class to render consistent boxed text displays for:
     - user status (username, number of pets)
     - time status (current time, days passed)
@@ -18,9 +17,6 @@ Notes:
 - The original implementation included Indonesian comments; those have been translated
   to English and additional docstrings were added for clarity. No runtime logic was changed.
 """
-
-GARIS = "─" * 101
-
 
 class Formatter:
     """

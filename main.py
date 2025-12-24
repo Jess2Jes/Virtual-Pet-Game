@@ -2,7 +2,7 @@ from features.shop import Shop
 from features.game import Game
 from features.user import User, loading
 import sys
-from features.formatter import GARIS
+from constants.configs import GARIS, USERNAME_INPUTTING, PASSWORD_INPUTTING
 from features.minigame import engine
 import os
 import datetime
@@ -15,8 +15,7 @@ init(autoreset=True)
 def clear():
     os.system("cls" if os.name == "nt" else "clear")
 
-INPUT_USERNAME = "Username: "
-INPUT_PASSWORD = "Password: "
+
 
 
 """
@@ -320,7 +319,7 @@ class Main:
     def _register_flow(self) -> None:
         """Interactive registration flow: ask for username/password and attempt registration."""
         while True:
-            username = input(INPUT_USERNAME).strip()
+            username = input(USERNAME_INPUTTING).strip()
             password = input(
                 "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
             ).strip()
@@ -341,8 +340,8 @@ class Main:
     def _login_flow(self) -> None:
         """Interactive login flow: prompt for credentials and attempt login."""
         while True:
-            username = input(INPUT_USERNAME).strip()
-            password = input(INPUT_PASSWORD).strip()
+            username = input(USERNAME_INPUTTING).strip()
+            password = input(PASSWORD_INPUTTING).strip()
 
             if self.facade.login_user(username, password):
                 break
@@ -369,8 +368,8 @@ class Main:
     def _change_password_flow(self) -> None:
         """Prompt for credentials and new password, then attempt to change it."""
         while True:
-            username = input(INPUT_USERNAME).strip()
-            password = input(INPUT_PASSWORD).strip()
+            username = input(USERNAME_INPUTTING).strip()
+            password = input(PASSWORD_INPUTTING).strip()
             new_password = input("Your New Password: ").strip()
 
             if self.facade.change_password(username, password, new_password):

@@ -1,5 +1,5 @@
 from .pet import VirtualPet
-from .formatter import GARIS
+from constants.configs import GARIS
 from constants.animalsArt import (
     CatsArt as CAT,
     RabbitsArt as RABBIT,
@@ -18,25 +18,25 @@ class Cat(VirtualPet):
         self.songs = "Born Again by Doja Cat", "Golden by HUNTR/X", "Busy Woman by Sabrina Carpenter"
     
     @staticmethod
-    async def baby():
+    def baby():
 
         yield GARIS
         yield CAT.baby
     
     @staticmethod
-    async def teen(): 
+    def teen(): 
 
         yield GARIS
         yield CAT.teenager
     
     @staticmethod
-    async def adult(): 
+    def adult(): 
 
         yield GARIS
         yield CAT.adult
         
     @staticmethod
-    async def elder(): 
+    def elder(): 
 
         yield GARIS
         yield 
@@ -52,25 +52,25 @@ class Rabbit(VirtualPet):
         self.songs = "Genic - It's Showtime", "Kis-My-Ft2 - Glory Days", "TWS - Hajimemashite"
     
     @staticmethod
-    async def baby():
+    def baby():
 
        yield GARIS
        yield RABBIT.baby
     
     @staticmethod
-    async def teen(): 
+    def teen(): 
 
         yield GARIS
         yield RABBIT.teenager
     
     @staticmethod
-    async def adult(): 
+    def adult(): 
 
         yield GARIS
         yield RABBIT.adult
         
     @staticmethod
-    async def elder(): 
+    def elder(): 
 
         yield GARIS
         yield RABBIT.elder
@@ -85,7 +85,7 @@ class Dino(VirtualPet):
         self.songs = "BTS - Spring Day", "Fifty Fifty - Cupid", "Twice - The Feels"
     
     @staticmethod
-    async def baby():
+    def baby():
 
        yield GARIS
        yield DINO.baby
@@ -96,13 +96,13 @@ class Dino(VirtualPet):
         yield DINO.teenager
     
     @staticmethod
-    async def adult():  
+    def adult():  
 
         yield GARIS
         yield DINO.adult
 
     @staticmethod
-    async def elder():  
+    def elder():  
 
         yield GARIS
         yield DINO.elder
@@ -118,25 +118,25 @@ class Dragon(VirtualPet):
         self.songs = "The Thrill is Gone By BB King", "Mannish Boy By Muddy Waters", "Love in Vain By Robert Johnson"
     
     @staticmethod
-    async def baby():  
+    def baby():  
 
         yield GARIS
         yield DRAGON.baby
     
     @staticmethod
-    async def teen():  
+    def teen():  
 
        yield GARIS
        yield DRAGON.teenager
     
     @staticmethod
-    async def adult():  
+    def adult():  
 
         yield GARIS
         yield DRAGON.adult
         
     @staticmethod
-    async def elder(): 
+    def elder(): 
         
         yield GARIS
         yield DRAGON.elder
@@ -151,22 +151,22 @@ class Pou(VirtualPet):
         self.songs = "Modern Jazz Quartet - Django", "Ahmad Jamal - Poinciana", "George Shearing - Lullaby of Birdland"
     
     @staticmethod
-    async def baby(): 
+    def baby(): 
         yield GARIS
         yield POU.baby
     
     @staticmethod
-    async def teen():  
+    def teen():  
         yield GARIS
         yield POU.teenager
         
     @staticmethod  
-    async def adult():  
+    def adult():  
         yield GARIS
         yield POU.adult
     
     @staticmethod
-    async def elder():  
+    def elder():  
 
         yield GARIS
         yield POU.elder

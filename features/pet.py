@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from random import randrange
-from typing import Dict, Literal
 from .formatter import Formatter
 from colorama import Fore, init
+from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF
 init(autoreset=True)
 
 """
@@ -24,12 +24,6 @@ Notes:
   interactions are managed elsewhere in the project.
 """
 
-FAT_BURNER = "Fat Burner"
-HEALTH_POTION = "Health Potion"
-ENERGIZER = "Energizer"
-ADULT_POTION = "Adult Potion"
-
-PotionType = Literal["fat", "health", "energy", "age"]
 
 # Abstract Class
 class AbstractPet(ABC):
@@ -98,30 +92,6 @@ class VirtualPet(AbstractPet):
       - generosity: small counter used by conversation logic to limit gifts.
       - format: Formatter instance used to render status boxes for the CLI.
     """
-
-    FOOD_DEF: Dict[str, Dict[str, int | str]] = {
-        "Kentucky Fried Chicken": {"emoji": "🍗", "hunger": 15, "happiness": 5, "price": 20000},
-        "Ice Cream": {"emoji": "🍦", "hunger": 5, "happiness": 3, "price": 5000},
-        "Fried Rice": {"emoji": "🥘", "hunger": 10, "happiness": 0, "price": 1000},
-        "Salad": {"emoji": "🥗", "hunger": 10, "happiness": -5, "price": 5500},
-        "French Fries": {"emoji": "🍟", "hunger": 5, "happiness": 5, "price": 30000},
-        "Mashed Potato": {"emoji": "🥔", "hunger": 5, "happiness": -2, "price": 15000},
-        "Mozarella Nugget": {"emoji": "🧀", "hunger": 20, "happiness": 10, "price": 25000},
-    }
-
-    SOAP_DEF: Dict[str, Dict[str, int | str]] = {
-        "Rainbow Bubble Soap": {"emoji": "🌈", "sanity": 50, "happiness": 20, "price": 55000},
-        "Pink Bubble Soap": {"emoji": "💗", "sanity": 20, "happiness": 10, "price": 35000},
-        "White Silk Soap": {"emoji": "⚪", "sanity": 10, "happiness": 5, "price": 10000},
-        "Flower Bubble Soap": {"emoji": "🌸", "sanity": 30, "happiness": 15, "price": 25000},
-    }
-
-    POTION_DEF: Dict[str, Dict[str, int | str | PotionType]] = {
-        FAT_BURNER: {"emoji": "🧪", "type": "fat", "delta": -50, "price": 110000},
-        HEALTH_POTION: {"emoji": "💊", "type": "health", "delta": 50, "price": 200000},
-        ENERGIZER: {"emoji": "⚡", "type": "energy", "delta": 50, "price": 800000},
-        ADULT_POTION: {"emoji": "💉", "type": "age", "delta": 20, "price": 1000000},
-    }
 
     def __init__(self, name: str, age: float = 0.0, species: str = "Pet"):
         """
@@ -259,13 +229,10 @@ class VirtualPet(AbstractPet):
         """
         Consume a food item and apply its stat changes.
 
-        Args:
-            food: key name as found in VirtualPet.FOOD_DEF
-
         Returns:
             True if the pet consumed the food; False if it refused (e.g., already full).
         """
-        data = VirtualPet.FOOD_DEF[food]
+        data = FOOD_DEF[food]
         emoji = data["emoji"]
         hunger_change = int(data["hunger"])
         happiness_change = int(data["happiness"])
@@ -291,13 +258,10 @@ class VirtualPet(AbstractPet):
         """
         Apply a soap/bath action and modify sanity/happiness.
 
-        Args:
-            soap: key name as found in VirtualPet.SOAP_DEF
-
         Returns:
             True if bathing was applied; False if pet already had full sanity.
         """
-        data = VirtualPet.SOAP_DEF[soap]
+        data = SOAP_DEF[soap]
         emoji = data["emoji"]
         sanity_change = int(data["sanity"])
         happiness_change = int(data["happiness"])
@@ -322,15 +286,13 @@ class VirtualPet(AbstractPet):
         """
         Apply a potion to the pet if requirements are met.
 
-        Args:
-            potion: key name as found in VirtualPet.POTION_DEF
 
         Returns:
             True if potion was applied and caused a change, False otherwise.
         """
-        data = VirtualPet.POTION_DEF[potion]
+        data = POTION_DEF[potion]
         emoji = data["emoji"]
-        effect_type: PotionType = data["type"]
+        effect_type = data["type"]
         delta = int(data["delta"])
 
         used = False
