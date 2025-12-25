@@ -6,8 +6,10 @@ from random import randint, choice, random
 import time
 import operator
 import os
+
+from utils.colorize import yellow, red, green
 from .user import User
-from colorama import Fore, init
+from colorama import init
 
 init(autoreset=True)
 
@@ -168,7 +170,7 @@ class MathQuiz(MinigameStrategy):
 
     def build_game(self):
         """Prompt the user with all questions and collect integer answers (None for invalid)."""
-        print(Fore.YELLOW + f"\nYou will be asked {len(self.questions)} questions. Type your answer (must be an int): ")
+        print(yellow(f"\nYou will be asked {len(self.questions)} questions. Type your answer (must be an int): "))
         print(GARIS)
         self.start_time = time.time()
         user_answers = []
@@ -266,7 +268,7 @@ class TicTacToe(MinigameStrategy):
 
     def build_question(self):
         """Collect board-size choice and prepare an empty board."""
-        print(Fore.YELLOW + "Choose the size of your Tic Tac Toe board!")
+        print(yellow("Choose the size of your Tic Tac Toe board!"))
         print(GARIS)
         print("1. 3 x 3 board")
         print("2. 4 x 4 board")
@@ -323,7 +325,7 @@ class TicTacToe(MinigameStrategy):
             elif choice == "n":
                 self.first = False
                 break
-            print(Fore.RED + "Please answer Y/N!")
+            print(red("Please answer Y/N!"))
 
     def check_winner(self):
         """Check the board for winning sequences in all directions and return counts per mark."""
@@ -558,16 +560,16 @@ class TicTacToe(MinigameStrategy):
             row -= 1
             col -= 1
         except ValueError:
-            print(Fore.RED + "Please input two numbers separated by space (e.g. '2 3').")
+            print(red("Please input two numbers separated by space (e.g. '2 3')."))
             return None
         if row < 0 or row >= self.row_length:
-            print(Fore.RED + f"Row number cannot be less than 1 or more than {self.row_length}!")
+            print(red(f"Row number cannot be less than 1 or more than {self.row_length}!"))
             return None
         if col < 0 or col >= self.col_length:
-            print(Fore.RED + f"Column number cannot be less than 1 or more than {self.col_length}!")
+            print(red(f"Column number cannot be less than 1 or more than {self.col_length}!"))
             return None
         if (row, col) not in self.available_moves():
-            print(Fore.YELLOW + "Cell has been placed with mark!")
+            print(yellow("Cell has been placed with mark!"))
             return None
 
         return row, col
@@ -664,7 +666,7 @@ class TicTacToe(MinigameStrategy):
             print("\nYou lose.. 🥲")
         print("Your pet is having fun playing with you!")
         print(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
-        print(Fore.GREEN + f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉")
+        print(green(f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉"))
         return {"currency": coins, "pet_happiness": pet_happiness}
 
     def play(self, player: Any, pet: Any) -> Dict[str, int]:
@@ -805,7 +807,7 @@ class MemoryMatch(MinigameStrategy):
         print(f"Your response: {' '.join(result['response']) if result['response'] else '(none)'}")
         print(f"\nCorrect: {correct}/{total}")
         if exact:
-            print(Fore.GREEN + "Perfect! Bonus awarded! 🎉")
+            print(green("Perfect! Bonus awarded! 🎉"))
         print(f"You earned Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})\n")
         return {"currency": coins, "pet_happiness": pet_happiness}
 
@@ -840,7 +842,7 @@ class BattleContest(MinigameStrategy):
             self.opponent = choice(other_players_with_pets)
             self.opponent_pet = choice(self.opponent.pets)
         else:
-            print(Fore.RED + "\nOther players currently doesn't have any pets yet!\n")
+            print(red("\nOther players currently doesn't have any pets yet!\n"))
             return False
         self.opponent_health = self.opponent_pet.health * 1000
         self.opponent_won = 0
@@ -889,9 +891,9 @@ class BattleContest(MinigameStrategy):
                 if 1 <= choice <= 4:
                     return choice
                 else:
-                    print(Fore.RED + "Please enter a number between 1-4!")
+                    print(red("Please enter a number between 1-4!"))
             except ValueError:
-                print(Fore.RED + "Please enter a valid number!")
+                print(red("Please enter a valid number!"))
 
     def build_question(self) -> Any:
         """Prepare the battle sequence and announce start."""
@@ -968,7 +970,7 @@ class BattleContest(MinigameStrategy):
             self.opponent_health -= special_damage
             print(f"\n{self.player_pet.name} uses special move for {special_damage} damage ✨!")
         else:
-            print(Fore.RED + "\nSpecial moves are locked in odd rounds!")
+            print(red("\nSpecial moves are locked in odd rounds!"))
 
     def _player_heal(self) -> None:
         """Player heals if heal limit not exceeded."""
@@ -978,7 +980,7 @@ class BattleContest(MinigameStrategy):
             print(f"\n{self.player_pet.name} heals for {heal_amount} health ❤️‍🩹!")
             self.player_heal_count += 1
         else:
-            print(Fore.RED + "\nYou already healed 3 times!")
+            print(red("\nYou already healed 3 times!"))
 
     def _opponent_attack(self) -> None:
         """Opponent attacks the player."""
@@ -999,7 +1001,7 @@ class BattleContest(MinigameStrategy):
             self.player_health -= special_damage
             print(f"{self.opponent_pet.name} uses special move for {special_damage} damage ✨!")
         else:
-            print(Fore.RED + "\nOpponent's special moves are restricted on even rounds!")
+            print(red("\nOpponent's special moves are restricted on even rounds!"))
 
     def _opponent_heal(self) -> None:
         """Opponent heals if heal limit not exceeded."""
@@ -1009,7 +1011,7 @@ class BattleContest(MinigameStrategy):
             print(f"{self.opponent_pet.name} heals for {heal_amount} health ❤️‍🩹!")
             self.opponent_heal_count += 1
         else:
-            print(Fore.RED + "\nOpponent's healing ability are restricted to 5 times only!")
+            print(red("\nOpponent's healing ability are restricted to 5 times only!"))
 
     def _determine_battle_outcome(self) -> None:
         """Determine and display the battle outcome and update counters."""
@@ -1054,12 +1056,11 @@ class BattleContest(MinigameStrategy):
         if victory:
             coins = 20 + (performance_score // 10)
             pet_happiness = 15 + ((player_health_remaining - 1000) // 5)
-            print(Fore.GREEN + f"🎉 VICTORY! {self.player_pet.name} won the battle!")
+            print(green(f"🎉 VICTORY! {self.player_pet.name} won the battle!"))
         else:
             coins = 5 + (performance_score // 20)
             pet_happiness = 5 + ((player_health_remaining - 1000) // 10)
-            print(Fore.RED + f"💔 Defeat... {self.player_pet.name} was defeated.")
-
+            print(red(f"💔 Defeat... {self.player_pet.name} was defeated."))
         print("\n" + GARIS)
         print("BATTLE RESULTS")
         print(GARIS)
