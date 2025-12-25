@@ -12,8 +12,9 @@ from rich.progress import (
 from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF
 from random import randrange
 from typing import Dict, Any, Optional
-from colorama import Fore, init
+from colorama import init
 from .pet import VirtualPet
+from utils.colorize import red, yellow, green
 init(autoreset=True)
 
 
@@ -110,7 +111,7 @@ class User:
     def currency(self, value) -> None:
         """Set currency ensuring it is non-negative; prints a message on invalid attempts."""
         if value < 0:
-            print(Fore.RED + "\nCurrency cannot be below 0!")
+            print(red("\nCurrency cannot be below 0!"))
         else:
             self._currency = value
 
@@ -137,9 +138,9 @@ class User:
         if the new password is not acceptable.
         """
         if not re.match(valid_password, new_password):
-            print(Fore.RED + "Change password operation unsuccessful!")
-            print(Fore.YELLOW + "Password must contain:")
-            print(Fore.YELLOW + "At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n")
+            print(red("Change password operation unsuccessful!"))
+            print(yellow("Password must contain:"))
+            print(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
             return
         self.__password_hash = self._hash_password(new_password)
 
@@ -177,22 +178,22 @@ class User:
         """
         print()
         if username in cls.users:
-            print(Fore.RED + "This username has already existed!\n")
+            print(red("This username has already existed!\n"))
             return None
         if username.strip().lower() in password.strip().lower():
-            print(Fore.RED + "Password cannot be the same as username!\n")
+            print(red("Password cannot be the same as username!\n"))
             return None
 
         if not re.match(valid_password, password):
-            print(Fore.RED + "Password is too weak!\n")
-            print(Fore.YELLOW + "Password must contain:")
-            print(Fore.YELLOW + "At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n")
+            print(red("Password is too weak!\n"))
+            print(yellow("Password must contain:"))
+            print(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
             return None
 
         new_user = cls(username, password)
         cls.users[username] = new_user
         cls.current_user = new_user
-        print(Fore.GREEN + f"User {username} registered successfully.\n")
+        print(green(f"User {username} registered successfully.\n"))
         return 1
 
     @classmethod
@@ -205,17 +206,17 @@ class User:
         """
         print()
         if username not in cls.users:
-            print(Fore.RED + "User not found!\n")
+            print(red("User not found!\n"))
             return None
 
         user = cls.users[username]
         # Access the instance's stored hash to validate credentials
         if not cls._check_password(password, user.__password_hash):
-            print(Fore.RED + "Wrong password!\n")
+            print(red("Wrong password!\n"))
             return None
 
         cls.current_user = user
-        print(Fore.GREEN + f"Welcome back, {username}!\n")
+        print(green(f"Welcome back, {username}!\n"))
         return 1
 
     @classmethod

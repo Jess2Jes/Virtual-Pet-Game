@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from random import randrange
 from .formatter import Formatter
-from colorama import Fore, init
+from colorama import init
 from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF
+from utils.colorize import red, green, yellow
 init(autoreset=True)
 
 """
@@ -238,19 +239,19 @@ class VirtualPet(AbstractPet):
         happiness_change = int(data["happiness"])
 
         if self.hunger >= 100:
-            print(Fore.RED + f"\n{self.name} doesn't want to eat anymore 🤢!\n")
+            print(red(f"\n{self.name} doesn't want to eat anymore 🤢!\n"))
             self.fat += 5
             self.limit_stat()
             return False
 
         print("\n" + "="*101)
-        print(Fore.GREEN + f"\n{self.name} has been fed with '{food}' {emoji} 🍽️.")
+        print(green(f"\n{self.name} has been fed with '{food}' {emoji} 🍽️."))
 
         self.hunger += hunger_change
         self.happiness += happiness_change
         self.limit_stat()
 
-        print(Fore.YELLOW + self.food_upgrade_stats())
+        print(yellow(self.food_upgrade_stats()))
 
         return True
 
@@ -267,19 +268,18 @@ class VirtualPet(AbstractPet):
         happiness_change = int(data["happiness"])
 
         if self.sanity >= 100:
-            print(Fore.RED + f"\n{self.name}'s sanity is still full!\n")
+            print(red(f"\n{self.name}'s sanity is still full!\n"))
             return False
 
         print("\n" + "="*101)
         self.sanity += sanity_change
         self.happiness += happiness_change
 
-        print(Fore.GREEN + f"\n{self.name} has been bathed 🛁 with '{soap}' {emoji}.")
+        print(green(f"\n{self.name} has been bathed 🛁 with '{soap}' {emoji}."))
 
         self.limit_stat()
 
-        print(Fore.YELLOW + self.bath_upgrade_stats())
-
+        print(yellow(self.bath_upgrade_stats()))
         return True
 
     def health_care(self, potion: str) -> bool:
@@ -314,12 +314,12 @@ class VirtualPet(AbstractPet):
             used = True
 
         if not used:
-            print(Fore.RED + f"\n{self.name} hasn't reached requirement to use {potion}!\n")
+            print(red(f"\n{self.name} hasn't reached requirement to use {potion}!\n"))
             return False
 
         self.limit_stat()
 
-        print(Fore.YELLOW + self.potion_upgrade_stats())
+        print(yellow(self.potion_upgrade_stats()))
 
         return True
 
@@ -331,15 +331,15 @@ class VirtualPet(AbstractPet):
         then clamps stats and prints an upgrade summary.
         """
         if self.energy >= 100:
-            print(Fore.RED + f"\n{self.name} is not tired yet! 😐\n")
+            print(red(f"\n{self.name} is not tired yet! 😐\n"))
             return
 
         self.energy += hours * 10
         self.hunger -= hours * 5
 
         self.limit_stat()
-        print(Fore.GREEN + f"\n{self.name} has slept for {hours} hours. 😴")
+        print(green(f"\n{self.name} has slept for {hours} hours. 😴"))
         print(f"{self.name}'s energy increased by {hours * 10}" \
                f" and hunger decreased by {hours * 5}.")
 
-        print(Fore.YELLOW + self.sleep_upgrade_stats())
+        print(yellow(self.sleep_upgrade_stats()))

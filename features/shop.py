@@ -1,12 +1,10 @@
 from typing import List, Tuple
 import asyncio
-from colorama import Fore, init
+from colorama import init
 import os
-
-from .pet import VirtualPet
-from .user import loading
+from .user import loading, User
 from constants.configs import GARIS, SOAP_DEF, FOOD_DEF, POTION_DEF
-from .user import User
+from utils.colorize import red, green
 
 init(autoreset=True)
 
@@ -65,7 +63,7 @@ class Shop:
             print(f"🐼 : Your current currency: Rp. {'{:,}'.format(money)}")
         else:
             print(f"🐼 : Your current currency: Rp. {money}")
-        print(Fore.RED + "🐼 : You are broke... 💸" if money < 5000 else Fore.GREEN + "🐼 : You still have lots... 💰")
+        print(red("🐼 : You are broke... 💸") if money < 5000 else green("🐼 : You still have lots... 💰"))
         print(GARIS + "\n")
 
     def _list_food_items(self) -> List[Tuple[str, str, int, int, int]]:
@@ -148,7 +146,7 @@ class Shop:
         print(GARIS)
         cat = self._input_int("🐼 : Choose category (1-3): ")
         if cat not in (1, 2, 3):
-            print(Fore.RED + "\n🐼 : Please choose between 1-3 please...")
+            print(red("\n🐼 : Please choose between 1-3 please..."))
             return None, None
 
         print()
@@ -183,7 +181,7 @@ class Shop:
             items = self._list_potion_items()
 
         if not (1 <= idx <= len(items)):
-            print(Fore.RED + "\n🐼 : Invalid item number.")
+            print(red("\n🐼 : Invalid item number."))
             return None
 
         return items[idx - 1][0]
@@ -219,7 +217,7 @@ class Shop:
         while True:
             amount = self._input_int("🐼 : How many do you want to buy? ")
             if amount is None or amount <= 0:
-                print(Fore.RED + "\n🐼 : Please input a positive number!")
+                print(red("\n🐼 : Please input a positive number!"))
                 continue
             break
 
@@ -227,7 +225,7 @@ class Shop:
         total = price_per * amount
 
         if total > self.user.currency:
-            print(Fore.RED + f"\n🐼 : Not enough amount to buy {name}!")
+            print(red(f"\n🐼 : Not enough amount to buy {name}!"))
             print(f"🐼 : Needed: Rp. {'{:,}'.format(total)}, You have: Rp. {'{:,}'.format(self.user.currency)}\n")
             return
 
@@ -278,7 +276,7 @@ class Shop:
 
             choice = self._input_int("🐼 : Choose (1-3): ")
             if choice is None:
-                print(Fore.RED + "\n🐼 : Please insert digit in choice input!")
+                print(red("\n🐼 : Please insert digit in choice input!"))
                 continue
 
             actions = {
@@ -295,4 +293,4 @@ class Shop:
                 print()
                 action()
             else:
-                print(Fore.RED + "\n🐼 : Please choose between 1-3 please...")
+                print(red("\n🐼 : Please choose between 1-3 please..."))
