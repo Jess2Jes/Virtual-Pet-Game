@@ -1,17 +1,16 @@
 from typing import List, Tuple
 import asyncio
 from colorama import init
-import os
-from .user import loading, User
-from constants.configs import GARIS, SOAP_DEF, FOOD_DEF, POTION_DEF
+
+from utils.formatter import clear
+from utils.loading import loading_bar
+from .user import User
+from constants.configs import LINE, SOAP_DEF, FOOD_DEF, POTION_DEF, NO_STOCK
 from utils.colorize import red, green
 
 init(autoreset=True)
 
-def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
 
-NO_STOCK = "Out of Stock"
 
 """
 shop.py
@@ -57,14 +56,14 @@ class Shop:
 
     def show_currency(self) -> None:
         """Print the user's current currency with a small friendly message."""
-        print(GARIS)
+        print(LINE)
         money = self.user.currency
         if money >= 1000:
             print(f"🐼 : Your current currency: Rp. {'{:,}'.format(money)}")
         else:
             print(f"🐼 : Your current currency: Rp. {money}")
         print(red("🐼 : You are broke... 💸") if money < 5000 else green("🐼 : You still have lots... 💰"))
-        print(GARIS + "\n")
+        print(LINE + "\n")
 
     def _list_food_items(self) -> List[Tuple[str, str, int, int, int]]:
         """Return a list of tuples describing available food items (name, emoji, price, qty, index)."""
@@ -101,33 +100,33 @@ class Shop:
 
     def catalog_food(self) -> None:
         """Print the formatted food catalog to the console."""
-        print(GARIS)
+        print(LINE)
         print("FOOD CATALOG")
-        print(GARIS)
+        print(LINE)
         for name, emoji, price, qty, i in self._list_food_items():
             stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK})"
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
-        print(GARIS + "\n")
+        print(LINE + "\n")
 
     def catalog_soap(self) -> None:
         """Print the formatted soap catalog to the console."""
-        print(GARIS)
+        print(LINE)
         print("SOAP CATALOG")
-        print(GARIS)
+        print(LINE)
         for name, emoji, price, qty, i in self._list_soap_items():
             stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK})"
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
-        print(GARIS + "\n")
+        print(LINE + "\n")
 
     def catalog_potion(self) -> None:
         """Print the formatted potion catalog to the console."""
-        print(GARIS)
+        print(LINE)
         print("POTION CATALOG")
-        print(GARIS)
+        print(LINE)
         for name, emoji, price, qty, i in self._list_potion_items():
             stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK})"
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
-        print(GARIS + "\n")
+        print(LINE + "\n")
 
     def _buy_category_and_index(self) -> tuple[str | None, int | None]:
         """
@@ -135,15 +134,15 @@ class Shop:
         the category key plus the selected item index (1-based). Returns (None, None)
         on invalid selection.
         """
-        print(GARIS)
+        print(LINE)
         print("🐼 : Hello, my lovely customer, welcome to our store!")
-        asyncio.run(loading())
+        asyncio.run(loading_bar())
         print("\n🐼 : What do you want to buy?")
-        print(GARIS)
+        print(LINE)
         print("1. Food")
         print("2. Soap")
         print("3. Potion")
-        print(GARIS)
+        print(LINE)
         cat = self._input_int("🐼 : Choose category (1-3): ")
         if cat not in (1, 2, 3):
             print(red("\n🐼 : Please choose between 1-3 please..."))
@@ -262,7 +261,7 @@ class Shop:
          3 - Exit
         """
         print("\n🐼 : Hi, I'm Po Ping. I'll be your shopping assistant for today!")
-        asyncio.run(loading())
+        asyncio.run(loading_bar())
         clear()
         while True:
             print("\n🐼 : Here's list of options you can do!")

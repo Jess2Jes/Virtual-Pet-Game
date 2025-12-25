@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from random import randrange
-from .formatter import Formatter
+from utils.formatter import Formatter
 from colorama import init
 from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF
 from utils.colorize import red, green, yellow
