@@ -1,5 +1,5 @@
 from .pet import VirtualPet
-from constants.configs import GARIS
+from constants.configs import LINE
 from constants.animalsArt import (
     CatsArt as CAT,
     RabbitsArt as RABBIT,
@@ -20,25 +20,25 @@ class Cat(VirtualPet):
     @staticmethod
     def baby():
 
-        yield GARIS
+        yield LINE
         yield CAT.baby
     
     @staticmethod
     def teen(): 
 
-        yield GARIS
+        yield LINE
         yield CAT.teenager
     
     @staticmethod
     def adult(): 
 
-        yield GARIS
+        yield LINE
         yield CAT.adult
         
     @staticmethod
     def elder(): 
 
-        yield GARIS
+        yield LINE
         yield 
 
 
@@ -54,25 +54,25 @@ class Rabbit(VirtualPet):
     @staticmethod
     def baby():
 
-       yield GARIS
+       yield LINE
        yield RABBIT.baby
     
     @staticmethod
     def teen(): 
 
-        yield GARIS
+        yield LINE
         yield RABBIT.teenager
     
     @staticmethod
     def adult(): 
 
-        yield GARIS
+        yield LINE
         yield RABBIT.adult
         
     @staticmethod
     def elder(): 
 
-        yield GARIS
+        yield LINE
         yield RABBIT.elder
 
 class Dino(VirtualPet):
@@ -87,24 +87,24 @@ class Dino(VirtualPet):
     @staticmethod
     def baby():
 
-       yield GARIS
+       yield LINE
        yield DINO.baby
     
     @staticmethod
     async def teen(): 
-        yield GARIS
+        yield LINE
         yield DINO.teenager
     
     @staticmethod
     def adult():  
 
-        yield GARIS
+        yield LINE
         yield DINO.adult
 
     @staticmethod
     def elder():  
 
-        yield GARIS
+        yield LINE
         yield DINO.elder
         
     
@@ -120,25 +120,25 @@ class Dragon(VirtualPet):
     @staticmethod
     def baby():  
 
-        yield GARIS
+        yield LINE
         yield DRAGON.baby
     
     @staticmethod
     def teen():  
 
-       yield GARIS
+       yield LINE
        yield DRAGON.teenager
     
     @staticmethod
     def adult():  
 
-        yield GARIS
+        yield LINE
         yield DRAGON.adult
         
     @staticmethod
     def elder(): 
         
-        yield GARIS
+        yield LINE
         yield DRAGON.elder
         
 class Pou(VirtualPet):
@@ -152,21 +152,21 @@ class Pou(VirtualPet):
     
     @staticmethod
     def baby(): 
-        yield GARIS
+        yield LINE
         yield POU.baby
     
     @staticmethod
     def teen():  
-        yield GARIS
+        yield LINE
         yield POU.teenager
         
     @staticmethod  
     def adult():  
-        yield GARIS
+        yield LINE
         yield POU.adult
     
     @staticmethod
     def elder():  
 
-        yield GARIS
+        yield LINE
         yield POU.elder

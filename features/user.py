@@ -1,15 +1,7 @@
 import math
-import asyncio
 import re
 import bcrypt
-from rich.progress import (
-    Progress,
-    TextColumn,
-    BarColumn,
-    TaskProgressColumn,
-    TimeRemainingColumn
-)
-from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF
+from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF, VALID_PASSWORD
 from random import randrange
 from typing import Dict, Any, Optional
 from colorama import init
@@ -27,7 +19,6 @@ Responsibilities:
 - Represent users (username, hashed password, currency, inventory, pets, profile fields).
 - Provide registration/login flows, password hashing/checking, and simple persistence helpers
   (create_memento / restore_from_memento) used by the memento/save system.
-- Expose an async `loading()` helper used by UI flows to show a progress bar.
 
 Notes:
 - Passwords are hashed with bcrypt. When restoring from saved state the module accepts
@@ -37,22 +28,9 @@ Notes:
 """
 
 # Regular expression for strong passwords:
-valid_password = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$"
 
 
-async def loading():
-    """Async helper that displays a short progress bar (used by UI flows)."""
-    progress = Progress(
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        TimeRemainingColumn()
-    )
-    task = progress.add_task("Loading.. .", total=150)
-    with progress:
-        for _ in range(150):
-            progress.update(task, advance=1)
-            await asyncio.sleep(0.01)
+
 
 
 class User:
@@ -137,7 +115,7 @@ class User:
         The method enforces the `valid_password` regex and will print a message
         if the new password is not acceptable.
         """
-        if not re.match(valid_password, new_password):
+        if not re.match(VALID_PASSWORD, new_password):
             print(red("Change password operation unsuccessful!"))
             print(yellow("Password must contain:"))
             print(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
@@ -177,21 +155,23 @@ class User:
           1 on success, None on failure (and prints diagnostic messages).
         """
         print()
-        if username in cls.users:
+        key = username.casefold()
+        
+        if key in cls.users:
             print(red("This username has already existed!\n"))
             return None
         if username.strip().lower() in password.strip().lower():
             print(red("Password cannot be the same as username!\n"))
             return None
 
-        if not re.match(valid_password, password):
+        if not re.match(VALID_PASSWORD, password):
             print(red("Password is too weak!\n"))
             print(yellow("Password must contain:"))
             print(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
             return None
 
         new_user = cls(username, password)
-        cls.users[username] = new_user
+        cls.users[key] = new_user
         cls.current_user = new_user
         print(green(f"User {username} registered successfully.\n"))
         return 1
@@ -205,11 +185,12 @@ class User:
           1 on success, None on failure.
         """
         print()
-        if username not in cls.users:
+        key = username.casefold()
+        if key not in cls.users:
             print(red("User not found!\n"))
             return None
 
-        user = cls.users[username]
+        user = cls.users[key]
         # Access the instance's stored hash to validate credentials
         if not cls._check_password(password, user.__password_hash):
             print(red("Wrong password!\n"))
@@ -300,3 +281,4 @@ class User:
             pet.generosity = pet_data.get("generosity", 0)
 
             self.pets.append(pet)
+

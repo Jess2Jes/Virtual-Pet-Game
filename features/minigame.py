@@ -1,20 +1,18 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Tuple
-from constants.configs import GARIS
 from abc import ABC, abstractmethod
 from random import randint, choice, random
 import time
 import operator
-import os
 
+from constants.configs import LINE
 from utils.colorize import yellow, red, green
+from utils.formatter import clear
 from .user import User
 from colorama import init
 
 init(autoreset=True)
 
-def clear():
-    os.system("cls" if os.name == "nt" else "clear")
 
 """
 minigame.py
@@ -90,7 +88,7 @@ class MathQuiz(MinigameStrategy):
 
     name = "Math Quiz"
 
-    OPS = {
+    ARITHMETIC_OPERATIONS = {
         "+": operator.add,
         "-": operator.sub,
         "*": operator.mul,
@@ -111,22 +109,22 @@ class MathQuiz(MinigameStrategy):
 
     def display_menu(self):
         """Explain rules and difficulty options to the player."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("➕ Math Quiz ➗")
-        print(GARIS)
+        print(LINE)
         print("🔍 This game is created to test your logical thinking skill! 🔍")
         print("🧠 Answer the given arithmetic questions as fast and accurately as you can... 🤓")
         print("You will get your coin rewards and boost your pet's happiness! 😸")
-        print(GARIS)
+        print(LINE)
         print("Before we start, please choose your difficulty: ")
-        print(GARIS)
+        print(LINE)
         print("1. Easy")
         print("2. Medium")
         print("3. Hard")
         print("4. Master")
-        print(GARIS)
+        print(LINE)
         print("NOTE: Any user's input other than 1-4 will be considered 1 (Default: Difficulty Easy)")
-        print(GARIS)
+        print(LINE)
 
     def get_input(self):
         """Collect difficulty choice (1-4)."""
@@ -141,37 +139,37 @@ class MathQuiz(MinigameStrategy):
     def build_question(self):
         """Generate the arithmetic questions based on chosen difficulty."""
         if self.difficulty == 1:
-            q_num = 5
-            _max = 10
-            ops = ["+", "-"]
+            total_question = 5
+            max_value = 10
+            operators = ["+", "-"]
         elif self.difficulty == 2:
-            q_num = 10
-            _max = 30
-            ops = ["+", "-", "*", "/"]
+            total_question = 10
+            max_value = 30
+            operators = ["+", "-", "*", "/"]
         elif self.difficulty == 3:
-            q_num = 20
-            _max = 50
-            ops = ["+", "-", "*", "/", "**"]
+            total_question = 20
+            max_value = 50
+            operators = ["+", "-", "*", "/", "**"]
         elif self.difficulty == 4:
-            q_num = 20
-            _max = 60
-            ops = ["+", "-", "*", "/", "%", "**"]
+            total_question = 20
+            max_value = 60
+            operators = ["+", "-", "*", "/", "%", "**"]
 
-        for _ in range(q_num):
-            a = randint(1, _max)
-            b = randint(1, _max)
-            op = choice(ops)
+        for _ in range(total_question):
+            a = randint(1, max_value)
+            b = randint(1, max_value)
+            op = choice(operators)
             if op == "/":
-                b = randint(1, max(1, _max // randint(1, max(1, _max - 1))))
-                a = b * randint(1, max(1, _max // max(1, b)))
+                b = randint(1, max(1, max_value // randint(1, max(1, max_value - 1))))
+                a = b * randint(1, max(1, max_value // max(1, b)))
             elif op == "**":
-                b = randint(1, max(1, _max // 10))
+                b = randint(1, max(1, max_value // 10))
             self.questions.append((a, op, b))
 
     def build_game(self):
         """Prompt the user with all questions and collect integer answers (None for invalid)."""
         print(yellow(f"\nYou will be asked {len(self.questions)} questions. Type your answer (must be an int): "))
-        print(GARIS)
+        print(LINE)
         self.start_time = time.time()
         user_answers = []
         for i, (a, op, b) in enumerate(self.questions, start=1):
@@ -186,7 +184,7 @@ class MathQuiz(MinigameStrategy):
     def evaluate(self, user_answers):
         """Evaluate provided answers against expected results and compute accuracy/timing metrics."""
         for (a, op, b), u in zip(self.questions, user_answers):
-            func = self.OPS.get(op)
+            func = self.ARITHMETIC_OPERATIONS.get(op)
             if func:
                 expected = func(a, b)
             else:
@@ -255,25 +253,25 @@ class TicTacToe(MinigameStrategy):
 
     def display_menu(self):
         """Show rules and rewards for the Tic Tac Toe minigame."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("⭕ Tic Tac Toe ✖️")
-        print(GARIS)
+        print(LINE)
         print("Let's play classic Tic-Tac-Toe with your pet!")
         print("You are X, your pet is O.")
-        print(GARIS)
+        print(LINE)
         print("Win ---> more currency")
         print("Draw ---> small currency")
         print("Loss ---> no currency")
-        print(GARIS)
+        print(LINE)
 
     def build_question(self):
         """Collect board-size choice and prepare an empty board."""
         print(yellow("Choose the size of your Tic Tac Toe board!"))
-        print(GARIS)
+        print(LINE)
         print("1. 3 x 3 board")
         print("2. 4 x 4 board")
         print("3. 5 x 5 board")
-        print(GARIS)
+        print(LINE)
         try:
             diff = int(input("Choose your size of board (1/2/3): ").strip())
         except ValueError:
@@ -552,9 +550,9 @@ class TicTacToe(MinigameStrategy):
 
     def player_move(self):
         """Prompt the player for a row/column move and validate it."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("It's your turn! Pick your cell now!")
-        print(GARIS)
+        print(LINE)
         try:
             row, col = map(int, input(f"\nEnter row (1-{self.row_length}) and column (1-{self.col_length}) --> ex: 2 3: ").strip().split())
             row -= 1
@@ -705,18 +703,18 @@ class MemoryMatch(MinigameStrategy):
 
     def display_menu(self):
         """Explain Memory Match rules and difficulty levels."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("🧩 Memory Match 🧩")
-        print(GARIS)
+        print(LINE)
         print("Memorize a short sequence, then reproduce it.")
         print("Faster and more accurate answers give better rewards.")
-        print(GARIS)
+        print(LINE)
         print("Choose difficulty:")
-        print(GARIS)
+        print(LINE)
         print("1. Easy   (sequence length 5-6, digits)")
         print("2. Medium (sequence length 3-4, words)")
         print("3. Hard   (sequence length 6-8, mixed digits/words)")
-        print(GARIS)
+        print(LINE)
 
     def get_input(self):
         """Collect difficulty choice."""
@@ -756,9 +754,9 @@ class MemoryMatch(MinigameStrategy):
 
     def build_game(self):
         """Show the sequence briefly and then prompt the player to reproduce it."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("Game started!")
-        print(GARIS)
+        print(LINE)
         print("Memorize this sequence:")
         print(" ".join(self.sequence))
         time.sleep(1.0 + 0.5 * self.length)
@@ -800,9 +798,9 @@ class MemoryMatch(MinigameStrategy):
 
         pet_happiness = correct // int(self.difficulty) if self.difficulty else correct
 
-        print("\n" + GARIS)
-        print("RESULT".center(len(GARIS)))
-        print(GARIS)
+        print("\n" + LINE)
+        print("RESULT".center(len(LINE)))
+        print(LINE)
         print(f"Sequence was: {' '.join(result['sequence'])}")
         print(f"Your response: {' '.join(result['response']) if result['response'] else '(none)'}")
         print(f"\nCorrect: {correct}/{total}")
@@ -858,15 +856,15 @@ class BattleContest(MinigameStrategy):
 
     def display_menu(self):
         """Display battle status and available actions for the current round."""
-        print("\n" + GARIS)
-        print(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(GARIS)))
-        print(GARIS)
-        print("\n" + GARIS)
+        print("\n" + LINE)
+        print(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(LINE)))
+        print(LINE)
+        print("\n" + LINE)
         print(f"Your Pet: {self.player_pet.name}")
         print(f"Health: {self.player_health}")
         print(f"Strength: {self.player_pet_stats['strength']}")
         print(f"Agility: {self.player_pet_stats['agility']}")
-        print('-' * len(GARIS))
+        print('-' * len(LINE))
 
         if self.opponent_pet:
             print(f"Opponent: {self.opponent_pet.name}")
@@ -874,14 +872,14 @@ class BattleContest(MinigameStrategy):
             print(f"Strength: {self.player_pet_stats['strength']}")
             print(f"Agility: {self.player_pet_stats['agility']}")
 
-        print(GARIS)
+        print(LINE)
         print("\nBattle Options:")
-        print(GARIS)
+        print(LINE)
         print("1. Attack 🗡️")
         print("2. Defend 🛡️")
         print("3. Special Move ✨")
         print("4. Heal ❤️‍🩹")
-        print(GARIS)
+        print(LINE)
 
     def get_input(self):
         """Prompt and validate a numeric choice for the battle action."""
@@ -897,9 +895,9 @@ class BattleContest(MinigameStrategy):
 
     def build_question(self) -> Any:
         """Prepare the battle sequence and announce start."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("Battle Starting!")
-        print(GARIS)
+        print(LINE)
         print(f"{self.player_pet.name} VS {self.opponent_pet.name}")
         print("Prepare for battle!")
         time.sleep(2)
@@ -1061,14 +1059,14 @@ class BattleContest(MinigameStrategy):
             coins = 5 + (performance_score // 20)
             pet_happiness = 5 + ((player_health_remaining - 1000) // 10)
             print(red(f"💔 Defeat... {self.player_pet.name} was defeated."))
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("BATTLE RESULTS")
-        print(GARIS)
+        print(LINE)
         print(f"Performance Score: {performance_score}/100")
         print(f"Health Remaining: {player_health_remaining}")
         print(f"Coins Earned: {'{:,}'.format(coins * 1000)}")
         print(f"Pet Happiness: (+{pet_happiness})")
-        print(GARIS)
+        print(LINE)
 
         return {"currency": coins, "pet_happiness": pet_happiness}
 

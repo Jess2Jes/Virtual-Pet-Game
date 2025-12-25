@@ -38,7 +38,7 @@ class GameFacade:
             self.current_user = User.current_user
             print("\n💾 Checking for saved game...")
             if self._load_game(username):
-                print(green("✅ Previous game loaded!\n"))
+                print(green("🔃 Previous game loaded!\n"))
             else:
                 print(yellow("ℹ️ Starting fresh game.\n"))
             return True
@@ -55,10 +55,11 @@ class GameFacade:
 
         Returns True when the password change and save were successful.
         """
-        if username not in User.users:
+        key = username.casefold()
+        if key not in User.users:
             return False
 
-        user = User.users[username]
+        user = User.users[key]
 
         if not User._check_password(old_password, user.password):
             return False
@@ -216,18 +217,20 @@ class GameFacade:
             all_saves = {}
 
         for username, save_data in all_saves.items():
-            if username not in User.users:
+            key = username.casefold()
+            if key not in User.users:
                 user_data = save_data.get("user", {})
                 password_hash = user_data.get("password", "")
 
                 user = User(username, password_hash)
                 user.restore_from_memento(user_data)
 
-                User.users[username] = user
+                User.users[key] = user
+
 
     def _load_game(self, username: str) -> bool:
         """Load a specific user's saved game state (user+game) and restore it into memory."""
-        game_state = self.save_manager.load_game(username)
+        game_state = self.save_manager.load_game(self.current_user.username)
 
         if not game_state:
             return False

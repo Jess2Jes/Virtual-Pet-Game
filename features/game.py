@@ -3,8 +3,8 @@ from random import randrange, choice as ch
 from colorama import init
 import json
 from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
-from .formatter import Formatter
-from constants.configs import GARIS, NO_STOCK, FOOD_DEF, SOAP_DEF, POTION_DEF
+from utils.formatter import Formatter
+from constants.configs import LINE, NO_STOCK, FOOD_DEF, SOAP_DEF, POTION_DEF
 from .user import User
 from utils.colorize import red, green, yellow, cyan, reset_color
 init(autoreset=True)
@@ -81,7 +81,7 @@ class Game:
     
     def create_name(self) -> tuple[bool, str, str]:
         """Prompt the player to choose a name for a new pet and forward to species selection."""
-        print(reset_color("\n" + GARIS))
+        print(reset_color("\n" + LINE))
         name = input("Name your pet: ").title().strip()
         flag, species = self.create_species(name)
         return flag, name, species
@@ -89,14 +89,14 @@ class Game:
     @classmethod
     def create_species(cls, name: str) -> tuple[bool, VirtualPet | None]:
         """Prompt the player to choose a species and construct the corresponding pet instance."""
-        print(GARIS)
+        print(LINE)
         print("Here's five types of species you can choose: ")
         print("1. Cat (🐈)")
         print("2. Rabbit (🐇)")
         print("3. Dinosaur (🦖)")
         print("4. Dragon (🐉)")
         print("5. Pou (💩)")
-        print(GARIS)
+        print(LINE)
 
         species_map = {
             "1": Cat,
@@ -172,7 +172,7 @@ class Game:
         print("6. Take a walk")
         print("7. Talk to pet")
         print("8. Exit")
-        print(GARIS)
+        print(LINE)
 
     @staticmethod
     def _input_int(prompt: str):
@@ -185,9 +185,9 @@ class Game:
     @staticmethod
     def _print_stock(title: str, defs: dict, category: str, user: User) -> None:
         """Print a formatted stock list for the requested category (food/soap/potion)."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print(title)
-        print(GARIS + "\n")
+        print(LINE + "\n")
 
         inv = user.inventory[category]
         is_food = category == "food"
@@ -207,14 +207,14 @@ class Game:
     @staticmethod
     def _print_potion_requirement(title: str) -> None:
         """Display potion usage requirements."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print(title)
-        print(GARIS)
+        print(LINE)
         print("1. Fat Burner can be used if your energy is below 50.")
         print("2. Health Potion can be used if your health is below 100.")
         print("3. Energizer can be used if your energy is below 100.")
         print("4. Adult Potion can be used if your age is below 20.")
-        print(GARIS + "\n")
+        print(LINE + "\n")
     
     @staticmethod
     def _food_choice_from_number(food: str) -> str | None:
@@ -404,9 +404,9 @@ class Game:
     
     def _print_talk_menu(self) -> None:
         """Print the high-level talk menu options for interacting with a pet."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("Topics of Conversation: ")
-        print(GARIS)
+        print(LINE)
         print("1. What do you want to do today?")
         print("2. What is your favourite food?")
         print("3. Ask me anything")
@@ -414,7 +414,7 @@ class Game:
         print("5. Tell a joke")
         # print("6. What do you know about me?") -- COMING SOON
         print("6. Goodbye")
-        print(GARIS)
+        print(LINE)
 
     def _topic_plan(self, pet: VirtualPet, user: User) -> bool:
         """Simple topic: plan for the day — pet replies with one of preset actions."""
@@ -449,7 +449,7 @@ class Game:
     
     def _print_conversation_menu(self) -> None:
         """Print detailed conversation menu (subtopics)."""
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("1. Music Taste")
         print("2. Favourite Food")
         # --- COMING SOON ----
@@ -459,7 +459,7 @@ class Game:
         # print("6. Deep Subjects")
         # print("7. Favourite Movies")
         print("3. That's enough about me")
-        print(GARIS)
+        print(LINE)
 
     def _music_topic(self, pet: VirtualPet, user: User) -> bool:
         """Music-related conversation topic — handles multiple answer/option types from data."""
@@ -745,7 +745,7 @@ class Game:
     def interact(self, pet, user: User) -> None:
         """Main loop for interacting with a specific pet and executing chosen actions."""
         print(reset_color("\n" + "="*101))
-        print(f"Playing with {pet.name}, the {pet.type}:".center(len(GARIS)))
+        print(f"Playing with {pet.name}, the {pet.type}:".center(len(LINE)))
         while True:
             self._print_main_interact_menu()
             choice = self._input_int("Choose (1-8): ")

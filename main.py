@@ -1,20 +1,19 @@
-from features.user import User, loading
 import sys
-from constants.configs import GARIS, USERNAME_INPUTTING, PASSWORD_INPUTTING
-import os
 import asyncio
 from colorama import init
+from constants.configs import LINE, USERNAME_INPUTTING, PASSWORD_INPUTTING
+from features.user import User
 from utils.gameFacade import GameFacade
 from utils.colorize import (
     cyan, yellow, red, magenta, green, reset_color
 )
+from utils.formatter import clear
+from utils.loading import loading_bar
 
 
 init(autoreset=True)
 
-def clear():
-    """Clear the console screen based on the operating system."""
-    os.system("cls" if os.name == "nt" else "clear")
+
 
 """
 main.py
@@ -55,7 +54,7 @@ class Main:
         print(yellow("2. Login"))
         print(yellow("3. Change Password"))
         print(red("4. Exit"))
-        print(magenta(GARIS))
+        print(magenta(LINE))
         try:
             return int(input(green("Choose (1-4): ")).strip())
         except ValueError:
@@ -92,7 +91,7 @@ class Main:
             if self.facade.login_user(username, password):
                 break
 
-            print(GARIS)
+            print(LINE)
             retry = input(
                 "Would you like to login again? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "
@@ -108,7 +107,7 @@ class Main:
             self.facade.save_game()
 
         self.facade.logout_user()
-        asyncio.run(loading())
+        asyncio.run(loading_bar())
         clear()
 
     def _change_password_flow(self) -> None:
@@ -125,7 +124,7 @@ class Main:
                 break
 
             print(red("\nInvalid credentials or password!\n"))
-            print(GARIS)
+            print(LINE)
             retry = input(
                 "Would you like to change password again? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "
@@ -171,7 +170,7 @@ class Main:
         print(yellow("8. Play Minigames"))
         print(green("9. 💾 Save Game"))
         print(red("10. Logout"))
-        print(magenta(GARIS))
+        print(magenta(LINE))
         try:
             return int(input(green("Choose (1-10): ")).strip())
         except ValueError:
@@ -196,9 +195,9 @@ class Main:
                 "pets": len(user.pets),
             }
 
-            print((f'"\n"  {reset_color(GARIS)}'))
-            print(yellow("ACCOUNT INFORMATION".center(len(GARIS))))
-            print(reset_color(GARIS))
+            print((f'"\n"  {reset_color(LINE)}'))
+            print(yellow("ACCOUNT INFORMATION".center(len(LINE))))
+            print(reset_color(LINE))
 
             print(self.facade.game.format.format_username_box(stats["username"], user.pets))
 
@@ -235,7 +234,7 @@ class Main:
             age = self.facade.get_pet_age(p)
             print(yellow(f"{i}. {p.name} ({p.type}) - Age: {age:.1f}"))
 
-        print(yellow(GARIS))
+        print(yellow(LINE))
 
         try:
             idx = int(input(green("\nSelect pet number: ")).strip())
@@ -304,12 +303,12 @@ class Main:
             print("\nNo minigames available.\n")
             return False
 
-        print("\n" + GARIS)
+        print("\n" + LINE)
         print("Minigames: ")
-        print(GARIS)
+        print(LINE)
         for i, name in enumerate(games, start=1):
             print(f"{i}. --> {name}")
-        print(GARIS)
+        print(LINE)
 
         try:
             idx = int(input("Choose a minigame number: ").strip())
@@ -362,7 +361,7 @@ class Main:
 
     def _pet_zone_flow(self) -> None:
         """Main loop for the pet zone where the player performs actions with pets or shop/minigames."""
-        asyncio.run(loading())
+        asyncio.run(loading_bar())
         clear()
         while self.facade.current_user:
             choice = self._pet_zone_menu()
@@ -374,13 +373,13 @@ class Main:
                     break
                 else:
                     self.facade.spend_time()
-                    asyncio.run(loading())
+                    asyncio.run(loading_bar())
                     clear()
 
     def _exit_game(self) -> None:
         """Exit the application politely."""
-        print(GARIS)
-        sys.exit("Thank you for playing!".upper().center(len(GARIS)) + "\n")
+        print(LINE)
+        sys.exit("Thank you for playing!".upper().center(len(LINE)) + "\n")
 
     def run(self) -> None:
         """Run the main application loop: authenticate then enter pet zone."""

@@ -1,8 +1,9 @@
-GARIS = "─" * 101
+LINE = "─" * 101
 NO_STOCK = "OUT OF STOCK"
 MAX_LENGTH = 0
 USERNAME_INPUTTING = "Username: "
 PASSWORD_INPUTTING = "Password: "
+VALID_PASSWORD = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$"
 
 FAT_BURNER = "Fat Burner"
 HEALTH_POTION = "Health Potion"
