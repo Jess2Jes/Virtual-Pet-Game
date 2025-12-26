@@ -5,6 +5,7 @@ from random import randint, choice, random, shuffle
 import time
 import operator
 import string
+import curses
 
 from constants.configs import LINE
 from utils.colorize import yellow, red, green, blue
@@ -1094,6 +1095,8 @@ class Sudoku(MinigameStrategy):
         self.pre_filled = [[False] * 9 for _ in range(9)]
         self.tries = 3
         self.coins = 50
+        self.start_time = None
+        self.end_time = None
     
     @staticmethod
     def display_menu():
@@ -1296,6 +1299,7 @@ class Sudoku(MinigameStrategy):
         self.print_grid()
         moves = 0
         solved = False
+        self.start_time = time.time()
 
         while True:
             print(yellow(f"Tries remaining: ({self.tries}/3)"))
@@ -1336,6 +1340,7 @@ class Sudoku(MinigameStrategy):
 
                     if all(self.grid[row][col] != 0 for row in range(9) for col in range(9)):
                         solved = True
+                        self.end_time = time.time()
                         return solved
 
                 elif not self.is_valid(self.grid, row, col, num):
@@ -1354,11 +1359,15 @@ class Sudoku(MinigameStrategy):
             outcome = "Win"
         else:
             outcome = "Lose"
-        return {"outcome": outcome}
+
+        elapsed = max(0.001, self.end_time - self.start_time) if self.start_time and self.end_time else 0.0
+
+        return {"outcome": outcome, "elapsed": elapsed}
 
     def reward(self, result):
         """Translate outcome into currency and pet happiness and display a summary."""
         outcome = result.get("outcome")
+        elapsed = result.get("elapsed")
         if outcome == "Win":
             pet_happiness = 15
             print("\nYou solved the sudoku! 🎉")
@@ -1367,6 +1376,7 @@ class Sudoku(MinigameStrategy):
             pet_happiness = 0
             print("\nYou failed to solve the sudoku.. 😾")
         
+        print(f"Elapsed time: {elapsed:.2f}")
         print(f"Reward: Rp. {'{:,}'.format(self.coins * 1000)}. Pet happiness (+{pet_happiness})")
         print(green(f"You received Rp. {'{:,}'.format(self.coins * 1000)} 🎉"))
         return {"currency": self.coins, "pet_happiness": pet_happiness}
@@ -1380,6 +1390,9 @@ class Sudoku(MinigameStrategy):
         result = self.evaluate(summary)
         reward = self.reward(result)
         return reward
+    
+class Tetris(MinigameStrategy):
+    ...
 
 class MinigameEngine:
     """Registry for minigame strategies and helper to play them by name."""
