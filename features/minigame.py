@@ -1351,6 +1351,7 @@ class Sudoku(MinigameStrategy):
                         continue
                     else:
                         print(red(f"You have exceeded 3 tries! Game Over! ❌\n"))
+                        self.end_time = time.time()
                         return solved
     
     def evaluate(self, answer):
