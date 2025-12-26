@@ -1,12 +1,13 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Tuple
 from abc import ABC, abstractmethod
-from random import randint, choice, random
+from random import randint, choice, random, shuffle
 import time
 import operator
+import string
 
 from constants.configs import LINE
-from utils.colorize import yellow, red, green
+from utils.colorize import yellow, red, green, blue
 from utils.formatter import clear
 from .user import User
 from colorama import init
@@ -287,7 +288,7 @@ class TicTacToe(MinigameStrategy):
             self.win_length = 4
         else:
             length = 5
-            self.win_length = 4
+            self.win_length = 5
 
         self.row_length = length
         self.col_length = length
@@ -1079,6 +1080,306 @@ class BattleContest(MinigameStrategy):
             evaluation = self.evaluate(battle_result)
             return self.reward(evaluation)
 
+class Sudoku(MinigameStrategy):
+    """A simple Sudoku minigame where logic-base determine rewards."""
+
+    name = "Sudoku"
+
+    def setup(self, player, pet):
+        self.player = player
+        self.pet = pet
+        self.difficulty = 1
+        self.cell_removed = 35
+        self.grid = [[0] * 9 for _ in range(9)]
+        self.pre_filled = [[False] * 9 for _ in range(9)]
+        self.tries = 3
+        self.coins = 50
+    
+    @staticmethod
+    def display_menu():
+        """Show rules and rewards for the Sudoku minigame."""
+        print("\n" + LINE)
+        print("🔢 Sudoku 🔢")
+        print(LINE)
+        print("Let's play classic Sudoku with your pet!")
+        print("You must complete following sudoku in order to win the game!")
+        print(LINE)
+        print("Rules on Sudoku: ")
+        print("1. Use number in range 1-9 (Do not exceed this range!)")
+        print("2. Do not repeat any numbers (no repeating in rows, columns and grid 3 x 3)")
+        print("3. You only have 3 tries to solve the sudoku")
+        print(LINE)
+        print("Win ---> more currency")
+        print("Loss ---> better luck next time")
+        print(LINE)
+    
+    def build_question(self):
+        """Collect difficulty choice and prepare an incomplete Sudoku."""
+        print(yellow("Level of Difficulty: "))
+        print(LINE)
+        print("1. Easy")
+        print("2. Medium")
+        print("3. Hard")
+        print("4. Expert")
+        print(LINE)
+        try:
+            diff = int(input("Choose your difficulty (1/2/3/4): ").strip())
+        except ValueError:
+            diff = 1
+        if diff not in range(1, 5):
+            diff = 1
+        self.difficulty = diff
+        if self.difficulty == 1:
+            self.cell_removed = 35
+        elif self.difficulty == 2:
+            self.cell_removed = 45
+        elif self.difficulty == 3:
+            self.cell_removed = 55
+        else:
+            self.cell_removed = 65
+    
+    def print_grid(self):
+        """Display the Sudoku grid with coordinates"""
+        print("\n    1 2 3   4 5 6   7 8 9")
+        print("  +-------+-------+-------+")
+        for i, row in enumerate(self.grid):
+            if i > 0 and i % 3 == 0:
+                print("  +-------+-------+-------+")
+            print(f"{i + 1} |", end='')
+            for j, num in enumerate(row):
+                if j > 0 and j % 3 == 0:
+                    print(" |", end='')
+                if self.pre_filled[i][j]:
+                    print(f" {num}", end='')
+                elif self.grid[i][j] != 0:
+                    print(f" {num}", end='')
+                else:
+                    print("  ", end="")
+            print(" |")
+        print("  +-------+-------+-------+")
+        print()
+    
+    @staticmethod
+    def is_valid(board, row, col, num):
+        """Check if placing num at (row, col) is valid"""
+        # Check row for any duplicates
+        for i in range(9):
+            if board[row][i] == num:
+                return False
+        
+        # Check column for any duplicates
+        for i in range(9):
+            if board[i][col] == num:
+                return False
+        
+        # Check 3x3 subgrid for any duplicates
+        start_row, start_col = 3 * (row // 3), 3 * (col // 3)
+        for i in range(start_row, start_row + 3):
+            for j in range(start_col, start_col + 3):
+                if board[i][j] == num:
+                    return False
+                
+        # If there is no duplicates in any
+        return True
+
+    def solve_sudoku(self, board):
+        """Solve Sudoku using backtracking algorithm"""
+        for row in range(9):
+            for col in range(9):
+                if board[row][col] == 0:
+                    numbers = list(range(1, 10))
+                    shuffle(numbers)
+                    for num in numbers:
+                        if self.is_valid(board, row, col, num):
+                            board[row][col] = num
+                            if self.solve_sudoku(board):
+                                return True
+                            board[row][col] = 0
+                    return False
+        return True
+
+    def generate_sudoku(self):
+        """Generate a Sudoku puzzle with given difficulty"""
+
+        temp_grid = [row[:] for row in self.grid]
+        # Complete Solution of Sudoku
+        self.solve_sudoku(temp_grid)
+
+        for i in range(9):
+            for j in range(9):
+                self.grid[i][j] = temp_grid[i][j]
+
+        positions = [(r, c) for r in range(9) for c in range(9)]
+        shuffle(positions)
+
+        for i in range(self.cell_removed):
+            row, col = positions[i]
+            self.grid[row][col] = 0
+
+        for row in range(9):
+            for col in range(9):
+                if self.grid[row][col] != 0:
+                    self.pre_filled[row][col] = True
+    
+    def get_input(self):
+        """Get and validate user input"""
+        while True:
+            choice = input("Enter Move: ").strip().lower()
+
+            if choice in ['exit', 'quit', 'q', 'ex', 'e']:
+                return 'exit', None
+
+            if choice == 'hint':
+                return 'hint', None
+            
+            if choice.startswith('clear '):
+                parts = choice.split()
+                if len(parts) == 2:
+                    position = parts[1]
+                    if len(position) == 2 and position[0] in string.digits and position[1] in string.digits:
+                        row, col = int(position[0]) - 1, int(position[1]) - 1
+                        if not self.pre_filled[row][col]:
+                            return 'clear', (row, col)
+                        else:
+                            print(red('Cannot clear a pre-filled cell!\n'))
+                            continue
+
+                print(red("Invalid clear command. Use format: 'clear 11'.\n"))
+                continue
+
+            parts = choice.replace(',', '').split()
+            if len(parts) != 2:
+                print(red('Invalid input. Use format: 11 5 (col)(row) (value)\n'))
+                continue
+
+            position, number = parts[0], parts[1]
+            if len(position) != 2 or position[0] not in string.digits or position[1] not in string.digits:
+                print(red("Invalid position. Use format like 11, 23, etc.\n"))
+                continue
+
+            try:
+                number = int(number)
+                if number < 1 or number > 9:
+                    print(red('Number must be between 1 and 9.\n'))
+                    continue
+            except ValueError:
+                print(red('Invalid number. Please enter a number between 1 and 9.\n'))
+                continue
+
+            row, col = int(position[0]) - 1, int(position[1]) - 1
+            return 'move', (row, col, number)
+    
+    def get_hint(self):
+        empty_cells = [(r, c) for r in range(9) for c in range(9) if self.grid[r][c] == 0]
+        if empty_cells:
+            row, col = choice(empty_cells)
+            temp_grid = [row[:] for row in self.grid]
+            self.solve_sudoku(temp_grid)
+            self.coins -= 15
+            return f"Try placing {temp_grid[row][col]} at col-{row + 1} row-{col + 1}."
+        return "No hints available - puzzle is complete!"
+    
+    def build_game(self):
+        difficulty_map = {1: "easy", 2: "medium", 3: "hard", 4: "expert"}
+        difficulty = difficulty_map[self.difficulty]
+        print(f"\nStarting '{difficulty.capitalize()}' level puzzle...")
+        self.generate_sudoku()
+        solution = [row[:] for row in self.grid]
+        self.solve_sudoku(solution)
+
+        print("\nInstructions:")
+        print("- Enter moves as 'column-row number' (e.g., '11 5')")
+        print("- Type 'hint' for a suggestion")
+        print("- Type 'clear 11' to clear a cell")
+        print("- Type 'q', 'quit', or 'exit' to quit")
+
+        self.print_grid()
+        moves = 0
+        solved = False
+
+        while True:
+            print(yellow(f"Tries remaining: ({self.tries}/3)"))
+            action, data = self.get_input()
+            if action == 'exit':
+                print(yellow("\nYou exited."))
+                return solved
+
+            elif action == 'hint':
+                hint = self.get_hint()
+                print(blue(f"\n 💡 Hint: {hint}\n"))
+                continue
+
+            elif action == 'clear':
+                row, col = data
+                if self.grid[row][col] != 0:
+                    self.grid[row][col] = 0
+                    print(green(f"\nCleared col-{col + 1} row-{row + 1}."))
+                    self.print_grid()
+                else:
+                    print(red("Cell is already empty!\n"))
+                continue
+
+            elif action == 'move':
+                row, col, num = data
+                if self.pre_filled[row][col]:
+                    print(red(f"Cell {col + 1}{row + 1} is pre-filled with {self.grid[row][col]}. Try a different cell.\n"))
+                    continue
+
+                temp_value = self.grid[row][col]
+                self.grid[row][col] = 0
+
+                if self.is_valid(self.grid, row, col, num):
+                    self.grid[row][col] = num
+                    moves += 1
+                    print(green(f"\nPlaced {num} at col-{col + 1} row-{row+1}."))
+                    self.print_grid()
+
+                    if all(self.grid[row][col] != 0 for row in range(9) for col in range(9)):
+                        solved = True
+                        return solved
+
+                elif not self.is_valid(self.grid, row, col, num):
+                    self.grid[row][col] = temp_value
+                    if self.tries > 1:
+                        print(red(f"Invalid move! {num} can't go in col-{col + 1} row-{row + 1} (conflicts with existing numbers).\n"))
+                        self.tries -= 1
+                        continue
+                    else:
+                        print(red(f"You have exceeded 3 tries! Game Over! ❌\n"))
+                        return solved
+    
+    def evaluate(self, answer):
+        """Convert the raw summary into a result outcome string."""
+        if (answer):
+            outcome = "Win"
+        else:
+            outcome = "Lose"
+        return {"outcome": outcome}
+
+    def reward(self, result):
+        """Translate outcome into currency and pet happiness and display a summary."""
+        outcome = result.get("outcome")
+        if outcome == "Win":
+            pet_happiness = 15
+            print("\nYou solved the sudoku! 🎉")
+        else:
+            self.coins -= 50
+            pet_happiness = 0
+            print("\nYou failed to solve the sudoku.. 😾")
+        
+        print(f"Reward: Rp. {'{:,}'.format(self.coins * 1000)}. Pet happiness (+{pet_happiness})")
+        print(green(f"You received Rp. {'{:,}'.format(self.coins * 1000)} 🎉"))
+        return {"currency": self.coins, "pet_happiness": pet_happiness}
+
+    def play(self, player, pet):
+        """Run an entire Sudoku game and return rewards."""
+        self.setup(player, pet)
+        self.display_menu()
+        self.build_question()
+        summary = self.build_game()
+        result = self.evaluate(summary)
+        reward = self.reward(result)
+        return reward
 
 class MinigameEngine:
     """Registry for minigame strategies and helper to play them by name."""
@@ -1106,4 +1407,5 @@ def engine() -> MinigameEngine:
     engine.register(TicTacToe())
     engine.register(MemoryMatch())
     engine.register(BattleContest())
+    engine.register(Sudoku())
     return engine

@@ -283,8 +283,7 @@ class Main:
 
         if getattr(pet, "health", 1) > 0:
             stage = self.facade.get_pet_stage(pet)
-            # Stage may be an async generator or synchronous iterable; handle as async iterable in the UI.
-            async for frame in stage:
+            for frame in stage:
                 print(frame)
             return True
         else:
