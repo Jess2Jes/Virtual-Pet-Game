@@ -27,12 +27,6 @@ Notes:
 - This file includes light input validation and prints user-facing messages; core logic is unchanged.
 """
 
-# Regular expression for strong passwords:
-
-
-
-
-
 class User:
     """
     Represents a player / account in the game.
