@@ -6,8 +6,9 @@ import time
 import operator
 import string
 import curses
+import logging
 
-from constants.configs import LINE
+from constants.configs import LINE, GRID_LINE
 from utils.colorize import yellow, red, green, blue
 from utils.formatter import clear
 from .user import User
@@ -630,11 +631,10 @@ class TicTacToe(MinigameStrategy):
                 self.winner = self.count_sequence()
                 return True
 
-        if self.row_length >= 3:
-            if not self.available_moves():
-                self.render_board()
-                self.winner = self.count_sequence()
-                return True
+        if self.row_length >= 3 and (not self.available_moves()):
+            self.render_board()
+            self.winner = self.count_sequence()
+            return True
 
         return False
 
@@ -862,14 +862,14 @@ class BattleContest(MinigameStrategy):
         print(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(LINE)))
         print(LINE)
         print("\n" + LINE)
-        print(f"Your Pet: {self.player_pet.name}")
+        print(f"Your Pet: {self.player_pet.name} {self.player_pet.emoji}")
         print(f"Health: {self.player_health}")
         print(f"Strength: {self.player_pet_stats['strength']}")
         print(f"Agility: {self.player_pet_stats['agility']}")
         print('-' * len(LINE))
 
         if self.opponent_pet:
-            print(f"Opponent: {self.opponent_pet.name}")
+            print(f"Opponent: {self.opponent_pet.name} {self.opponent_pet.emoji}")
             print(f"Health: {self.opponent_health}")
             print(f"Strength: {self.player_pet_stats['strength']}")
             print(f"Agility: {self.player_pet_stats['agility']}")
@@ -900,7 +900,7 @@ class BattleContest(MinigameStrategy):
         print("\n" + LINE)
         print("Battle Starting!")
         print(LINE)
-        print(f"{self.player_pet.name} VS {self.opponent_pet.name}")
+        print(f"{self.player_pet.name} {self.player_pet.emoji} VS {self.opponent_pet.name} {self.opponent_pet.emoji}")
         print("Prepare for battle!")
         time.sleep(2)
 
@@ -1118,7 +1118,7 @@ class Sudoku(MinigameStrategy):
     
     def build_question(self):
         """Collect difficulty choice and prepare an incomplete Sudoku."""
-        
+
         print(yellow("Level of Difficulty: "))
         print(LINE)
         print("1. Easy")
@@ -1146,10 +1146,10 @@ class Sudoku(MinigameStrategy):
         """Display the Sudoku grid with coordinates"""
 
         print("\n    1 2 3   4 5 6   7 8 9")
-        print("  +-------+-------+-------+")
+        print(f"  {GRID_LINE}")
         for i, row in enumerate(self.grid):
             if i > 0 and i % 3 == 0:
-                print("  +-------+-------+-------+")
+                print(f"  {GRID_LINE}")
             print(f"{i + 1} |", end='')
             for j, num in enumerate(row):
                 if j > 0 and j % 3 == 0:
@@ -1161,7 +1161,7 @@ class Sudoku(MinigameStrategy):
                 else:
                     print("  ", end="")
             print(" |")
-        print("  +-------+-------+-------+")
+        print(f"  {GRID_LINE}")
         print()
     
     @staticmethod
@@ -1284,7 +1284,71 @@ class Sudoku(MinigameStrategy):
             return f"Try placing {temp_grid[row][col]} at col-{row + 1} row-{col + 1}."
         return "No hints available - puzzle is complete!"
     
+    def _handle_hint_action(self):
+        hint = self.get_hint()
+        print(blue(f"\n 💡 Hint: {hint}\n"))
+        return True
+
+    def _handle_exit_action(self):
+        print(yellow("\nYou exited."))
+        return False
+
+    def _handle_clear_action(self, data):
+        """Handle clearing a cell."""
+        row, col = data
+
+        if self.grid[row][col] != 0:
+            self.grid[row][col] = 0
+            print(green(f"\nCleared col-{col + 1} row-{row + 1}."))
+            self.print_grid()
+        else:
+            print(red("Cell is already empty!\n"))
+
+        return True
+    
+    def _handle_move_action(self, data):
+        """Handle placing a number. Returns True if game won, False if lost, None to continue."""
+        row, col, num = data
+        if self.pre_filled[row][col]:
+            print(red(f"Cell {col + 1}{row + 1} is pre-filled with {self.grid[row][col]}. Try a different cell.\n"))
+            return True, False
+
+        temp_value = self.grid[row][col]
+        self.grid[row][col] = 0
+
+        if self.is_valid(self.grid, row, col, num):
+            return self._handle_valid_move(row, col, num)
+
+        elif not self.is_valid(self.grid, row, col, num):
+            return self._handle_invalid_move(row, col, num, temp_value)
+
+    def _handle_valid_move(self, row, col, num):
+        """Handle a valid move placement."""
+        self.grid[row][col] = num
+        print(green(f"\nPlaced {num} at col-{col + 1} row-{row+1}."))
+        self.print_grid()
+
+        if all(self.grid[row][col] != 0 for row in range(9) for col in range(9)):
+            self.end_time = time.time()
+            return False, True
+        
+        return True, False
+
+    def _handle_invalid_move(self, row, col, num, temp_value):
+        """Handle an invalid move (reduces tries)."""
+        self.grid[row][col] = temp_value
+        if self.tries > 1:
+            print(red(f"Invalid move! {num} can't go in col-{col + 1} row-{row + 1} (conflicts with existing numbers).\n"))
+            self.tries -= 1
+            return True, False
+        else:
+            print(red("You have exceeded 3 tries! Game Over! ❌\n"))
+            self.end_time = time.time()
+            return False, False
+    
     def build_game(self):
+        """Main game loop."""
+
         difficulty_map = {1: "easy", 2: "medium", 3: "hard", 4: "expert"}
         difficulty = difficulty_map[self.difficulty]
         print(f"\nStarting '{difficulty.capitalize()}' level puzzle...")
@@ -1300,61 +1364,30 @@ class Sudoku(MinigameStrategy):
 
         self.print_grid()
         moves = 0
-        solved = False
         self.start_time = time.time()
 
         while True:
             print(yellow(f"Tries remaining: ({self.tries}/3)"))
             action, data = self.get_input()
-            if action == 'exit':
-                print(yellow("\nYou exited."))
-                return solved
-
-            elif action == 'hint':
-                hint = self.get_hint()
-                print(blue(f"\n 💡 Hint: {hint}\n"))
+            handler = {
+                'exit': self._handle_exit_action,
+                'hint': self._handle_hint_action,
+                'clear': self._handle_clear_action,
+                'move': self._handle_move_action,
+            }.get(action)
+        
+            if handler is None:
+                print(red("Invalid action!"))
                 continue
-
-            elif action == 'clear':
-                row, col = data
-                if self.grid[row][col] != 0:
-                    self.grid[row][col] = 0
-                    print(green(f"\nCleared col-{col + 1} row-{row + 1}."))
-                    self.print_grid()
-                else:
-                    print(red("Cell is already empty!\n"))
-                continue
-
-            elif action == 'move':
-                row, col, num = data
-                if self.pre_filled[row][col]:
-                    print(red(f"Cell {col + 1}{row + 1} is pre-filled with {self.grid[row][col]}. Try a different cell.\n"))
-                    continue
-
-                temp_value = self.grid[row][col]
-                self.grid[row][col] = 0
-
-                if self.is_valid(self.grid, row, col, num):
-                    self.grid[row][col] = num
-                    moves += 1
-                    print(green(f"\nPlaced {num} at col-{col + 1} row-{row+1}."))
-                    self.print_grid()
-
-                    if all(self.grid[row][col] != 0 for row in range(9) for col in range(9)):
-                        solved = True
-                        self.end_time = time.time()
-                        return solved
-
-                elif not self.is_valid(self.grid, row, col, num):
-                    self.grid[row][col] = temp_value
-                    if self.tries > 1:
-                        print(red(f"Invalid move! {num} can't go in col-{col + 1} row-{row + 1} (conflicts with existing numbers).\n"))
-                        self.tries -= 1
-                        continue
-                    else:
-                        print(red(f"You have exceeded 3 tries! Game Over! ❌\n"))
-                        self.end_time = time.time()
-                        return solved
+            
+            if action == 'move':
+                should_continue, won = handler(data)
+            else:
+                should_continue = handler() if data is None else handler(data)
+                won = False  
+            
+            if not should_continue:
+                return won
     
     def evaluate(self, answer):
         """Convert the raw summary into a result outcome string."""
@@ -1379,7 +1412,7 @@ class Sudoku(MinigameStrategy):
             pet_happiness = 0
             print("\nYou failed to solve the sudoku.. 😾")
         
-        print(f"Elapsed time: {elapsed:.2f}")
+        print(f"Elapsed time: {elapsed:.2f}s")
         print(f"Reward: Rp. {'{:,}'.format(self.coins * 1000)}. Pet happiness (+{pet_happiness})")
         print(green(f"You received Rp. {'{:,}'.format(self.coins * 1000)} 🎉"))
         return {"currency": self.coins, "pet_happiness": pet_happiness}
@@ -1413,7 +1446,6 @@ class Tetris(MinigameStrategy):
     HEIGHT = 20
 
     def setup(self, player, pet):
-        """Prepare internal state before the game begins."""
         self.player = player
         self.pet = pet
         self.board = [[0] * Tetris.WIDTH for _ in range(Tetris.HEIGHT)]
@@ -1637,8 +1669,9 @@ class Tetris(MinigameStrategy):
                 stdscr.addstr(height // 2 - 1, width // 2 - 5, "GAME OVER!")
                 stdscr.addstr(height // 2, width // 2 - 8, f"Final Score: {self.score}")
                 stdscr.addstr(height // 2 + 2, width // 2 - 10, "Press any key to continue...")
-            except:
-                pass
+            except Exception as e:
+                logging.error(f"Unexpected error in game over screen: {e}", exc_info=True)
+    
             stdscr.refresh()
             stdscr.nodelay(False)
             stdscr.getch()
@@ -1702,7 +1735,438 @@ class Tetris(MinigameStrategy):
         result = self.evaluate(summary)
         reward = self.reward(result)
         return reward
+
+class UNO(MinigameStrategy):
+    """A simple UNO card minigame to play with your little pet."""
+
+    name = "UNO Card"
+
+    COLORS = ['RED', 'YELLOW', 'GREEN', 'BLUE']
+    VALUES = [str(num) for num in range(0, 10)]
+    ACTION_CARDS = ['Skip', 'Reverse', 'DrawTwo']
+    WILD_CARDS = ['Wild ColourChanger', 'Wild DrawFour']
+
+    def setup(self, player, pet):
+        self.player = player
+        self.pet = pet
+        self.deck = []
+        self.top_card = None
+        self.player_hand = []
+        self.pet_hand = []
+        self.discard = []
+        self.turns = 0
+        self.winner = None
+        self.current_player_index = 0
+        self.skip = False
+        self.players = [
+            {'name': 'You', 'hand': [], 'emoji': '👤'},
+            {'name': self.pet.name, 'hand': [], 'emoji': self.pet.emoji},
+        ]
+        other_players_with_pets = list(filter(lambda user: user != self.player and user.pets, User.users.values()))
+        if other_players_with_pets:
+            self.opponent = choice(other_players_with_pets)
+        else:
+            self.opponent = None
+        self.direction = 1
+
+    def build_deck(self):
+        """Builds and returns a full UNO deck."""
+
+        self.deck = []
+
+        # Number Cards
+        for color in UNO.COLORS:
+            self.deck.append(f"{color} 0")
+            for v in UNO.VALUES[1:]:
+                self.deck.append(f"{color} {v}")
+                self.deck.append(f"{color} {v}")
         
+        # Action Cards (2 of each)
+        for color in UNO.COLORS:
+            for action in UNO.ACTION_CARDS:
+                self.deck.append(f"{color} {action}")
+                self.deck.append(f"{color} {action}")
+        
+        # Wild Cards (4 of each)
+        for wild in UNO.WILD_CARDS:
+            for _ in range(4):
+                self.deck.append(wild)
+        
+        shuffle(self.deck)
+        return self.deck
+
+    @staticmethod
+    def display_menu():
+        """Show a description and choices to the player."""
+        print("\n" + LINE)
+        print("🃏 UNO Card Minigame 🃏")
+        print(LINE)
+        print("Play this classic UNO card minigame with your pet!")
+        print("\nRules:")
+        print(LINE)
+        print("- Each player will be given cards depending on game choices.")
+        print("- Play one card matching the discard in color, number or symbol.")
+        print("- Skip: Next player misses turn")
+        print("- Reverse: Changes direction (3+ players)")
+        print("- DrawTwo: Next player draws 2 cards")
+        print("- Wild: Choose any color")
+        print("- Wild DrawFour: Choose color and next player draws 4")
+        print(LINE)
+    
+    @staticmethod
+    def can_play(card, top_card):
+        """Return True if card can be played on top_card."""
+        card_parts = card.split()
+        top_parts = top_card.split()
+
+        card_color = card_parts[0]
+        card_value = ' '.join(card_parts[1:])
+
+        top_color = top_parts[0]
+        top_value = ' '.join(top_parts[1:]) if len(top_parts) > 1 else None
+
+        if "Wild" in card_color:
+            return True
+        
+        if top_parts[0] == "Wild" and len(top_parts) > 1:
+            chosen_color = top_parts[1]  
+            return card_parts[0] == chosen_color
+        
+        if top_color in UNO.COLORS and top_value is None:
+            return card_color == top_color
+        
+        return card_color == top_color or card_value == top_value
+    
+    def draw_card(self):
+        """Draw a card; reshuffle discard pile if deck is empty."""
+        if not self.deck:
+            top = self.discard.pop()
+            self.deck.extend(self.discard)
+            self.discard.clear()
+            self.discard.append(top)
+            shuffle(self.deck)
+
+        return self.deck.pop()
+
+    def get_valid_moves(self, hand):
+        """Get all valid moves from a hand."""
+        return [card for card in hand if self.can_play(card, self.top_card)]
+
+    def get_input(self, player_name, player_hand):
+        """Collect any initial input from the player."""
+
+        print(f"\n{player_name}r Turn:")
+        print(LINE)
+        print("Top Card:", self.top_card)
+        print(f"\nYour Hand:")
+        for i, c in enumerate(player_hand):
+            print(f" {i + 1}. {c}")
+        print(LINE)
+        valid_moves = self.get_valid_moves(player_hand)
+
+        if valid_moves:
+            print("\nValid moves:")
+            for i, c in enumerate(valid_moves):
+                print(f"{i + 1}. {c}")
+            print(LINE)
+            choice = input("Play (h) or draw (p)? ").strip().lower()
+
+            return choice, valid_moves
+        
+        else:
+            print(red("\nThere is no more valid moves for player!"))
+            return 'p', None
+    
+    def build_question(self):
+        """Build the game setup - optional difficulty or rules."""
+
+        total_players = self._multiplayer_choice()
+        if total_players > 2:
+            self._setup_player(total_players)
+
+        print("\nUNO Games:")
+        print(LINE)
+        print("1. Standard UNO (7 cards each)")
+        print("2. Quick UNO (5 cards each)")
+        print("3. Challenge UNO (10 cards each)")
+        print(LINE)
+
+        try:
+            choice = int(input("Choose your game modes (1/2/3/4): ").strip())
+        except ValueError:
+            choice = 1
+        if choice not in range(1, 5):
+            choice = 1
+
+        self.build_deck()
+
+        self.top_card = self.draw_card()
+        while "Wild" in self.top_card:
+            self.deck.append(self.top_card)
+            shuffle(self.deck)
+            self.top_card = self.draw_card()
+        
+        self.discard.append(self.top_card)
+
+        if choice == 1:
+            hand_size = 7
+        elif choice == 2:
+            hand_size = 5
+        else:
+            hand_size = 10
+
+        for player in self.players:
+            player['hand'] = [self.draw_card() for _ in range(hand_size) if self.deck]
+    
+    def _multiplayer_choice(self):
+        """Choose number of players."""
+
+        print("\nUNO Multiplayer Games:")
+        print(LINE)
+        print("1. 2 Players")
+        print("2. 3 Players")
+        print("3. 4 Players")
+        print("4. 5 Players")
+        print(LINE)
+        try:
+            player_count = int(input("Choose your game modes (1/2/3/4): ").strip())
+        except ValueError:
+            player_count = 1
+
+        if player_count not in range(1, 5):
+            player_count = 1
+
+        total_players = player_count + 1
+
+        return total_players
+    
+    def _setup_player(self, total_players=3):
+        """Setup players list based on total players."""
+
+        if not self.opponent:
+            print(red("\nNo other players available!"))
+
+        elif len(self.opponent.pets) < total_players - 2:
+            print(red("\nNot enough player!"))
+        else:
+            list_player_names = [player['name'] for player in self.players]
+            for i in range(total_players - 2):
+                opponent_pet = choice([pet for pet in self.opponent.pets 
+                    if pet.name not in list_player_names])
+                self.players.append({
+                    'name': opponent_pet.name,
+                    'hand': [],
+                    'emoji': opponent_pet.emoji
+                })
+                list_player_names.append(opponent_pet.name)
+
+    def _play_card(self, player, card):
+        """Play a card from hand. Returns played_card."""
+
+        next_player_idx = (self.current_player_index + self.direction) % len(self.players)
+
+        if card in player['hand']:
+            player['hand'].remove(card)
+            print(f"\n{player['emoji']} {player['name']}: {card}")
+        
+        if 'Wild' in card:
+            if not player['name'].lower() == 'you':
+                color = choice(UNO.COLORS)
+                print(f"{player['emoji']} {player['name'].title()} changes color to:", color)
+            else:
+                color = None
+                while color not in UNO.COLORS:
+                    color = input("Choose color (RED/YELLOW/GREEN/BLUE): ").strip().upper()
+            
+            if 'DrawFour' in card:
+                for _ in range(4):
+                    card = self.draw_card()
+                    self.players[next_player_idx]['hand'].append(card)
+                self.skip = True
+            
+            played_card = f"Wild {color}"
+
+            self.discard.append(played_card)
+            return played_card
+
+        if 'DrawTwo' in card:
+            for _ in range(2):
+                card = self.draw_card()
+                self.players[next_player_idx]['hand'].append(card)
+            self.skip = True
+        
+        if 'Skip' in card:
+            self.skip = True
+
+        if 'Reverse' in card and len(self.players) > 2:
+            self.direction *= -1
+            print(f"Direction reversed! Now going {'↻ clockwise' if self.direction == 1 else '↺ counter-clockwise'}")
+        
+        self.discard.append(card)
+        return card
+    
+    def _handle_draw(self, player):
+        """Handle drawing a card when no valid moves."""
+
+        print(blue("\nDrawing..."))
+        new_card = self.draw_card()
+        player['hand'].append(new_card)
+
+        print(f"{player['emoji']} {player['name'].title()} drew:", new_card)
+    
+        if self.can_play(new_card, self.top_card):
+            print(green(f"{player['name']} can play it!"))
+            return self._play_card(player, new_card)
+        else:
+            print(red("Cannot play. Turn ends."))
+            return self.top_card
+        
+    def next_player(self):
+        """Move to next player based on direction."""
+
+        if self.skip:
+            self.skip = False
+            self.current_player_index = (self.current_player_index + self.direction) % len(self.players)
+            if self.players[self.current_player_index]['name'].lower() == 'you':
+                print(blue(f"Your turn skipped!"))
+            else:
+                print(blue(f"{self.players[self.current_player_index]['name']}'s turn skipped!"))
+            self.current_player_index = (self.current_player_index + self.direction) % len(self.players)
+        else:
+            self.current_player_index = (self.current_player_index + self.direction) % len(self.players)
+
+    def player_turn(self, player):
+        """Handle the player's full turn."""
+
+        valid = False
+
+        while not valid:
+            choice, valid_moves = self.get_input(player['name'], player['hand'])
+
+            if choice == 'h':
+                try: 
+                    idx = int(input('\nEnter card index: ')) - 1
+                    card = valid_moves[idx]
+                    valid = True
+                except:
+                    print(red("Invalid input! Please try again."))
+            else:
+                return self._handle_draw(player)
+        
+        return self._play_card(player, card)
+    
+    def opponent_turn(self, player):
+        """Handle pet(s) move."""
+
+        print(f"\n{player['name']}'s Turn...")
+        print(LINE)
+        time.sleep(1)
+        valid_moves = self.get_valid_moves(player['hand'])
+
+        if valid_moves:
+            card = choice(valid_moves)
+
+            return self._play_card(player, card)
+        
+        else:
+            return self._handle_draw(player)
+
+    def build_game(self):
+        """Run the interactive game loop."""
+
+        print("\nList of UNO Participants: ")
+        print(LINE)
+        for i, p in enumerate(self.players):
+            print(f" {i + 1}. {p['name']}")
+
+        print(f"\nDealing with {len(self.players[0]['hand'])} cards each...")
+        time.sleep(1)
+
+        while True:
+            current_player = self.players[self.current_player_index]
+            print(f"Top Card: {self.top_card}")
+            if current_player['name'].lower() == "you":
+                card = self.player_turn(current_player)
+            else:
+                card = self.opponent_turn(current_player)
+
+            if not current_player['hand']:
+                self.winner = current_player['name']
+                break
+
+            if card and card != self.top_card:
+                self.top_card = card
+            
+            if len(current_player['hand']) == 1 and current_player['name'].lower() != 'you':
+                print(green(f"\n{current_player['emoji']} {current_player['name']}: UNO!"))
+            
+            self.next_player()
+            self.turns += 1
+
+        return {
+            "winner": self.winner,
+            "turns": self.turns,
+            "player_cards_left": len(self.player_hand),
+            "pet_cards_left": len(self.pet_hand),
+            "deck_size": len(self.deck)
+        }
+    
+    def evaluate(self, answer):
+        """Evaluate the game results."""
+
+        winner = answer.get('winner')
+        turns = answer.get('turns', 0)
+        player_cards = answer.get('player_cards_left', 0)
+        
+        if winner == "You":
+            outcome = "Win"
+        else:
+            outcome = "Lose"
+
+        return {
+            "outcome": outcome,
+            "turns": turns,
+            "player_cards_left": player_cards,
+            "winner": winner
+        }
+    
+    def reward(self, result):
+        """Convert evaluation results into currency/pet happiness rewards."""
+        outcome = result.get('outcome')
+        turns = result.get('turns', 0)
+        player_cards = result.get('player_cards_left', 0)
+        winner = result.get('winner')
+        
+        if outcome == "Win":
+            coins = 30 + max(0, 20 - turns) + max(0, 10 - player_cards)
+            pet_happiness = 2
+            print(green(f"\n🎉 You won in {turns} turns!"))
+        else:
+            if winner == self.pet.name:
+                coins = max(5, 15 - player_cards)
+                pet_happiness = 10
+                print(green(f"\n🎉 Your pet won in {turns} turns!"))
+            else:
+                coins = max(5, 35 - player_cards)
+                pet_happiness = 5
+                print(f"\nThe winner is: {winner}!")
+                print(red(f"\n💪 Better luck next time!"))
+        
+        print(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
+        print(green(f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉"))
+
+        return {"currency": coins, "pet_happiness": pet_happiness}
+    
+    def play(self, player, pet):
+        """Run the full UNO game and return rewards."""
+        self.setup(player, pet)
+        self.display_menu()
+        self.build_question()
+        summary = self.build_game()
+        result = self.evaluate(summary)
+        reward = self.reward(result)
+        return reward
+
 class MinigameEngine:
     """Registry for minigame strategies and helper to play them by name."""
 
@@ -1731,4 +2195,5 @@ def engine() -> MinigameEngine:
     engine.register(BattleContest())
     engine.register(Sudoku())
     engine.register(Tetris())
+    engine.register(UNO())
     return engine
