@@ -267,11 +267,11 @@ class Shop:
             print("\n🐼 : Here's list of options you can do!")
             # There will also be a sell item menu in here soon!
             # You can also try to bargain here in the future updates!
-            print('='*101)
+            print('='*120)
             print("1. Buy Item")
             print("2. Show Current Currency")
             print("3. Exit")
-            print('='*101)
+            print('='*120)
 
             choice = self._input_int("🐼 : Choose (1-3): ")
             if choice is None:

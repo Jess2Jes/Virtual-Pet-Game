@@ -244,7 +244,7 @@ class VirtualPet(AbstractPet):
             self.limit_stat()
             return False
 
-        print("\n" + "="*101)
+        print("\n" + "="*120)
         print(green(f"\n{self.name} has been fed with '{food}' {emoji} 🍽️."))
 
         self.hunger += hunger_change

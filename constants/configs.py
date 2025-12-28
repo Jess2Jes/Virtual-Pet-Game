@@ -1,4 +1,5 @@
-LINE = "─" * 101
+LINE = "─" * 120
+GRID_LINE = '+-------+-------+-------+'
 NO_STOCK = "OUT OF STOCK"
 MAX_LENGTH = 0
 USERNAME_INPUTTING = "Username: "

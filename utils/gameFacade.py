@@ -15,12 +15,18 @@ class GameFacade:
     """
 
     def __init__(self):
-        self.game = Game()
+        self.game = None
         self.current_user = User.current_user
         self._minigame_engine = engine()
         self.save_manager = SaveManager.get_instance()
         # Load saved users into in-memory registry so players can log in later
         self._load_all_users_from_saves()
+
+    def _connect_to_game(self):
+        if (not self.game) and self.current_user:
+            self.game = Game(self.current_user)
+        elif self.current_user and self.game.user != self.current_user:
+            self.game = Game(self.current_user)
 
     # === User Management ===
     def register_user(self, username: str, password: str) -> bool:
@@ -28,6 +34,7 @@ class GameFacade:
         auth = User.register(username, password)
         if auth is not None:
             self.current_user = User.current_user
+            self._connect_to_game()
             return True
         return False
 
@@ -36,6 +43,7 @@ class GameFacade:
         auth = User.login(username, password)
         if auth is not None:
             self.current_user = User.current_user
+            self._connect_to_game()
             print("\n💾 Checking for saved game...")
             if self._load_game(username):
                 print(green("🔃 Previous game loaded!\n"))
@@ -88,6 +96,8 @@ class GameFacade:
     # === Pet Management ===
     def create_pet(self) -> bool:
         """Run the pet creation flow and attach the newly created pet to the current user."""
+        self._connect_to_game()
+
         if not self.current_user:
             return False
 
@@ -108,9 +118,9 @@ class GameFacade:
         """Render a pet's stats using the Game helper."""
         self.game.view(pet)
 
-    def interact_pet(self, pet, user) -> None:
+    def interact_pet(self, pet) -> None:
         """Enter the interactive play loop for a pet and then advance time for the pet."""
-        self.game.interact(pet, user)
+        self.game.interact(pet)
         pet.time_past()
 
     def get_pet_age(self, pet) -> float:
@@ -141,6 +151,7 @@ class GameFacade:
         Human-friendly current time string derived from the game's internal clock (hour).
         Uses a simple 12-hour format with A.M./P.M. labels.
         """
+        self._connect_to_game()
         clock = self.game.clock - 12 if self.game.clock > 12 else self.game.clock
         return f"{clock} A.M." if self.game.clock < 12 else f"{clock} P.M."
 
@@ -150,12 +161,14 @@ class GameFacade:
 
         Note: spend reset logic is handled elsewhere in the game loop (if needed).
         """
+        self._connect_to_game()
         if self.game.spend == 24:
             self.game.day += 1
         return self.game.day
 
     def spend_time(self) -> None:
         """Increment the game's spend counter (used to track time progression)."""
+        self._connect_to_game()
         self.game.spend += 1
 
     def save_game(self) -> bool:

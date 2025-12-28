@@ -10,6 +10,7 @@ from utils.colorize import (
 from utils.formatter import clear
 from utils.loading import loading_bar
 
+import string
 
 init(autoreset=True)
 
@@ -49,7 +50,7 @@ class Main:
 
     def _auth_menu(self) -> int | None:
         """Render the authentication menu and collect a numeric choice from the user."""
-        print(cyan("─" * 39 + " " + "VIRTUAL PET GAME" + " " + "─" * 44))
+        print(cyan("─" * 51 + " " + "VIRTUAL PET GAME" + " " + "─" * 51))
         print(yellow("1. Register"))
         print(yellow("2. Login"))
         print(yellow("3. Change Password"))
@@ -159,7 +160,7 @@ class Main:
 
     def _pet_zone_menu(self) -> int | None:
         """Render the main pet-zone menu and collect the user's choice."""
-        print(cyan("─" * 43 + " " + "PET ZONE" + " " + "─" * 48))
+        print(cyan("─" * 55 + " " + "PET ZONE" + " " + "─" * 55))
         print(yellow("1. Check time"))
         print(yellow("2. Show account info"))
         print(yellow("3. Create a new pet"))
@@ -195,7 +196,7 @@ class Main:
                 "pets": len(user.pets),
             }
 
-            print((f'"\n"  {reset_color(LINE)}'))
+            print((f'\n{reset_color(LINE)}'))
             print(yellow("ACCOUNT INFORMATION".center(len(LINE))))
             print(reset_color(LINE))
 
@@ -255,7 +256,7 @@ class Main:
             return False
 
         if getattr(pet, "health", 1) > 0:
-            self.facade.interact_pet(pet, self.facade.current_user)
+            self.facade.interact_pet(pet)
             return True
         else:
             print(red("\nYour pet has deceased... 🧦\n"))
@@ -309,17 +310,17 @@ class Main:
             print(f"{i}. --> {name}")
         print(LINE)
 
-        try:
-            idx = int(input("Choose a minigame number: ").strip())
-        except Exception:
+        idx = input("Choose a minigame number (or type 'q' to quit): ").strip().lower()
+        
+        if idx == 'q':
+            print(green("\nExit from minigame!"))
+            return True
+
+        if not (1 <= int(idx) <= len(games)) and idx != 'q':
             print("Invalid choice.")
             return False
 
-        if not (1 <= idx <= len(games)):
-            print("Invalid choice.")
-            return False
-
-        if idx == 4 and len(User.users) < 2:
+        if int(idx) == 4 and len(User.users) < 2:
             print(red("\nNo other players available right now!"))
             return True
 
@@ -327,7 +328,7 @@ class Main:
         if pet is None:
             return True
 
-        mg_name = games[idx - 1]
+        mg_name = games[int(idx) - 1]
         self.facade.play_minigame(mg_name, pet)
         return True
 
