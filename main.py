@@ -10,7 +10,6 @@ from utils.colorize import (
 from utils.formatter import clear
 from utils.loading import loading_bar
 
-import string
 
 init(autoreset=True)
 
@@ -271,12 +270,9 @@ class Main:
         self.facade.view_pet_stats(pet)
         return True
 
-    async def _show_pet_stage(self) -> bool:
+    def _show_pet_stage(self) -> bool:
         """
         Show an animated/staged representation of the pet's life stage.
-
-        The pet stage methods (baby/teen/adult/elder) are expected to be iterable
-        or asynchronous iterables that yield frames to print.
         """
         pet = self._select_pet()
         if pet is None:
@@ -393,4 +389,5 @@ class Main:
 
 if __name__ == "__main__":
     pet_game = Main()
+    print("Starting UI...")
     pet_game.run()
