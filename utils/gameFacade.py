@@ -1,7 +1,7 @@
 import datetime
 from features.shop import Shop
 from features.game import Game
-from features.minigame import engine
+from features.minigame.engine import engine
 from features.save_manager import SaveManager
 from features.user import User
 from utils.colorize import green, yellow
@@ -23,9 +23,7 @@ class GameFacade:
         self._load_all_users_from_saves()
 
     def _connect_to_game(self):
-        if (not self.game) and self.current_user:
-            self.game = Game(self.current_user)
-        elif self.current_user and self.game.user != self.current_user:
+        if self.current_user and (not self.game or self.game.user != self.current_user):
             self.game = Game(self.current_user)
 
     # === User Management ===
@@ -241,9 +239,9 @@ class GameFacade:
                 User.users[key] = user
 
 
-    def _load_game(self, username: str) -> bool:
+    def _load_game(self, username) -> bool:
         """Load a specific user's saved game state (user+game) and restore it into memory."""
-        game_state = self.save_manager.load_game(self.current_user.username)
+        game_state = self.save_manager.load_game(username)
 
         if not game_state:
             return False
