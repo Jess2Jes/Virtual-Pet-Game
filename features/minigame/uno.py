@@ -313,7 +313,7 @@ class Uno(MinigameStrategy):
         valid = False
 
         while not valid:
-            choice, valid_moves = self.get_input(player['name'], player['hand'])
+            choice, valid_moves = self.get_input(player)
 
             if choice == 'h':
                 try: 
