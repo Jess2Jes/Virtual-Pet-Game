@@ -10,7 +10,7 @@ from rich.progress import (
     TimeRemainingColumn
 )
 
-async def loading_bar(total: int = 30, delay: float = 0.005):
+async def loading_bar(total: int = 30, delay: float = 0.065):
     """Async helper that displays a short progress bar (used by UI flows).
     """
     progress = Progress(

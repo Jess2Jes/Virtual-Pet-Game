@@ -4,6 +4,7 @@ from features.game import Game
 from features.save_manager import SaveManager
 from features.user import User
 from utils.colorize import green, yellow
+from constants.configs import GAME_LIST
 
 class GameFacade:
     """
@@ -15,16 +16,9 @@ class GameFacade:
     def __init__(self):
         self.game = None
         self.current_user = User.current_user
-        self._minigame_engine = None  # build on demand
         self.save_manager = SaveManager.get_instance()
         # Load saved users into in-memory registry so players can log in later
         self._load_all_users_from_saves()
-
-    def _ensure_minigame_engine(self):
-        """Create the minigame engine only when first needed."""
-        if self._minigame_engine is None:
-            from features.minigame.engine import engine
-            self._minigame_engine = engine()
 
     def _connect_to_game(self):
         if self.current_user and (not self.game or self.game.user != self.current_user):
@@ -151,12 +145,33 @@ class GameFacade:
             shop.interact()
 
     def get_minigames(self) -> list:
-        self._ensure_minigame_engine()
-        return self._minigame_engine.list_games()
+        return GAME_LIST
 
     def play_minigame(self, game_name: str, pet) -> bool:
-        self._ensure_minigame_engine()
-        result = self._minigame_engine.play(game_name, self.current_user, pet)
+
+        if game_name == "Math Quiz":
+            from features.minigame.mathQuiz import MathQuiz
+            game = MathQuiz()
+        elif game_name == "Tic Tac Toe":
+            from features.minigame.ticTacToe import TicTacToe
+            game = TicTacToe()
+        elif game_name == "Memory Match":
+            from features.minigame.memoryMatch import MemoryMatch
+            game = MemoryMatch()
+        elif game_name == "Battle Contest":
+            from features.minigame.battleContest import BattleContest
+            game = BattleContest()
+        elif game_name == "Sudoku":
+            from features.minigame.sudoku import Sudoku
+            game = Sudoku()
+        elif game_name == "Tetris":
+            from features.minigame.tetris import Tetris
+            game = Tetris()
+        elif game_name == "Uno":
+            from features.minigame.uno import Uno
+            game = Uno()
+
+        result = game.play(self.current_user, pet)
         if result:
             coins = int(result.get("currency", 0))
             pet_happiness = int(result.get("pet_happiness", 0))

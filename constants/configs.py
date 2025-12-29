@@ -6,6 +6,9 @@ USERNAME_INPUTTING = "Username: "
 PASSWORD_INPUTTING = "Password: "
 VALID_PASSWORD = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$"
 
+GAME_LIST = ["Math Quiz", "Tic Tac Toe", "Memory Match", 
+            "Battle Contest", "Sudoku", "Tetris", "Uno"]
+
 FAT_BURNER = "Fat Burner"
 HEALTH_POTION = "Health Potion"
 ENERGIZER = "Energizer"
