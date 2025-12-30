@@ -32,6 +32,3 @@ saves/
 dist/
 build/
 *.egg-info/
-
-# Unit Test
-test/
