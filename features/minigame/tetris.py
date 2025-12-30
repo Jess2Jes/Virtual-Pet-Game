@@ -109,6 +109,16 @@ class Tetris(MinigameStrategy):
         grid_x = max(2, (width - Tetris.WIDTH * 2) // 2)
         grid_y = max(1, (height - Tetris.HEIGHT) // 2)
 
+        self._draw_frame(win, grid_x, grid_y)
+        self._draw_board_cells(win, grid_x, grid_y)
+        self._draw_piece(win, self.current_piece, self.piece_offset, grid_x, grid_y)
+        self._draw_ui(win, grid_x, grid_y)
+
+        win.refresh()
+
+
+    def _draw_frame(self, win, grid_x, grid_y):
+        """Draw the board frame (borders)."""
         for y in range(Tetris.HEIGHT + 2):
             for x in range(Tetris.WIDTH * 2 + 2):
                 char = " "
@@ -117,19 +127,28 @@ class Tetris(MinigameStrategy):
                 elif x == 0 or x == Tetris.WIDTH * 2 + 1:
                     char = "|"
                 win.addstr(grid_y + y, grid_x + x, char)
-        
+
+
+    def _draw_board_cells(self, win, grid_x, grid_y):
+        """Draw the placed blocks on the board."""
         for y, row in enumerate(self.board):
             for x, cell in enumerate(row):
                 if cell:
                     win.addstr(grid_y + 1 + y, grid_x + 1 + x * 2, '[]')
-        
-        for y, row in enumerate(self.current_piece):
+
+
+    def _draw_piece(self, win, piece, offset, grid_x, grid_y):
+        """Draw a piece at a given offset."""
+        for y, row in enumerate(piece):
             for x, cell in enumerate(row):
-                by = y + self.piece_offset[0]
-                bx = x + self.piece_offset[1]
+                by = y + offset[0]
+                bx = x + offset[1]
                 if cell and 0 <= by < Tetris.HEIGHT and 0 <= bx < Tetris.WIDTH:
                     win.addstr(grid_y + 1 + by, grid_x + 1 + bx * 2, '[]')
-        
+
+
+    def _draw_ui(self, win, grid_x, grid_y):
+        """Draw score and next piece preview."""
         win.addstr(grid_y, grid_x + Tetris.WIDTH * 2 + 4, f"Score: {self.score}")
         win.addstr(grid_y + 2, grid_x + Tetris.WIDTH * 2 + 4, "Next:")
         for y, row in enumerate(self.next_piece):
@@ -137,7 +156,6 @@ class Tetris(MinigameStrategy):
                 if cell:
                     win.addstr(grid_y + 3 + y, grid_x + Tetris.WIDTH * 2 + 4 + x * 2, "[]")
 
-        win.refresh()
     
     def build_question(self):
         """Collect difficulty choice before starting the game."""
@@ -166,48 +184,62 @@ class Tetris(MinigameStrategy):
     
     def handle_input(self, key):
         """Handle keyboard input."""
-
         if key in [ord('q'), ord('Q')]:
             return 'quit'
-        
-        elif key == curses.KEY_LEFT:
-            new_offset = [self.piece_offset[0], self.piece_offset[1] - 1]
-            if not self.check_collision(self.current_piece, new_offset):
-                self.piece_offset = new_offset
 
+        if key == curses.KEY_LEFT:
+            self._try_move(0, -1)
         elif key == curses.KEY_RIGHT:
-            new_offset = [self.piece_offset[0], self.piece_offset[1] + 1]
-            if not self.check_collision(self.current_piece, new_offset):
-                self.piece_offset = new_offset
-
+            self._try_move(0, 1)
         elif key == curses.KEY_UP:
-            rotated = self.rotate(self.current_piece)
-            if not self.check_collision(rotated, self.piece_offset):
-                self.current_piece = rotated
-
+            self._try_rotate()
         elif key == curses.KEY_DOWN:
-            new_offset = [self.piece_offset[0] + 1, self.piece_offset[1]]
-            if not self.check_collision(self.current_piece, new_offset):
-                self.piece_offset = new_offset
-            else:
-                self.merge()
-                cleared = self.remove_full_lines()
-                self.score += cleared * 100
-                if cleared:
-                    self.speed = max(0.1, self.speed - 0.02)
+            self._try_drop()
 
-                self.current_piece = self.next_piece
-                self.next_piece = choice(Tetris.SHAPES)
-                self.piece_offset = [0, Tetris.WIDTH // 2 - len(self.current_piece[0]) // 2]
-
-                if self.check_collision(self.current_piece, self.piece_offset):
-                    self.game_over = True
-            
         return 'continue'
+
+
+    def _try_move(self, d_row, d_col):
+        """Attempt to move the piece by (d_row, d_col) if no collision."""
+        new_offset = [self.piece_offset[0] + d_row, self.piece_offset[1] + d_col]
+        if not self.check_collision(self.current_piece, new_offset):
+            self.piece_offset = new_offset
+
+
+    def _try_rotate(self):
+        """Attempt to rotate the current piece if no collision."""
+        rotated = self.rotate(self.current_piece)
+        if not self.check_collision(rotated, self.piece_offset):
+            self.current_piece = rotated
+
+
+    def _try_drop(self):
+        """Attempt to move the piece down; if blocked, merge and spawn next piece."""
+        new_offset = [self.piece_offset[0] + 1, self.piece_offset[1]]
+        if not self.check_collision(self.current_piece, new_offset):
+            self.piece_offset = new_offset
+        else:
+            self.merge()
+            cleared = self.remove_full_lines()
+            self.score += cleared * 100
+            if cleared:
+                self.speed = max(0.1, self.speed - 0.02)
+
+            self._spawn_next_piece()
+
+            if self.check_collision(self.current_piece, self.piece_offset):
+                self.game_over = True
+
+
+    def _spawn_next_piece(self):
+        """Spawn the next piece at the top of the board."""
+        self.current_piece = self.next_piece
+        self.next_piece = choice(Tetris.SHAPES)
+        self.piece_offset = [0, Tetris.WIDTH // 2 - len(self.current_piece[0]) // 2]
+
 
     def game_loop(self, stdscr):
         """Main game loop using curses."""
-
         curses.curs_set(0)
         stdscr.nodelay(True)
         stdscr.timeout(100)
@@ -219,47 +251,69 @@ class Tetris(MinigameStrategy):
             key = stdscr.getch()
 
             if key != -1:
-                result = self.handle_input(key)
-                if result == 'quit':
+                if self._handle_key(key) == 'quit':
                     break
-            
+
             if current_time > next_drop:
                 next_drop = time.time() + self.speed
-                new_offset = [self.piece_offset[0] + 1, self.piece_offset[1]]
-                
-                if not self.check_collision(self.current_piece, new_offset):
-                    self.piece_offset = new_offset
-                else:
-                    self.merge()
-                    cleared = self.remove_full_lines()
-                    self.lines_cleared += cleared
-                    self.score += cleared * 100
-                    if cleared:
-                        self.speed = max(0.1, self.speed - 0.02)
-                    self.current_piece = self.next_piece
-                    self.next_piece = choice(Tetris.SHAPES)
-                    self.piece_offset = [0, Tetris.WIDTH // 2 - len(self.current_piece[0]) // 2]
-
-                    if self.check_collision(self.current_piece, self.piece_offset):
-                        self.game_over = True
+                self._handle_drop()
 
             self.draw_board(stdscr)
 
-        if self.game_over:
-            stdscr.clear()
-            height, width = stdscr.getmaxyx()
-            try:
-                stdscr.addstr(height // 2 - 1, width // 2 - 5, "GAME OVER!")
-                stdscr.addstr(height // 2, width // 2 - 8, f"Final Score: {self.score}")
-                stdscr.addstr(height // 2 + 2, width // 2 - 10, "Press any key to continue...")
-            except Exception as e:
-                logging.error(f"Unexpected error in game over screen: {e}", exc_info=True)
-    
-            stdscr.refresh()
-            stdscr.nodelay(False)
-            stdscr.getch()
-    
+        self._display_game_over(stdscr)
         return self.score
+
+
+    def _handle_key(self, key):
+        """Process a keyboard input key."""
+        result = self.handle_input(key)
+        if result == 'quit':
+            return 'quit'
+        return None
+
+
+    def _handle_drop(self):
+        """Handle automatic piece drop, collision, merging, and spawning new pieces."""
+        new_offset = [self.piece_offset[0] + 1, self.piece_offset[1]]
+        if not self.check_collision(self.current_piece, new_offset):
+            self.piece_offset = new_offset
+        else:
+            self.merge()
+            cleared = self.remove_full_lines()
+            self.lines_cleared += cleared
+            self.score += cleared * 100
+            if cleared:
+                self.speed = max(0.1, self.speed - 0.02)
+            self._spawn_new_piece()
+            if self.check_collision(self.current_piece, self.piece_offset):
+                self.game_over = True
+
+
+    def _spawn_new_piece(self):
+        """Spawn the next piece and reset its position."""
+        self.current_piece = self.next_piece
+        self.next_piece = choice(Tetris.SHAPES)
+        self.piece_offset = [0, Tetris.WIDTH // 2 - len(self.current_piece[0]) // 2]
+
+
+    def _display_game_over(self, stdscr):
+        """Display the game over screen."""
+        if not self.game_over:
+            return
+
+        stdscr.clear()
+        height, width = stdscr.getmaxyx()
+        try:
+            stdscr.addstr(height // 2 - 1, width // 2 - 5, "GAME OVER!")
+            stdscr.addstr(height // 2, width // 2 - 8, f"Final Score: {self.score}")
+            stdscr.addstr(height // 2 + 2, width // 2 - 10, "Press any key to continue...")
+        except Exception as e:
+            logging.error(f"Unexpected error in game over screen: {e}", exc_info=True)
+
+        stdscr.refresh()
+        stdscr.nodelay(False)
+        stdscr.getch()
+
 
     def build_game(self):
         """Run the interactive portion where the user provides moves."""
