@@ -1,14 +1,34 @@
-import pytest
 import sys
 from pathlib import Path
-from typing import Generator
-from features.user import User
+from typing import Generator, Optional
 
-repo_root = Path(__file__).resolve().parent.parent
-repo_root_str = str(repo_root)
-if repo_root_str not in sys.path:
-    sys.path.insert(0, repo_root_str)
+import pytest
 
+def find_repo_root_with_features(max_levels: int = 6) -> Optional[Path]:
+    cur = Path(__file__).resolve().parent
+    for _ in range(max_levels):
+        if (cur / "features").is_dir():
+            return cur
+        cur = cur.parent
+    return None
+
+_repo_root = find_repo_root_with_features()
+if _repo_root is None:
+    _repo_root = Path(__file__).resolve().parent.parent
+
+_repo_root_str = str(_repo_root)
+if _repo_root_str not in sys.path:
+    sys.path.insert(0, _repo_root_str)
+
+try:
+    from features.user import User
+except Exception as exc:
+    raise ImportError(
+        "Could not import 'features.user'. Make sure there is a 'features' package "
+        f"directory at or above {Path(__file__).resolve().parent} and that you run "
+        "pytest from the repository (or set PYTHONPATH). Original error: "
+        f"{exc!s}"
+    ) from exc
 
 class MockPet:
     """Simple mock pet class for testing."""
@@ -27,19 +47,15 @@ class MockPet:
 
 @pytest.fixture
 def mock_pet() -> MockPet:
-    """Fixture to create a mock pet."""
+    """Fixture that returns a lightweight mock pet instance."""
     return MockPet()
 
 @pytest.fixture(autouse=True)
 def clean_user_registry() -> Generator[None, None, None]:
-    """
-    Fixture to clear user registry before each test.
-    autouse=True ensures it runs for every test automatically.
-    """
+    """Autouse fixture to clear User registry before and after each test."""
     User.users.clear()
     User.current_user = None
     yield
-    # After a test, ensure registry is still clean (defensive).
     User.users.clear()
     User.current_user = None
 
@@ -50,7 +66,7 @@ def sample_user() -> User:
 
 @pytest.fixture
 def sample_user_with_pet() -> User:
-    """Fixture to create a user with a pet."""
+    """Fixture to create a sample user prepopulated with a pet."""
     user = User('jessica29', '29.September.2006')
     pet = MockPet()
     user.add_pet(pet)
