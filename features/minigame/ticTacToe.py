@@ -8,7 +8,7 @@ from colorama import init
 init(autoreset=True)
 
 class TicTacToe(MinigameStrategy):
-    """n x n Tic-Tac-Toe with an AI pet opponent and configurable board sizes."""
+    """n x n Tic-Tac-Toe with your pet and configurable board sizes."""
 
     name = "Tic Tac Toe"
 
