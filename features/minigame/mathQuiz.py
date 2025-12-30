@@ -1,28 +1,16 @@
-import operator
 import time
 from random import randint, choice
 from .baseClass import MinigameStrategy
 from utils.colorize import yellow
 from typing import Any, Dict
-from constants.configs import LINE
+from constants.configs import LINE, ARITHMETIC_OPERATIONS
 from colorama import init
 
 init(autoreset=True)
 
 class MathQuiz(MinigameStrategy):
     """A short arithmetic quiz where speed and accuracy determine rewards."""
-
     name = "Math Quiz"
-
-    ARITHMETIC_OPERATIONS = {
-        "+": operator.add,
-        "-": operator.sub,
-        "*": operator.mul,
-        "/": lambda a, b: a // b if b != 0 else 0,
-        "%": operator.mod,
-        "**": operator.pow
-    }
-
     def setup(self, player, pet):
         self.player = player
         self.pet = pet
@@ -110,7 +98,7 @@ class MathQuiz(MinigameStrategy):
     def evaluate(self, user_answers):
         """Evaluate provided answers against expected results and compute accuracy/timing metrics."""
         for (a, op, b), u in zip(self.questions, user_answers):
-            func = self.ARITHMETIC_OPERATIONS.get(op)
+            func = ARITHMETIC_OPERATIONS.get(op)
             if func:
                 expected = func(a, b)
             else:
