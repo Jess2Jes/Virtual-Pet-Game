@@ -1,5 +1,4 @@
 from random import shuffle, choice
-import string
 from .baseClass import MinigameStrategy
 import time
 from constants.configs import LINE, GRID_LINE
@@ -114,21 +113,50 @@ class Sudoku(MinigameStrategy):
         # If there is no duplicates in any
         return True
 
-    def solve_sudoku(self, board):
-        """Solve Sudoku using backtracking algorithm"""
+    def _find_empty(self, board):
+        """Return the row and column of the first empty cell (0), or (None, None) if the board is full."""
         for row in range(9):
             for col in range(9):
                 if board[row][col] == 0:
-                    numbers = list(range(1, 10))
-                    shuffle(numbers)
-                    for num in numbers:
-                        if self.is_valid(board, row, col, num):
-                            board[row][col] = num
-                            if self.solve_sudoku(board):
-                                return True
-                            board[row][col] = 0
-                    return False
-        return True
+                    return row, col
+        return None, None
+
+
+    def _shuffled_numbers(self):
+        """Return numbers 1–9 in random order for randomized backtracking."""
+        numbers = list(range(1, 10))
+        shuffle(numbers)
+        return numbers
+
+
+    def _try_number(self, board, row, col, num):
+        """Try placing a number in a cell and recursively solve the board.
+        
+        Returns True if the placement leads to a valid solution, otherwise False.
+        """
+        if not self.is_valid(board, row, col, num):
+            return False
+
+        board[row][col] = num
+        if self.solve_sudoku(board):
+            return True
+
+        board[row][col] = 0
+        return False
+
+    def solve_sudoku(self, board):
+        """Solve the Sudoku puzzle using backtracking."""
+        row, col = self._find_empty(board)
+        if row is None:
+            return True
+
+        for num in self._shuffled_numbers():
+            if self._try_number(board, row, col, num):
+                return True
+
+        board[row][col] = 0
+        return False
+
 
     def generate_sudoku(self):
         """Generate a Sudoku puzzle with given difficulty"""
@@ -154,52 +182,77 @@ class Sudoku(MinigameStrategy):
                     self.pre_filled[row][col] = True
     
     def get_input(self):
-        """Get and validate user input"""
+        """Get and validate user input for Sudoku moves."""
         while True:
             choice = input("Enter Move: ").strip().lower()
 
-            if choice in ['exit', 'quit', 'q', 'ex', 'e']:
-                return 'exit', None
+            command = self._parse_exit_or_hint(choice)
+            if command:
+                return command
 
-            if choice == 'hint':
-                return 'hint', None
-            
-            if choice.startswith('clear '):
-                parts = choice.split()
-                if len(parts) == 2:
-                    position = parts[1]
-                    if len(position) == 2 and position[0] in string.digits and position[1] in string.digits:
-                        row, col = int(position[0]) - 1, int(position[1]) - 1
-                        if not self.pre_filled[row][col]:
-                            return 'clear', (row, col)
-                        else:
-                            print(red('Cannot clear a pre-filled cell!\n'))
-                            continue
+            command = self._parse_clear(choice)
+            if command:
+                return command
 
-                print(red("Invalid clear command. Use format: 'clear 11'.\n"))
-                continue
+            command = self._parse_move(choice)
+            if command:
+                return command
 
-            parts = choice.replace(',', '').split()
-            if len(parts) != 2:
-                print(red('Invalid input. Use format: 11 5 (col)(row) (value)\n'))
-                continue
+            print(red("Invalid input. Please try again.\n"))
 
-            position, number = parts[0], parts[1]
-            if len(position) != 2 or position[0] not in string.digits or position[1] not in string.digits:
-                print(red("Invalid position. Use format like 11, 23, etc.\n"))
-                continue
+    def _parse_exit_or_hint(self, choice):
+        """Check if input is an exit or hint command."""
+        if choice in ['exit', 'quit', 'q', 'ex', 'e']:
+            return 'exit', None
+        if choice == 'hint':
+            return 'hint', None
+        return None
 
-            try:
-                number = int(number)
-                if number < 1 or number > 9:
-                    print(red('Number must be between 1 and 9.\n'))
-                    continue
-            except ValueError:
-                print(red('Invalid number. Please enter a number between 1 and 9.\n'))
-                continue
+    def _parse_clear(self, choice):
+        """Parse 'clear' command and validate position."""
+        if not choice.startswith('clear '):
+            return None
 
-            row, col = int(position[0]) - 1, int(position[1]) - 1
-            return 'move', (row, col, number)
+        parts = choice.split()
+        if len(parts) != 2:
+            print(red("Invalid clear command. Use format: 'clear 11'.\n"))
+            return None
+
+        position = parts[1]
+        if len(position) != 2 or not position.isdigit():
+            print(red("Invalid clear command. Use format: 'clear 11'.\n"))
+            return None
+
+        row, col = int(position[0]) - 1, int(position[1]) - 1
+        if self.pre_filled[row][col]:
+            print(red('Cannot clear a pre-filled cell!\n'))
+            return None
+
+        return 'clear', (row, col)
+
+    def _parse_move(self, choice):
+        """Parse a move input and validate it."""
+        parts = choice.replace(',', '').split()
+        if len(parts) != 2:
+            print(red('Invalid input. Use format: 11 5 (col)(row) (value)\n'))
+            return None
+
+        position, number_str = parts
+        if len(position) != 2 or not position.isdigit():
+            print(red("Invalid position. Use format like 11, 23, etc.\n"))
+            return None
+
+        try:
+            number = int(number_str)
+            if number < 1 or number > 9:
+                print(red('Number must be between 1 and 9.\n'))
+                return None
+        except ValueError:
+            print(red('Invalid number. Please enter a number between 1 and 9.\n'))
+            return None
+
+        row, col = int(position[0]) - 1, int(position[1]) - 1
+        return 'move', (row, col, number)
     
     def get_hint(self):
         empty_cells = [(r, c) for r in range(9) for c in range(9) if self.grid[r][c] == 0]

@@ -176,64 +176,78 @@ class TicTacToe(MinigameStrategy):
 
     def pet_move(self):
         """Compute the pet's move using heuristics: win, block, fork, center, corners, edges."""
-        if len(self.available_moves()) == self.row_length * self.col_length:
-            center = (self.row_length // 2, self.col_length // 2)
-            if center in self.available_moves():
-                return center
 
-            corners = [(0, 0), (0, self.col_length - 1), (self.row_length - 1, 0),
-                       (self.row_length - 1, self.col_length - 1)]
-            for corner in corners:
-                if corner in self.available_moves():
-                    return corner
+        # Prioritize immediate winning or blocking moves
+        for mark in [self.pet_mark, self.player_mark]:
+            move = self.winning_move(mark)
+            if move:
+                return move
 
-        win = self.winning_move(self.pet_mark)
-        if win:
-            return win
+        # Prioritize creating or blocking forks
+        for mark in [self.pet_mark, self.player_mark]:
+            move = self.fork_move(mark)
+            if move:
+                return move
 
-        block = self.winning_move(self.player_mark)
-        if block:
-            return block
+        # Prioritize center
+        move = self._choose_center()
+        if move:
+            return move
 
-        fork_move = self.fork_move(self.pet_mark)
-        if fork_move:
-            return fork_move
+        # Prioritize corners
+        move = self._choose_corner()
+        if move:
+            return move
 
-        block_fork = self.fork_move(self.player_mark)
-        if block_fork:
-            return block_fork
+        # Prioritize edges if board is at least 4x4
+        move = self._choose_edge() if self.row_length >= 4 else None
+        if move:
+            return move
 
+        # Fallback: choose any available move
+        return choice(self.available_moves())
+
+
+    def _choose_center(self):
+        """Return the center cell if available, else None."""
         center = (self.row_length // 2, self.col_length // 2)
         if center in self.available_moves():
             return center
+        return None
 
-        corners = [(0, 0), (0, self.col_length - 1), (self.row_length - 1, 0),
-                   (self.row_length - 1, self.col_length - 1)]
+
+    def _choose_corner(self):
+        """Return the first available corner, else None."""
+        corners = [
+            (0, 0), 
+            (0, self.col_length - 1), 
+            (self.row_length - 1, 0),
+            (self.row_length - 1, self.col_length - 1)
+        ]
         for corner in corners:
             if corner in self.available_moves():
                 return corner
+        return None
 
-        if self.row_length >= 4:
-            edges = []
 
-            for c in range(1, self.col_length - 1):
-                if (0, c) in self.available_moves():
-                    edges.append((0, c))
-                if (self.row_length - 1, c) in self.available_moves():
-                    edges.append((self.row_length - 1, c))
+    def _choose_edge(self):
+        """Return the best edge cell if available, else None."""
+        edges = []
 
-            for r in range(1, self.row_length - 1):
-                if (r, 0) in self.available_moves():
-                    edges.append((r, 0))
-                if (r, self.col_length - 1) in self.available_moves():
-                    edges.append((r, self.col_length - 1))
+        for c in range(1, self.col_length - 1):
+            if (0, c) in self.available_moves():
+                edges.append((0, c))
+            if (self.row_length - 1, c) in self.available_moves():
+                edges.append((self.row_length - 1, c))
 
-            if edges:
-                best_edge = self.best_edge(edges)
-                if best_edge:
-                    return best_edge
+        for r in range(1, self.row_length - 1):
+            if (r, 0) in self.available_moves():
+                edges.append((r, 0))
+            if (r, self.col_length - 1) in self.available_moves():
+                edges.append((r, self.col_length - 1))
 
-        return choice(self.available_moves())
+        return self.best_edge(edges) if edges else None
+
 
     def fork_move(self, mark):
         """Attempt to find a move that creates multiple immediate winning threats (fork)."""
@@ -265,62 +279,74 @@ class TicTacToe(MinigameStrategy):
         return None
 
     def best_edge(self, edges):
-        """Select the best edge cell from a list using simple heuristics (varies by board size)."""
+        """Select the best edge cell from a list using heuristics based on board size."""
+        if not edges:
+            return None
+
         if self.row_length == 4:
-
-            best_score = -1
-            best_edge = None
-
-            for edge in edges:
-                row_distance = abs(edge[0] - (self.row_length // 2))
-                col_distance = abs(edge[1] - (self.col_length // 2))
-
-                score = 2 - (row_distance + col_distance)
-
-                self.board[edge[0]][edge[1]] = self.pet_mark
-                likely_wins = 0
-
-                for test_move in self.available_moves():
-                    self.board[test_move[0]][test_move[1]] = self.pet_mark
-                    wins = self.check_winner()
-
-                    if wins.get(self.pet_mark, 0) > 0:
-                        likely_wins += 1
-                    self.board[test_move[0]][test_move[1]] = " "
-
-                self.board[edge[0]][edge[1]] = " "
-
-                score += likely_wins * 0.5
-
-                if score > best_score:
-                    best_score = score
-                    best_edge = edge
-
-            return best_edge
-
+            return self._best_edge_4(edges)
         elif self.row_length == 5:
-            best_edge = None
+            return self._best_edge_5(edges)
+        
+        return edges[0]
 
-            for edge in edges:
-                self.board[edge[0]][edge[1]] = self.pet_mark
-                winning_move = self.winning_move(self.pet_mark)
+
+    def _best_edge_4(self, edges):
+        """Edge selection logic for 4x4 board."""
+        best_score = -1
+        best_edge = None
+
+        for edge in edges:
+            score = self._edge_score_4(edge)
+            if score > best_score:
+                best_score = score
+                best_edge = edge
+
+        return best_edge
+
+
+    def _edge_score_4(self, edge):
+        """Compute a heuristic score for a single edge in 4x4 board."""
+        row_distance = abs(edge[0] - (self.row_length // 2))
+        col_distance = abs(edge[1] - (self.col_length // 2))
+        score = 2 - (row_distance + col_distance)
+
+        self.board[edge[0]][edge[1]] = self.pet_mark
+        likely_wins = 0
+
+        for test_move in self.available_moves():
+            self.board[test_move[0]][test_move[1]] = self.pet_mark
+            wins = self.check_winner()
+            if wins.get(self.pet_mark, 0) > 0:
+                likely_wins += 1
+            self.board[test_move[0]][test_move[1]] = " "
+
+        self.board[edge[0]][edge[1]] = " "
+        return score + likely_wins * 0.5
+
+
+    def _best_edge_5(self, edges):
+        """Edge selection logic for 5x5 board."""
+        center = 2
+        best_edge = None
+        min_distance = float('inf')
+
+        for edge in edges:
+            # Prioritize immediate winning move
+            self.board[edge[0]][edge[1]] = self.pet_mark
+            if self.winning_move(self.pet_mark):
                 self.board[edge[0]][edge[1]] = " "
+                return edge
+            self.board[edge[0]][edge[1]] = " "
 
-                if winning_move:
-                    return edge
+            # Otherwise, pick edge closest to center
+            distance = abs(edge[0] - center) + abs(edge[1] - center)
+            if distance < min_distance:
+                min_distance = distance
+                best_edge = edge
 
-                center_distance = float('inf')
+        return best_edge
 
-                for e in edges:
-                    distance = abs(e[0] - 2) + abs(e[1] - 2)
-
-                    if distance < center_distance:
-                        center_distance = distance
-                        best_edge = e
-
-            return best_edge
-
-        return edges[0] if edges else None
 
     def player_move(self):
         """Prompt the player for a row/column move and validate it."""

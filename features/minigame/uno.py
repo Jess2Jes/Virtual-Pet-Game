@@ -233,50 +233,56 @@ class Uno(MinigameStrategy):
                 list_player_names.append(opponent_pet.name)
 
     def _play_card(self, player, card):
-        """Play a card from hand. Returns played_card."""
-
+        """Play a card from hand. Returns the played card."""
         next_player_idx = (self.current_player_index + self.direction) % len(self.players)
 
         if card in player['hand']:
             player['hand'].remove(card)
             print(f"\n{player['emoji']} {player['name']}: {card}")
-        
-        if 'Wild' in card:
-            if player['name'].lower() != 'you':
-                color = choice(Uno.COLORS)
-                print(f"{player['emoji']} {player['name'].title()} changes color to:", color)
-            else:
-                color = None
-                while color not in Uno.COLORS:
-                    color = input("Choose color (RED/YELLOW/GREEN/BLUE): ").strip().upper()
-            
-            if 'DrawFour' in card:
-                for _ in range(4):
-                    card = self.draw_card()
-                    self.players[next_player_idx]['hand'].append(card)
-                self.skip = True
-            
-            played_card = f"Wild {color}"
 
+        if 'Wild' in card:
+            played_card = self._handle_wild(player, card, next_player_idx)
             self.discard.append(played_card)
             return played_card
 
         if 'DrawTwo' in card:
-            for _ in range(2):
-                card = self.draw_card()
-                self.players[next_player_idx]['hand'].append(card)
+            self._handle_draw_two(next_player_idx)
             self.skip = True
-        
+
         if 'Skip' in card:
             self.skip = True
 
         if 'Reverse' in card and len(self.players) > 2:
             self.direction *= -1
             print(f"Direction reversed! Now going {'↻ clockwise' if self.direction == 1 else '↺ counter-clockwise'}")
-        
+
         self.discard.append(card)
         return card
-    
+
+
+    def _handle_wild(self, player, card, next_player_idx):
+        """Handle Wild and Wild Draw Four cards."""
+        color = None
+        if player['name'].lower() != 'you':
+            color = choice(Uno.COLORS)
+            print(f"{player['emoji']} {player['name'].title()} changes color to:", color)
+        else:
+            while color not in Uno.COLORS:
+                color = input("Choose color (RED/YELLOW/GREEN/BLUE): ").strip().upper()
+
+        if 'DrawFour' in card:
+            for _ in range(4):
+                self.players[next_player_idx]['hand'].append(self.draw_card())
+            self.skip = True
+
+        return f"Wild {color}"
+
+
+    def _handle_draw_two(self, next_player_idx):
+        """Give the next player two cards."""
+        for _ in range(2):
+            self.players[next_player_idx]['hand'].append(self.draw_card())
+
     def _handle_draw(self, player):
         """Handle drawing a card when no valid moves."""
 
@@ -309,23 +315,19 @@ class Uno(MinigameStrategy):
 
     def player_turn(self, player):
         """Handle the player's full turn."""
-
-        valid = False
-
-        while not valid:
+        while True:
             choice, valid_moves = self.get_input(player)
 
-            if choice == 'h':
-                try: 
-                    idx = int(input('\nEnter card index: ')) - 1
-                    card = valid_moves[idx]
-                    valid = True
+            if choice == 'h' and valid_moves:
+                try:
+                    card_number = int(input('\nEnter card number: '))
+                    card = valid_moves[card_number - 1]
+                    return self._play_card(player, card)
                 except (ValueError, IndexError):
                     print(red("Invalid input! Please try again."))
             else:
                 return self._handle_draw(player)
-        
-        return self._play_card(player, card)
+
     
     def opponent_turn(self, player):
         """Handle pet(s) move."""
