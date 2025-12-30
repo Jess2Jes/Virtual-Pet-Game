@@ -1,3 +1,5 @@
+import operator
+
 LINE = "─" * 120
 GRID_LINE = '+-------+-------+-------+'
 NO_STOCK = "OUT OF STOCK"
@@ -37,3 +39,18 @@ POTION_DEF = {
         ENERGIZER: {"emoji": "⚡", "type": "energy", "delta": 50, "price": 800000},
         ADULT_POTION: {"emoji": "💉", "type": "age", "delta": 20, "price": 1000000},
     }
+
+ARITHMETIC_OPERATIONS = {
+    "+": operator.add,
+    "-": operator.sub,
+    "*": operator.mul,
+    "/": lambda a, b: a // b if b != 0 else 0,
+    "%": operator.mod,
+    "**": operator.pow
+}
+
+class UnoConstants:
+    COLORS = ['RED', 'YELLOW', 'GREEN', 'BLUE']
+    VALUES = [str(num) for num in range(0, 10)]
+    ACTION_CARDS = ['Skip', 'Reverse', 'DrawTwo']
+    WILD_CARDS = ['Wild ColourChanger', 'Wild DrawFour']

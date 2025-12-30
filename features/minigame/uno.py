@@ -1,7 +1,7 @@
 from .baseClass import MinigameStrategy
 from random import choice, shuffle
 from features.user import User
-from constants.configs import LINE
+from constants.configs import LINE, UnoConstants as UC
 from utils.colorize import red, green, blue
 import time
 from colorama import init
@@ -12,11 +12,6 @@ class Uno(MinigameStrategy):
     """A simple UNO card minigame to play with your little pet."""
 
     name = "UNO Card"
-
-    COLORS = ['RED', 'YELLOW', 'GREEN', 'BLUE']
-    VALUES = [str(num) for num in range(0, 10)]
-    ACTION_CARDS = ['Skip', 'Reverse', 'DrawTwo']
-    WILD_CARDS = ['Wild ColourChanger', 'Wild DrawFour']
 
     def setup(self, player, pet):
         self.player = player
@@ -47,20 +42,20 @@ class Uno(MinigameStrategy):
         self.deck = []
 
         # Number Cards
-        for color in Uno.COLORS:
+        for color in UC.COLORS:
             self.deck.append(f"{color} 0")
-            for v in Uno.VALUES[1:]:
+            for v in UC.VALUES[1:]:
                 self.deck.append(f"{color} {v}")
                 self.deck.append(f"{color} {v}")
         
         # Action Cards (2 of each)
-        for color in Uno.COLORS:
-            for action in Uno.ACTION_CARDS:
+        for color in UC.COLORS:
+            for action in UC.ACTION_CARDS:
                 self.deck.append(f"{color} {action}")
                 self.deck.append(f"{color} {action}")
         
         # Wild Cards (4 of each)
-        for wild in Uno.WILD_CARDS:
+        for wild in UC.WILD_CARDS:
             for _ in range(4):
                 self.deck.append(wild)
         
@@ -104,7 +99,7 @@ class Uno(MinigameStrategy):
             chosen_color = top_parts[1]  
             return card_parts[0] == chosen_color
         
-        if top_color in Uno.COLORS and top_value is None:
+        if top_color in UC.COLORS and top_value is None:
             return card_color == top_color
         
         return card_color == top_color or card_value == top_value
@@ -264,10 +259,10 @@ class Uno(MinigameStrategy):
         """Handle Wild and Wild Draw Four cards."""
         color = None
         if player['name'].lower() != 'you':
-            color = choice(Uno.COLORS)
+            color = choice(UC.COLORS)
             print(f"{player['emoji']} {player['name'].title()} changes color to:", color)
         else:
-            while color not in Uno.COLORS:
+            while color not in UC.COLORS:
                 color = input("Choose color (RED/YELLOW/GREEN/BLUE): ").strip().upper()
 
         if 'DrawFour' in card:
