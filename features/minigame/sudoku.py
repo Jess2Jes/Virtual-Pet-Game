@@ -1,3 +1,5 @@
+"""Sudoku minigame implementation (conforms to MinigameStrategy interfaces)."""
+
 from random import shuffle, choice
 from .baseClass import MinigameStrategy
 import time
@@ -6,6 +8,7 @@ from utils.colorize import red, green, blue, yellow
 from colorama import init
 
 init(autoreset=True)
+
 
 class Sudoku(MinigameStrategy):
     """A simple Sudoku minigame where logic-base determine rewards."""
@@ -23,7 +26,7 @@ class Sudoku(MinigameStrategy):
         self.coins = 50
         self.start_time = None
         self.end_time = None
-    
+
     @staticmethod
     def display_menu():
         """Show rules and rewards for the Sudoku minigame."""
@@ -41,7 +44,7 @@ class Sudoku(MinigameStrategy):
         print("Win ---> more currency")
         print("Loss ---> better luck next time")
         print(LINE)
-    
+
     def build_question(self):
         """Collect difficulty choice and prepare an incomplete Sudoku."""
 
@@ -67,7 +70,7 @@ class Sudoku(MinigameStrategy):
             self.cell_removed = 55
         else:
             self.cell_removed = 65
-    
+
     def print_grid(self):
         """Display the Sudoku grid with coordinates"""
 
@@ -89,28 +92,24 @@ class Sudoku(MinigameStrategy):
             print(" |")
         print(f"  {GRID_LINE}")
         print()
-    
+
     @staticmethod
     def is_valid(board, row, col, num):
         """Check if placing num at (row, col) is valid"""
-        # Check row for any duplicates
         for i in range(9):
             if board[row][i] == num:
                 return False
-        
-        # Check column for any duplicates
+
         for i in range(9):
             if board[i][col] == num:
                 return False
-        
-        # Check 3x3 subgrid for any duplicates
+
         start_row, start_col = 3 * (row // 3), 3 * (col // 3)
         for i in range(start_row, start_row + 3):
             for j in range(start_col, start_col + 3):
                 if board[i][j] == num:
                     return False
-                
-        # If there is no duplicates in any
+
         return True
 
     def _find_empty(self, board):
@@ -121,19 +120,14 @@ class Sudoku(MinigameStrategy):
                     return row, col
         return None, None
 
-
     def _shuffled_numbers(self):
         """Return numbers 1–9 in random order for randomized backtracking."""
         numbers = list(range(1, 10))
         shuffle(numbers)
         return numbers
 
-
     def _try_number(self, board, row, col, num):
-        """Try placing a number in a cell and recursively solve the board.
-        
-        Returns True if the placement leads to a valid solution, otherwise False.
-        """
+        """Try placing a number in a cell and recursively solve the board."""
         if not self.is_valid(board, row, col, num):
             return False
 
@@ -157,12 +151,10 @@ class Sudoku(MinigameStrategy):
         board[row][col] = 0
         return False
 
-
     def generate_sudoku(self):
         """Generate a Sudoku puzzle with given difficulty"""
 
         temp_grid = [row[:] for row in self.grid]
-        # Complete Solution of Sudoku
         self.solve_sudoku(temp_grid)
 
         for i in range(9):
@@ -180,40 +172,40 @@ class Sudoku(MinigameStrategy):
             for col in range(9):
                 if self.grid[row][col] != 0:
                     self.pre_filled[row][col] = True
-    
+
     def get_input(self):
         """Get and validate user input for Sudoku moves."""
         while True:
-            choice = input("Enter Move: ").strip().lower()
+            choice_val = input("Enter Move: ").strip().lower()
 
-            command = self._parse_exit_or_hint(choice)
+            command = self._parse_exit_or_hint(choice_val)
             if command:
                 return command
 
-            command = self._parse_clear(choice)
+            command = self._parse_clear(choice_val)
             if command:
                 return command
 
-            command = self._parse_move(choice)
+            command = self._parse_move(choice_val)
             if command:
                 return command
 
             print(red("Invalid input. Please try again.\n"))
 
-    def _parse_exit_or_hint(self, choice):
+    def _parse_exit_or_hint(self, choice_val):
         """Check if input is an exit or hint command."""
-        if choice in ['exit', 'quit', 'q', 'ex', 'e']:
+        if choice_val in ['exit', 'quit', 'q', 'ex', 'e']:
             return 'exit', None
-        if choice == 'hint':
+        if choice_val == 'hint':
             return 'hint', None
         return None
 
-    def _parse_clear(self, choice):
+    def _parse_clear(self, choice_val):
         """Parse 'clear' command and validate position."""
-        if not choice.startswith('clear '):
+        if not choice_val.startswith('clear '):
             return None
 
-        parts = choice.split()
+        parts = choice_val.split()
         if len(parts) != 2:
             print(red("Invalid clear command. Use format: 'clear 11'.\n"))
             return None
@@ -230,9 +222,9 @@ class Sudoku(MinigameStrategy):
 
         return 'clear', (row, col)
 
-    def _parse_move(self, choice):
+    def _parse_move(self, choice_val):
         """Parse a move input and validate it."""
-        parts = choice.replace(',', '').split()
+        parts = choice_val.replace(',', '').split()
         if len(parts) != 2:
             print(red('Invalid input. Use format: 11 5 (col)(row) (value)\n'))
             return None
@@ -253,8 +245,9 @@ class Sudoku(MinigameStrategy):
 
         row, col = int(position[0]) - 1, int(position[1]) - 1
         return 'move', (row, col, number)
-    
+
     def get_hint(self):
+        """Provide a hint and apply coin penalty."""
         empty_cells = [(r, c) for r in range(9) for c in range(9) if self.grid[r][c] == 0]
         if empty_cells:
             row, col = choice(empty_cells)
@@ -263,7 +256,7 @@ class Sudoku(MinigameStrategy):
             self.coins -= 15
             return f"Try placing {temp_grid[row][col]} at col-{row + 1} row-{col + 1}."
         return "No hints available - puzzle is complete!"
-    
+
     def _handle_hint_action(self):
         hint = self.get_hint()
         print(blue(f"\n 💡 Hint: {hint}\n"))
@@ -285,7 +278,7 @@ class Sudoku(MinigameStrategy):
             print(red("Cell is already empty!\n"))
 
         return True
-    
+
     def _handle_move_action(self, data):
         """Handle placing a number. Returns True if game won, False if lost, None to continue."""
         row, col, num = data
@@ -311,7 +304,7 @@ class Sudoku(MinigameStrategy):
         if all(self.grid[row][col] != 0 for row in range(9) for col in range(9)):
             self.end_time = time.time()
             return False, True
-        
+
         return True, False
 
     def _handle_invalid_move(self, row, col, num, temp_value):
@@ -325,7 +318,7 @@ class Sudoku(MinigameStrategy):
             print(red("You have exceeded 3 tries! Game Over! ❌\n"))
             self.end_time = time.time()
             return False, False
-    
+
     def build_game(self):
         """Main game loop."""
 
@@ -354,23 +347,23 @@ class Sudoku(MinigameStrategy):
                 'clear': self._handle_clear_action,
                 'move': self._handle_move_action,
             }.get(action)
-        
+
             if handler is None:
                 print(red("Invalid action!"))
                 continue
-            
+
             if action == 'move':
                 should_continue, won = handler(data)
             else:
                 should_continue = handler() if data is None else handler(data)
-                won = False  
-            
+                won = False
+
             if not should_continue:
                 return won
-    
+
     def evaluate(self, answer):
         """Convert the raw summary into a result outcome string."""
-        if (answer):
+        if answer:
             outcome = "Win"
         else:
             outcome = "Lose"
@@ -390,7 +383,7 @@ class Sudoku(MinigameStrategy):
             self.coins -= 50
             pet_happiness = 0
             print("\nYou failed to solve the sudoku.. 😾")
-        
+
         print(f"Elapsed time: {elapsed:.2f}s")
         print(f"Reward: Rp. {'{:,}'.format(self.coins * 1000)}. Pet happiness (+{pet_happiness})")
         print(green(f"You received Rp. {'{:,}'.format(self.coins * 1000)} 🎉"))
@@ -405,4 +398,3 @@ class Sudoku(MinigameStrategy):
         result = self.evaluate(summary)
         reward = self.reward(result)
         return reward
- 

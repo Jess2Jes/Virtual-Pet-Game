@@ -1,122 +1,83 @@
+"""User domain model with injectable auth service and persistence helpers."""
+
 import math
 import re
 import bcrypt
-from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF, VALID_PASSWORD
+from typing import Dict, Any, Optional, Protocol
 from random import randrange
-from typing import Dict, Any, Optional
+from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF, VALID_PASSWORD
 from colorama import init
-from .pet import VirtualPet
 from utils.colorize import red, yellow, green
+
 init(autoreset=True)
 
 
-"""
-user.py
+class AuthService(Protocol):
+    """Authentication service abstraction."""
+    def hash(self, password: str) -> str: ...
+    def verify(self, plain: str, hashed: str) -> bool: ...
 
-User model and helper utilities for the Virtual Pet Game.
 
-Responsibilities:
-- Represent users (username, hashed password, currency, inventory, pets, profile fields).
-- Provide registration/login flows, password hashing/checking, and simple persistence helpers
-  (create_memento / restore_from_memento) used by the memento/save system.
+class BcryptAuthService:
+    """Concrete AuthService using bcrypt."""
+    def hash(self, password: str) -> str:
+        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
-Notes:
-- Passwords are hashed with bcrypt. When restoring from saved state the module accepts
-  pre-hashed passwords (starting with the bcrypt prefix).
-- Inventory is initialized from the VirtualPet class-level item definitions.
-- This file includes light input validation and prints user-facing messages; core logic is unchanged.
-"""
+    def verify(self, plain: str, hashed: str) -> bool:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+
 
 class User:
-    """
-    Represents a player / account in the game.
-
-    Attributes:
-        users: class-level mapping of username -> User (in-memory registry).
-        current_user: class-level pointer to the signed-in user.
-    """
-
+    """Represents a player/account with inventory, pets, and profile data."""
     users: Dict[str, "User"] = {}
     current_user: Optional["User"] = None
 
-    def __init__(self, username: str, password: str):
-        """
-        Create a new User instance.
-
-        Args:
-            username: the account name.
-            password: plaintext password or existing bcrypt hash (starting with $2b$).
-        """
+    def __init__(self, username: str, password: str, auth_service: AuthService | None = None):
+        self.auth_service = auth_service or BcryptAuthService()
         self.username = username
-        # Accept pre-hashed bcrypt strings or hash plaintext passwords
         self.__password_hash = (
-            self._hash_password(password) if not password.startswith('$2b$') else password
+            self.auth_service.hash(password) if not password.startswith('$2b$') else password
         )
         self.pets: list = []
         self.music: Dict[str, Any] = {}
         self.food: Dict[str, Any] = {}
         self._currency: int = randrange(0, 25000)
 
-        # Initialize inventory from VirtualPet definitions (default quantity 3)
         self.inventory: Dict[str, Dict[str, int]] = {
             "food": dict.fromkeys(FOOD_DEF.keys(), 3),
             "soap": dict.fromkeys(SOAP_DEF.keys(), 3),
             "potion": dict.fromkeys(POTION_DEF.keys(), 3),
         }
 
-    @staticmethod
-    def _hash_password(password: str) -> str:
-        """Return a bcrypt hash for the given plaintext password."""
-        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
-    @staticmethod
-    def _check_password(password: str, hashed: str) -> bool:
-        """Verify a plaintext password against a bcrypt hash."""
-        return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
-
     @property
     def currency(self) -> int:
-        """Current currency (int)."""
         return self._currency
 
     @currency.setter
     def currency(self, value) -> None:
-        """Set currency ensuring it is non-negative; prints a message on invalid attempts."""
         if value < 0:
             print(red("\nCurrency cannot be below 0!"))
         else:
             self._currency = value
 
     def limit_currency(self) -> None:
-        """
-        Clamp currency to a sensible non-negative bound.
-
-        Uses math.inf to keep the API but ensures currency is not negative.
-        """
         val = int(getattr(self, "currency"))
         setattr(self, "currency", max(0, min(math.inf, val)))
 
     @property
     def password(self) -> str:
-        """Return the stored bcrypt password hash (do not expose plaintext)."""
         return self.__password_hash
 
     @password.setter
     def password(self, new_password: str):
-        """
-        Change password after validating strength.
-
-        The method enforces the `valid_password` regex and will print a message
-        if the new password is not acceptable.
-        """
         if not re.match(VALID_PASSWORD, new_password):
             print(red("Change password operation unsuccessful!"))
             print(yellow("Password must contain:"))
             print(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
             return
-        self.__password_hash = self._hash_password(new_password)
+        self.__password_hash = self.auth_service.hash(new_password)
 
-    def add_pet(self, pet: VirtualPet) -> None:
+    def add_pet(self, pet) -> None:
         """Attach a new pet to this user's pet list."""
         self.pets.append(pet)
 
@@ -142,15 +103,10 @@ class User:
 
     @classmethod
     def register(cls, username: str, password: str) -> Optional[int]:
-        """
-        Register a new user.
-
-        Returns:
-          1 on success, None on failure (and prints diagnostic messages).
-        """
+        """Register a new user."""
         print()
         key = username.casefold()
-        
+
         if key in cls.users:
             print(red("This username has already existed!\n"))
             return None
@@ -172,12 +128,7 @@ class User:
 
     @classmethod
     def login(cls, username: str, password: str) -> Optional[int]:
-        """
-        Authenticate a user by username and plaintext password.
-
-        Returns:
-          1 on success, None on failure.
-        """
+        """Authenticate a user by username and plaintext password."""
         print()
         key = username.casefold()
         if key not in cls.users:
@@ -185,8 +136,7 @@ class User:
             return None
 
         user = cls.users[key]
-        # Access the instance's stored hash to validate credentials
-        if not cls._check_password(password, user.__password_hash):
+        if not user.auth_service.verify(password, user.__password_hash):
             print(red("Wrong password!\n"))
             return None
 
@@ -202,12 +152,7 @@ class User:
         return False
 
     def create_memento(self) -> Dict[str, Any]:
-        """
-        Produce a serializable snapshot of the user and their pets suitable for saving.
-
-        Returns:
-            A dict representing the user's state (username, hashed password, currency, inventory, profile, pets).
-        """
+        """Produce a serializable snapshot of the user and their pets suitable for saving."""
         pets_data = []
         for pet in self.pets:
             pet_data = {
@@ -237,12 +182,7 @@ class User:
         return user_data
 
     def restore_from_memento(self, memento: Dict[str, Any]) -> None:
-        """
-        Restore this user's state from a previously created memento dict.
-
-        The function recreates pet instances based on the stored 'type' field and restores
-        primitive attributes. Unknown pet types default to Cat.
-        """
+        """Restore this user's state from a previously created memento dict."""
         from .animal import Cat, Rabbit, Dino, Dragon, Pou
 
         self.username = memento.get("username", self.username)
@@ -275,4 +215,3 @@ class User:
             pet.generosity = pet_data.get("generosity", 0)
 
             self.pets.append(pet)
-

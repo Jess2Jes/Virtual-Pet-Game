@@ -1,3 +1,5 @@
+"""Battle Contest minigame implementation (conforms to MinigameStrategy interfaces)."""
+
 from .baseClass import MinigameStrategy
 import time
 from random import randint, choice
@@ -8,6 +10,7 @@ from typing import Any
 from colorama import init
 
 init(autoreset=True)
+
 
 class BattleContest(MinigameStrategy):
     """Simple multi-round pet-battle simulation against another player's pet."""
@@ -74,9 +77,9 @@ class BattleContest(MinigameStrategy):
         """Prompt and validate a numeric choice for the battle action."""
         while True:
             try:
-                choice = int(input("Choose your action (1-4): "))
-                if 1 <= choice <= 4:
-                    return choice
+                choice_val = int(input("Choose your action (1-4): "))
+                if 1 <= choice_val <= 4:
+                    return choice_val
                 else:
                     print(red("Please enter a number between 1-4!"))
             except ValueError:
@@ -114,15 +117,15 @@ class BattleContest(MinigameStrategy):
 
         return battle_result
 
-    def _execute_player_action(self, choice: int) -> None:
+    def _execute_player_action(self, choice_val: int) -> None:
         """Execute the player's chosen action."""
-        if choice == 1:
+        if choice_val == 1:
             self._player_attack()
-        elif choice == 2:
+        elif choice_val == 2:
             self._player_defend()
-        elif choice == 3:
+        elif choice_val == 3:
             self._player_special_move()
-        elif choice == 4:
+        elif choice_val == 4:
             self._player_heal()
 
     def _execute_opponent_action(self) -> None:
