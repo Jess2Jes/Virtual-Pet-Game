@@ -1,19 +1,32 @@
+<div align="center">
+
 [English](README.md) | Indonesian | [中文](READMECN.md)
+
+</div>
+
+<div align="center">
+
 # 🐾 Game Peliharaan Virtual
 
-![Python](https://img.shields.io/badge/python-3.x-blue.svg)
-![Concepts](https://img.shields.io/badge/konsep-PBO_&_Pewarisan-blueviolet.svg)
+</div>
 
-Sebuah game simulasi peliharaan virtual berbasis konsol yang menawan, dibangun dengan Pemrograman Berbasis Objek (PBO) di Python. Pilih seekor peliharaan, berikan nama, dan ambil tanggung jawab untuk membesarkannya dari bayi mungil hingga menjadi sesepuh yang bijaksana. Kelola statistiknya, bermain dengannya, dan jaga agar ia tetap sehat dan bahagia!
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.x-blue.svg" />
+  <img alt="Konsep" src="https://img.shields.io/badge/konsep-PBO_%26_Pewarisan-blueviolet.svg" />
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-green.svg" />
+  <img alt="Status" src="https://img.shields.io/badge/status-Selesai-brightgreen.svg" />
+</p>
+
+Game simulasi peliharaan virtual berbasis konsol yang dibangun dengan Pemrograman Berbasis Objek (PBO) di Python. Pilih peliharaan, beri nama, lalu rawat sampai tumbuh melalui beberapa tahap kehidupan. Kelola statistik, ajak bermain, dan jaga agar tetap sehat dan bahagia!
 
 ---
 
 ## 🎮 Demo Gameplay
 
-Seluruh permainan berjalan di terminal Anda, menampilkan kotak status yang detail dan seni ASCII yang menawan untuk setiap tahap kehidupan peliharaan.
+Seluruh permainan berjalan di terminal, menampilkan kotak status yang detail dan seni ASCII untuk setiap tahap kehidupan peliharaan.
 
 **Buat peliharaan unik Anda sendiri:**
-```
+```text
 ───────────────────────────────── Create Your Own Pet ─────────────────────────────────────────
 Name your pet: Mochi
 ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -32,7 +45,7 @@ Mochi, a cat, has born!
 ```
 
 **Saksikan ia tumbuh dan lihat seni uniknya di setiap tahap kehidupan:**
-```
+```text
 ==================================================================================================
 
 /|、      ......
@@ -40,87 +53,109 @@ Mochi, a cat, has born!
  |、˜〵   ......
 じしˍ,)ノ
 ~~~~~~~~~~~~~~~
-
 ```
 
 **Pantau kebutuhannya dengan panel status yang terperinci:**
-<img src="assets/pet_stats.png" alt="Panel Status Peliharaan">
+
+<img src="assets/pet_stats.png" alt="Panel Status Peliharaan" />
 
 ---
 
 ## ✨ Fitur Utama
 
--   **Peliharaan Beragam & Berkembang**: Pilih dari 5 spesies unik: **Kucing, Kelinci, Dinosaurus, Naga, dan Pou**. Saksikan peliharaan Anda tumbuh melalui empat tahap kehidupan yang berbeda (Bayi, Remaja, Dewasa, Tua), masing-masing dengan seni ASCII yang dibuat dengan indah.
--   **Simulasi Peliharaan Mendalam**: Kelola serangkaian statistik yang kompleks termasuk **Rasa Lapar, Kewarasan, Kebahagiaan, Kesehatan, Lemak, dan Energi**. Setiap statistik memengaruhi suasana hati dan kesejahteraan peliharaan Anda. Mengabaikan kebutuhan mereka dapat menyebabkan kesehatan kritis!
--   **Sistem Perawatan Interaktif**: Berinteraksi dengan peliharaan Anda melalui berbagai tindakan:
-    -   **Beri Makan**: Pilih dari menu makanan dengan efek yang berbeda.
-    -   **Mandi**: Jaga kebersihan dan kewarasan peliharaan Anda dengan sabun yang berbeda.
-    -   **Bermain**: Tingkatkan kebahagiaan dengan aktivitas khusus untuk setiap spesies.
-    -   **Bicara**: Berinteraksi dengan peliharaan Anda untuk mendengar pikiran mereka atau bahkan mendapatkan lelucon!
-    -   **Jalan-Jalan**: Ajak peliharaan Anda jalan-jalan, tapi waspadai kejadian acak yang bisa baik atau buruk!
-    -   **Tidur**: Pulihkan energi peliharaan Anda.
--   **Ekonomi & Toko Dalam Game**: Dapatkan mata uang dalam game dengan bermain bersama peliharaan Anda. Habiskan di Toko Hewan untuk membeli berbagai makanan, sabun, dan ramuan kuat seperti "Pembakar Lemak" atau "Ramuan Dewasa".
--   **Autentikasi Pengguna**: Sistem pengguna yang aman memungkinkan pemain untuk mendaftar, masuk, dan mengubah kata sandi mereka, dengan aturan validasi untuk memastikan kredensial yang kuat.
--   **Sistem Waktu**: Game ini melacak waktu yang berlalu dengan jam dan penghitung hari dalam game, dan statistik peliharaan Anda akan berubah secara pasif seiring waktu, membutuhkan perawatan terus-menerus.
+- **Peliharaan Beragam & Berkembang**: Pilih dari 5 spesies (**Kucing, Kelinci, Dinosaurus, Naga, Pou**) dan saksikan mereka tumbuh melalui tahap (**Bayi, Remaja, Dewasa, Tua**) dengan ASCII art unik.
+- **Simulasi Peliharaan Mendalam**: Kelola statistik seperti **Rasa Lapar, Kewarasan, Kebahagiaan, Kesehatan, Lemak, Energi**. Mengabaikan kebutuhan dapat membuat kondisi peliharaan kritis.
+- **Aksi Perawatan Interaktif**:
+  - **Beri Makan**, **Mandi**, **Bermain**, **Bicara**, **Jalan-Jalan**, **Tidur**
+- **Ekonomi & Toko Dalam Game**: Dapatkan mata uang dan beli makanan, sabun, serta ramuan spesial.
+- **Autentikasi Pengguna**: Daftar, masuk, dan ubah kata sandi dengan validasi.
+- **Sistem Waktu**: Sistem jam/hari dalam game; statistik berubah seiring waktu.
 
 ---
 
 ## 🛠️ Pameran Teknis
 
-Proyek ini adalah demonstrasi praktis dari prinsip-prinsip utama Pemrograman Berbasis Objek:
--   **Pemrograman Berbasis Objek (PBO/OOP)**: Seluruh proyek dibangun di sekitar kelas seperti `VirtualPet`, `User`, `Game`, dan `Shop`, menciptakan struktur yang logis dan dapat diskalakan.
--   **Pewarisan (Inheritance) & Polimorfisme**: Setiap hewan (`Cat`, `Rabbit`, dll.) mewarisi dari kelas dasar `VirtualPet`. Mereka berbagi metode umum (`feed`, `bath`) tetapi memiliki properti unik (seperti makanan favorit) dan tampilan seni ASCII yang unik (polimorfisme).
--   **Metode Kelas & Properti**: Kelas `User` menggunakan `@classmethod` untuk registrasi/login dan `@property` untuk penanganan kata sandi dan mata uang yang aman.
--   **Enkapsulasi Data**: Atribut kunci dalam kelas seperti `User` dienkapsulasi untuk melindungi integritas data.
--   **Desain Modular**: Kode dipisahkan dengan bersih ke dalam file yang berbeda (`user.py`, `pet.py`, `game.py`, dll.), masing-masing dengan satu tanggung jawab, membuat proyek mudah dipelihara dan dipahami.
+- **Desain PBO (OOP)**: Dibangun dari modul inti (`game`, `pet`, `user`, `shop`).
+- **Pewarisan & Polimorfisme**: Kelas spesies mewarisi model peliharaan dasar dan memiliki perilaku/art unik.
+- **Struktur Modular**: Fitur dan utilitas dipisah ke file/folder agar mudah dipelihara.
 
 ---
 
-## 🏛️ Arsitektur & Diagram Kelas
-
-Arsitektur game ini berpusat pada kelas dasar `VirtualPet`, dengan kelas-kelas hewan spesifik yang mewarisinya. Kelas `Main` mengatur alur permainan, memanfaatkan objek `User`, `Game`, dan `Shop` untuk mengelola pengalaman secara keseluruhan.
-
-<img src="docs/Class-Diagram.png">
-
 ## 🚀 Cara Memulai
-
-Tidak ada *library* khusus yang diperlukan untuk menjalankan game ini, hanya instalasi Python standar.
 
 ### Prasyarat
 - Python 3.x
 
 ### Instalasi & Menjalankan
-1.  *Clone* atau unduh repositori.
-    ```bash
-    git clone [https://github.com/Jess2Jes/Virtual-Pet-Game.git](https://github.com/Jess2Jes/Virtual-Pet-Game.git)
-    cd Virtual-Pet-Game
-    ```
-2.  Jalankan file `main.py` dari terminal Anda.
-    ```bash
-    python main.py
-    ```
-3.  Ikuti petunjuk di layar untuk mendaftarkan pengguna dan mulai bermain!
+1. Clone repo
+```bash
+git clone https://github.com/Jess2Jes/Virtual-Pet-Game.git
+cd Virtual-Pet-Game
+```
+
+2. Jalankan game
+```bash
+python main.py
+```
+
+3. Ikuti instruksi di layar untuk registrasi dan mulai bermain.
 
 ---
+
 ## 📂 Struktur Proyek
-- `main.py` – Titik masuk utama, menangani menu dan status game.
-- `game.py` – Mengelola loop gameplay inti dan interaksi dengan peliharaan.
-- `pet.py` – Mendefinisikan kelas dasar `VirtualPet`, statistik, dan logika inti.
-- `animal.py` – Berisi subkelas hewan spesifik dengan seni ASCII unik mereka.
-- `formatter.py` – Kelas utilitas untuk membuat UI kotak status yang terformat.
-- `shop.py` – Berisi kelas `Shop`, katalog item, dan logika pembelian.
-- `user.py` – Menangani registrasi pengguna, autentikasi, mata uang, dan kepemilikan peliharaan.
+
+(Sesuai struktur repo saat ini)
+
+```bash
+Virtual-Pet-Game/
+├── assets/
+│   └── pet_stats.png
+├── constants/
+│   ├── arts/
+│   │   ├── cat.py
+│   │   ├── dino.py
+│   │   ├── dragon.py
+│   │   ├── pou.py
+│   │   ├── rabbits.py
+│   │   └── animalsArt.py
+│   └── configs.py
+├── datas/
+│   ├── conversations.json
+│   ├── jokes.json
+│   └── words.txt
+├── docs/
+├── features/
+│   ├── minigame/
+│   ├── animal.py
+│   ├── game.py
+│   ├── memento.py
+│   ├── pet.py
+│   ├── save_manager.py
+│   ├── shop.py
+│   └── user.py
+├── program_testing/
+├── saves/
+│   └── player_saves.json
+├── utils/
+├── main.py
+├── README.md
+├── READMEID.md
+├── READMECN.md
+└── LICENSE
+```
 
 ---
+
 ## 🗺️ Rencana Pengembangan
 
--   **Persistensi**: Menyimpan/memuat status game untuk pengguna dan peliharaan mereka (menggunakan JSON, pickle, atau database).
--   **Implementasi GUI**: Mengubah game menjadi antarmuka grafis menggunakan *library* seperti Tkinter atau PyQT.
--   **Konten Tambahan**: Menambahkan lebih banyak jenis hewan, item, dan kejadian acak.
--   **Game Mini**: Memperkenalkan game mini interaktif untuk mendapatkan mata uang dan meningkatkan statistik.
--   **Pengujian**: Menerapkan *unit test* untuk memastikan kualitas kode dan mencegah *bug*.
+- **Persistensi**: Perbaiki sistem save/load (atau migrasi ke SQLite).
+- **Implementasi GUI**: Buat versi GUI (Tkinter / PyQT).
+- **Konten Tambahan**: Tambah spesies, item, dan event acak.
+- **Mini-Games**: Perluas mini-game dan reward.
+- **Testing**: Tambahkan unit test dan CI.
 
 ---
+
 ## 👥 Penulis & Kontributor
 
 <table border="0" cellspacing="10" cellpadding="5">
@@ -148,3 +183,9 @@ Tidak ada *library* khusus yang diperlukan untuk menjalankan game ini, hanya ins
     </td>
   </tr>
 </table>
+
+---
+
+## 📜 Lisensi
+
+Proyek ini dilisensikan dengan lisensi MIT. Lihat [`LICENSE`](LICENSE) untuk detail.
