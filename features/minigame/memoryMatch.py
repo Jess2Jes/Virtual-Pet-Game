@@ -1,3 +1,5 @@
+"""Memory Match minigame implementation (conforms to MinigameStrategy interfaces)."""
+
 from .baseClass import MinigameStrategy
 import time
 from random import choice, randint, random
@@ -7,6 +9,7 @@ from utils.colorize import green
 from colorama import init
 
 init(autoreset=True)
+
 
 class MemoryMatch(MinigameStrategy):
     """Memorize-and-recall game using digits, words or mixed tokens."""
@@ -22,7 +25,8 @@ class MemoryMatch(MinigameStrategy):
         self.player = player
         self.pet = pet
         self.sequence = []
-        self.user_response = []
+        a = []
+        self.user_response = a
         self.length = None
         self.charset = "words"
         self.start_time = None

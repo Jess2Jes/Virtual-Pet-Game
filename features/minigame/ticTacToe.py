@@ -1,3 +1,5 @@
+"""Tic Tac Toe minigame implementation (conforms to MinigameStrategy interfaces)."""
+
 from .baseClass import MinigameStrategy
 from typing import Any, Dict, List, Tuple
 from random import choice
@@ -6,6 +8,7 @@ from constants.configs import LINE
 from colorama import init
 
 init(autoreset=True)
+
 
 class TicTacToe(MinigameStrategy):
     """n x n Tic-Tac-Toe with your pet and configurable board sizes."""
@@ -37,6 +40,18 @@ class TicTacToe(MinigameStrategy):
         print("Draw ---> small currency")
         print("Loss ---> no currency")
         print(LINE)
+
+    def get_input(self):
+        """Ask if the player wants to play first (Y/N)."""
+        while True:
+            choice_val = input("\nDo you want to play first (Y/N)? ").strip().lower()
+            if choice_val == "y":
+                self.first = True
+                break
+            elif choice_val == "n":
+                self.first = False
+                break
+            print(red("Please answer Y/N!"))
 
     def build_question(self):
         """Collect board-size choice and prepare an empty board."""
@@ -87,23 +102,10 @@ class TicTacToe(MinigameStrategy):
                     available.append((i, j))
         return available
 
-    def get_input(self):
-        """Ask if the player wants to play first (Y/N)."""
-        while True:
-            choice = input("\nDo you want to play first (Y/N)? ").strip().lower()
-            if choice == "y":
-                self.first = True
-                break
-            elif choice == "n":
-                self.first = False
-                break
-            print(red("Please answer Y/N!"))
-
     def check_winner(self):
         """Check the board for winning sequences in all directions and return counts per mark."""
         counts = {}
 
-        # Check all four directions
         self._check_horizontal_wins(counts)
         self._check_vertical_wins(counts)
         self._check_diagonal_wins(counts)
@@ -112,7 +114,6 @@ class TicTacToe(MinigameStrategy):
         return counts
 
     def _check_horizontal_wins(self, counts: dict) -> None:
-        """Check for horizontal winning sequences."""
         for row in range(self.row_length):
             for col in range(self.row_length - self.win_length + 1):
                 first = self.board[row][col]
@@ -120,7 +121,6 @@ class TicTacToe(MinigameStrategy):
                     counts[first] = counts.get(first, 0) + 1
 
     def _check_vertical_wins(self, counts: dict) -> None:
-        """Check for vertical winning sequences."""
         for col in range(self.col_length):
             for row in range(self.row_length - self.win_length + 1):
                 first = self.board[row][col]
@@ -128,7 +128,6 @@ class TicTacToe(MinigameStrategy):
                     counts[first] = counts.get(first, 0) + 1
 
     def _check_diagonal_wins(self, counts: dict) -> None:
-        """Check for diagonal winning sequences (top-left to bottom-right)."""
         for row in range(self.row_length - self.win_length + 1):
             for col in range(self.row_length - self.win_length + 1):
                 first = self.board[row][col]
@@ -136,7 +135,6 @@ class TicTacToe(MinigameStrategy):
                     counts[first] = counts.get(first, 0) + 1
 
     def _check_anti_diagonal_wins(self, counts: dict) -> None:
-        """Check for anti-diagonal winning sequences (top-right to bottom-left)."""
         for row in range(self.row_length - self.win_length + 1):
             for col in range(self.win_length - 1, self.col_length):
                 first = self.board[row][col]
@@ -144,8 +142,7 @@ class TicTacToe(MinigameStrategy):
                     counts[first] = counts.get(first, 0) + 1
 
     def _is_winning_sequence(self, start_row: int, start_col: int,
-                            row_delta: int, col_delta: int, mark: str) -> bool:
-        """Check if there's a winning sequence starting from given position."""
+                             row_delta: int, col_delta: int, mark: str) -> bool:
         if mark == " ":
             return False
 
@@ -175,38 +172,30 @@ class TicTacToe(MinigameStrategy):
         return None
 
     def pet_move(self):
-        """Compute the pet's move using heuristics: win, block, fork, center, corners, edges."""
-
-        # Prioritize immediate winning or blocking moves
+        """Compute the pet's move using heuristics."""
         for mark in [self.pet_mark, self.player_mark]:
             move = self.winning_move(mark)
             if move:
                 return move
 
-        # Prioritize creating or blocking forks
         for mark in [self.pet_mark, self.player_mark]:
             move = self.fork_move(mark)
             if move:
                 return move
 
-        # Prioritize center
         move = self._choose_center()
         if move:
             return move
 
-        # Prioritize corners
         move = self._choose_corner()
         if move:
             return move
 
-        # Prioritize edges if board is at least 4x4
         move = self._choose_edge() if self.row_length >= 4 else None
         if move:
             return move
 
-        # Fallback: choose any available move
         return choice(self.available_moves())
-
 
     def _choose_center(self):
         """Return the center cell if available, else None."""
@@ -215,12 +204,11 @@ class TicTacToe(MinigameStrategy):
             return center
         return None
 
-
     def _choose_corner(self):
         """Return the first available corner, else None."""
         corners = [
-            (0, 0), 
-            (0, self.col_length - 1), 
+            (0, 0),
+            (0, self.col_length - 1),
             (self.row_length - 1, 0),
             (self.row_length - 1, self.col_length - 1)
         ]
@@ -228,7 +216,6 @@ class TicTacToe(MinigameStrategy):
             if corner in self.available_moves():
                 return corner
         return None
-
 
     def _choose_edge(self):
         """Return the best edge cell if available, else None."""
@@ -247,7 +234,6 @@ class TicTacToe(MinigameStrategy):
                 edges.append((r, self.col_length - 1))
 
         return self.best_edge(edges) if edges else None
-
 
     def fork_move(self, mark):
         """Attempt to find a move that creates multiple immediate winning threats (fork)."""
@@ -287,9 +273,8 @@ class TicTacToe(MinigameStrategy):
             return self._best_edge_4(edges)
         elif self.row_length == 5:
             return self._best_edge_5(edges)
-        
-        return edges[0]
 
+        return edges[0]
 
     def _best_edge_4(self, edges):
         """Edge selection logic for 4x4 board."""
@@ -303,7 +288,6 @@ class TicTacToe(MinigameStrategy):
                 best_edge = edge
 
         return best_edge
-
 
     def _edge_score_4(self, edge):
         """Compute a heuristic score for a single edge in 4x4 board."""
@@ -324,7 +308,6 @@ class TicTacToe(MinigameStrategy):
         self.board[edge[0]][edge[1]] = " "
         return score + likely_wins * 0.5
 
-
     def _best_edge_5(self, edges):
         """Edge selection logic for 5x5 board."""
         center = 2
@@ -332,21 +315,18 @@ class TicTacToe(MinigameStrategy):
         min_distance = float('inf')
 
         for edge in edges:
-            # Prioritize immediate winning move
             self.board[edge[0]][edge[1]] = self.pet_mark
             if self.winning_move(self.pet_mark):
                 self.board[edge[0]][edge[1]] = " "
                 return edge
             self.board[edge[0]][edge[1]] = " "
 
-            # Otherwise, pick edge closest to center
             distance = abs(edge[0] - center) + abs(edge[1] - center)
             if distance < min_distance:
                 min_distance = distance
                 best_edge = edge
 
         return best_edge
-
 
     def player_move(self):
         """Prompt the player for a row/column move and validate it."""
@@ -476,4 +456,3 @@ class TicTacToe(MinigameStrategy):
         result = self.evaluate(summary)
         reward = self.reward(result)
         return reward
-

@@ -1,3 +1,5 @@
+"""Math Quiz minigame implementation (conforms to MinigameStrategy interfaces)."""
+
 import time
 from random import randint, choice
 from .baseClass import MinigameStrategy
@@ -8,9 +10,11 @@ from colorama import init
 
 init(autoreset=True)
 
+
 class MathQuiz(MinigameStrategy):
     """A short arithmetic quiz where speed and accuracy determine rewards."""
     name = "Math Quiz"
+
     def setup(self, player, pet):
         self.player = player
         self.pet = pet
@@ -104,7 +108,6 @@ class MathQuiz(MinigameStrategy):
             else:
                 expected = None
             self.answers.append(expected)
-            # Note: this check treats expected==0 as falsy; preserving original logic.
             if expected and u == expected:
                 self.correct += 1
         elapsed = max(0.001, self.end_time - self.start_time) if self.start_time and self.end_time else 0.0
@@ -128,7 +131,6 @@ class MathQuiz(MinigameStrategy):
         coins = max(0, correct * 5 * diff - time_penalty)
         pet_happiness = correct
 
-        # fixed quoting for nested keys
         elapsed = result.get("elapsed", 0)
         accuracy = result.get("accuracy", 0.0)
         print(f"\nResult: {correct}/{total} correct in {elapsed:.2f}s (accuracy {round(accuracy * 100)}%)")

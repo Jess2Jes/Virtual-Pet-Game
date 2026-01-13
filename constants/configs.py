@@ -2,7 +2,7 @@ import operator
 
 LINE = "─" * 120
 GRID_LINE = '+-------+-------+-------+'
-NO_STOCK = "OUT OF STOCK"
+NO_STOCK_MSG = "OUT OF STOCK"
 MAX_LENGTH = 0
 USERNAME_INPUTTING = "Username: "
 PASSWORD_INPUTTING = "Password: "

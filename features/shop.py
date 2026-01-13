@@ -5,7 +5,7 @@ from colorama import init
 from utils.formatter import clear
 from utils.loading import loading_bar
 from .user import User
-from constants.configs import LINE, SOAP_DEF, FOOD_DEF, POTION_DEF, NO_STOCK
+from constants.configs import LINE, SOAP_DEF, FOOD_DEF, POTION_DEF, NO_STOCK_MSG
 from utils.colorize import red, green
 
 init(autoreset=True)
@@ -104,7 +104,7 @@ class Shop:
         print("FOOD CATALOG")
         print(LINE)
         for name, emoji, price, qty, i in self._list_food_items():
-            stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK})"
+            stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK_MSG})"
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(LINE + "\n")
 
@@ -114,7 +114,7 @@ class Shop:
         print("SOAP CATALOG")
         print(LINE)
         for name, emoji, price, qty, i in self._list_soap_items():
-            stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK})"
+            stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK_MSG})"
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(LINE + "\n")
 
@@ -124,7 +124,7 @@ class Shop:
         print("POTION CATALOG")
         print(LINE)
         for name, emoji, price, qty, i in self._list_potion_items():
-            stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK})"
+            stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK_MSG})"
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(LINE + "\n")
 

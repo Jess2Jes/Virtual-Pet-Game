@@ -1,3 +1,5 @@
+"""Animal entities with separated identity data and rendering concerns."""
+
 from .pet import VirtualPet
 from constants.configs import LINE
 from constants.animalsArt import (
@@ -6,167 +8,206 @@ from constants.animalsArt import (
     DinoArt as DINO,
     DragonArt as DRAGON,
     PouArt as POU,
-    )
+)
+
+
+class PetIdentity:
+    """Encapsulates identity attributes shared across pet behaviors."""
+    def __init__(self, emoji: str, fav_food: str, music_taste: str, dislike_music: str, songs: tuple[str, ...]):
+        self.emoji = emoji
+        self.fav_food = fav_food
+        self.music_taste = music_taste
+        self.dislike_music = dislike_music
+        self.songs = songs
+
+
+class PetRenderer:
+    """Responsible for rendering ASCII representations."""
+    @staticmethod
+    def render(lines: tuple[str, ...]) -> tuple[str, ...]:
+        return (LINE,) + lines
+
 
 class Cat(VirtualPet):
+    """Cat pet with identity metadata and rendering helpers."""
     def __init__(self, name, age):
         super().__init__(name, age, "Cat")
-        self.emoji = "🐈"
-        self.fav_food = "Chicken"
-        self.music_taste = "Pop"
-        self.dislike_music = "Reggae"
-        self.songs = "Born Again by Doja Cat", "Golden by HUNTR/X", "Busy Woman by Sabrina Carpenter"
-    
+        identity = PetIdentity(
+            emoji="🐈",
+            fav_food="Chicken",
+            music_taste="Pop",
+            dislike_music="Reggae",
+            songs=("Born Again by Doja Cat", "Golden by HUNTR/X", "Busy Woman by Sabrina Carpenter"),
+        )
+        self._set_identity(identity)
+
+    def _set_identity(self, identity: PetIdentity):
+        self.emoji = identity.emoji
+        self.fav_food = identity.fav_food
+        self.music_taste = identity.music_taste
+        self.dislike_music = identity.dislike_music
+        self.songs = identity.songs
+
     @staticmethod
     def baby():
+        return PetRenderer.render((CAT.baby,))
 
-        yield LINE
-        yield CAT.baby
-    
     @staticmethod
-    def teen(): 
+    def teen():
+        return PetRenderer.render((CAT.teenager,))
 
-        yield LINE
-        yield CAT.teenager
-    
     @staticmethod
-    def adult(): 
+    def adult():
+        return PetRenderer.render((CAT.adult,))
 
-        yield LINE
-        yield CAT.adult
-        
     @staticmethod
-    def elder(): 
-
-        yield LINE
-        yield 
+    def elder():
+        return PetRenderer.render((CAT.elder,))
 
 
 class Rabbit(VirtualPet):
+    """Rabbit pet with identity metadata and rendering helpers."""
     def __init__(self, name, age):
         super().__init__(name, age, "Rabbit")
-        self.emoji = "🐇"
-        self.fav_food = "Ice Cream"
-        self.music_taste = "J-Pop"
-        self.dislike_music = "Rock"
-        self.songs = "Genic - It's Showtime", "Kis-My-Ft2 - Glory Days", "TWS - Hajimemashite"
-    
+        identity = PetIdentity(
+            emoji="🐇",
+            fav_food="Ice Cream",
+            music_taste="J-Pop",
+            dislike_music="Rock",
+            songs=("Genic - It's Showtime", "Kis-My-Ft2 - Glory Days", "TWS - Hajimemashite"),
+        )
+        self._set_identity(identity)
+
+    def _set_identity(self, identity: PetIdentity):
+        self.emoji = identity.emoji
+        self.fav_food = identity.fav_food
+        self.music_taste = identity.music_taste
+        self.dislike_music = identity.dislike_music
+        self.songs = identity.songs
+
     @staticmethod
     def baby():
+        return PetRenderer.render((RABBIT.baby,))
 
-       yield LINE
-       yield RABBIT.baby
-    
     @staticmethod
-    def teen(): 
+    def teen():
+        return PetRenderer.render((RABBIT.teenager,))
 
-        yield LINE
-        yield RABBIT.teenager
-    
     @staticmethod
-    def adult(): 
+    def adult():
+        return PetRenderer.render((RABBIT.adult,))
 
-        yield LINE
-        yield RABBIT.adult
-        
     @staticmethod
-    def elder(): 
+    def elder():
+        return PetRenderer.render((RABBIT.elder,))
 
-        yield LINE
-        yield RABBIT.elder
 
 class Dino(VirtualPet):
+    """Dinosaur pet with identity metadata and rendering helpers."""
     def __init__(self, name, age):
         super().__init__(name, age, "Dinosaur")
-        self.emoji = "🦖"
-        self.fav_food = "French Fries"
-        self.music_taste = "K-Pop"
-        self.dislike_music = "Country"
-        self.songs = "BTS - Spring Day", "Fifty Fifty - Cupid", "Twice - The Feels"
-    
+        identity = PetIdentity(
+            emoji="🦖",
+            fav_food="French Fries",
+            music_taste="K-Pop",
+            dislike_music="Country",
+            songs=("BTS - Spring Day", "Fifty Fifty - Cupid", "Twice - The Feels"),
+        )
+        self._set_identity(identity)
+
+    def _set_identity(self, identity: PetIdentity):
+        self.emoji = identity.emoji
+        self.fav_food = identity.fav_food
+        self.music_taste = identity.music_taste
+        self.dislike_music = identity.dislike_music
+        self.songs = identity.songs
+
     @staticmethod
     def baby():
-
-       yield LINE
-       yield DINO.baby
-    
-    @staticmethod
-    async def teen(): 
-        yield LINE
-        yield DINO.teenager
-    
-    @staticmethod
-    def adult():  
-
-        yield LINE
-        yield DINO.adult
+        return PetRenderer.render((DINO.baby,))
 
     @staticmethod
-    def elder():  
+    def teen():
+        return PetRenderer.render((DINO.teenager,))
 
-        yield LINE
-        yield DINO.elder
-        
-    
+    @staticmethod
+    def adult():
+        return PetRenderer.render((DINO.adult,))
+
+    @staticmethod
+    def elder():
+        return PetRenderer.render((DINO.elder,))
+
+
 class Dragon(VirtualPet):
+    """Dragon pet with identity metadata and rendering helpers."""
     def __init__(self, name, age):
         super().__init__(name, age, "Dragon")
-        self.emoji = "🐉"
-        self.fav_food = "Nugget"
-        self.music_taste = "Blues"
-        self.dislike_music = "K-Pop"
-        self.songs = "The Thrill is Gone By BB King", "Mannish Boy By Muddy Waters", "Love in Vain By Robert Johnson"
-    
-    @staticmethod
-    def baby():  
+        identity = PetIdentity(
+            emoji="🐉",
+            fav_food="Nugget",
+            music_taste="Blues",
+            dislike_music="K-Pop",
+            songs=("The Thrill is Gone By BB King", "Mannish Boy By Muddy Waters", "Love in Vain By Robert Johnson"),
+        )
+        self._set_identity(identity)
 
-        yield LINE
-        yield DRAGON.baby
-    
-    @staticmethod
-    def teen():  
+    def _set_identity(self, identity: PetIdentity):
+        self.emoji = identity.emoji
+        self.fav_food = identity.fav_food
+        self.music_taste = identity.music_taste
+        self.dislike_music = identity.dislike_music
+        self.songs = identity.songs
 
-       yield LINE
-       yield DRAGON.teenager
-    
     @staticmethod
-    def adult():  
+    def baby():
+        return PetRenderer.render((DRAGON.baby,))
 
-        yield LINE
-        yield DRAGON.adult
-        
     @staticmethod
-    def elder(): 
-        
-        yield LINE
-        yield DRAGON.elder
-        
+    def teen():
+        return PetRenderer.render((DRAGON.teenager,))
+
+    @staticmethod
+    def adult():
+        return PetRenderer.render((DRAGON.adult,))
+
+    @staticmethod
+    def elder():
+        return PetRenderer.render((DRAGON.elder,))
+
+
 class Pou(VirtualPet):
+    """Pou pet with identity metadata and rendering helpers."""
     def __init__(self, name, age):
         super().__init__(name, age, "Pou")
-        self.emoji = "💩"
-        self.fav_food = "Chicken"
-        self.music_taste = "Jazz"
-        self.dislike_music = "Rap"
-        self.songs = "Modern Jazz Quartet - Django", "Ahmad Jamal - Poinciana", "George Shearing - Lullaby of Birdland"
-    
-    @staticmethod
-    def baby(): 
-        yield LINE
-        yield POU.baby
-    
-    @staticmethod
-    def teen():  
-        yield LINE
-        yield POU.teenager
-        
-    @staticmethod  
-    def adult():  
-        yield LINE
-        yield POU.adult
-    
-    @staticmethod
-    def elder():  
+        identity = PetIdentity(
+            emoji="💩",
+            fav_food="Chicken",
+            music_taste="Jazz",
+            dislike_music="Rap",
+            songs=("Modern Jazz Quartet - Django", "Ahmad Jamal - Poinciana", "George Shearing - Lullaby of Birdland"),
+        )
+        self._set_identity(identity)
 
-        yield LINE
-        yield POU.elder
+    def _set_identity(self, identity: PetIdentity):
+        self.emoji = identity.emoji
+        self.fav_food = identity.fav_food
+        self.music_taste = identity.music_taste
+        self.dislike_music = identity.dislike_music
+        self.songs = identity.songs
+
+    @staticmethod
+    def baby():
+        return PetRenderer.render((POU.baby,))
+
+    @staticmethod
+    def teen():
+        return PetRenderer.render((POU.teenager,))
+
+    @staticmethod
+    def adult():
+        return PetRenderer.render((POU.adult,))
+
+    @staticmethod
+    def elder():
+        return PetRenderer.render((POU.elder,))

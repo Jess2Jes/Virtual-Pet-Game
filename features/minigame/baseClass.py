@@ -1,18 +1,42 @@
+"""Minigame strategy interfaces segregated for ISP compliance."""
+
 from abc import ABC, abstractmethod
 from typing import Any, Dict
-class MinigameStrategy(ABC):
-    """Abstract base class for minigame implementations."""
+
+
+class IGameLoop(ABC):
+    """Interface for the core game loop construction."""
+    @abstractmethod
+    def build_game(self) -> Any:
+        ...
+
+
+class IScoreable(ABC):
+    """Interface for scoring/evaluation responsibilities."""
+    @abstractmethod
+    def evaluate(self, answer: Any) -> Dict[str, Any]:
+        ...
+
+    @abstractmethod
+    def reward(self, result: Dict[str, Any]) -> Dict[str, int]:
+        ...
+
+
+class IRenderable(ABC):
+    """Interface for menu/display responsibilities."""
+    @abstractmethod
+    def display_menu(self) -> None:
+        ...
+
+
+class MinigameStrategy(IGameLoop, IScoreable, IRenderable):
+    """Abstract base class for minigame implementations with segregated concerns."""
 
     name: str
 
     @abstractmethod
     def setup(self, player: Any, pet: Any) -> None:
         """Prepare internal state before the game begins."""
-        pass
-
-    @abstractmethod
-    def display_menu(self) -> None:
-        """Show a description and choices to the player."""
         pass
 
     @abstractmethod
@@ -23,21 +47,6 @@ class MinigameStrategy(ABC):
     @abstractmethod
     def build_question(self) -> Any:
         """Build the questions or game board prior to playing."""
-        pass
-
-    @abstractmethod
-    def build_game(self) -> Any:
-        """Run the interactive portion where the user provides answers/moves."""
-        pass
-
-    @abstractmethod
-    def evaluate(self, answer: Any) -> Dict[str, Any]:
-        """Evaluate the raw answers/moves and return a structured result."""
-        pass
-
-    @abstractmethod
-    def reward(self, result: Dict[str, Any]) -> Dict[str, int]:
-        """Convert evaluation results into currency/pet happiness rewards."""
         pass
 
     @abstractmethod
