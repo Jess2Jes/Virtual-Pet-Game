@@ -1,14 +1,16 @@
 """Tetris minigame implementation (conforms to MinigameStrategy interfaces)."""
 
-from .baseClass import MinigameStrategy
-from typing import Dict
 import curses
+import logging
 import time
 from random import choice
-import logging
+from typing import Dict
+
+from colorama import init
+
+from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from utils.colorize import green, yellow
 from constants.configs import LINE
-from colorama import init
 
 init(autoreset=True)
 
@@ -30,6 +32,9 @@ class Tetris(MinigameStrategy):
 
     WIDTH = 10
     HEIGHT = 20
+
+    def __init__(self, io: InputPort | OutputPort | None = None):
+        self.io: InputPort | OutputPort = io or ConsoleIO()
 
     def setup(self, player, pet):
         self.player = player
@@ -101,7 +106,7 @@ class Tetris(MinigameStrategy):
 
     def get_input(self):
         """Collect any initial input from the player."""
-        choice_val = input(yellow("\nPress Enter to start the game...")).strip().lower()
+        choice_val = self.io.read(yellow("\nPress Enter to start the game...")).strip().lower()
         return choice_val
 
     def draw_board(self, win):
@@ -157,15 +162,14 @@ class Tetris(MinigameStrategy):
 
     def build_question(self):
         """Collect difficulty choice before starting the game."""
-
-        print("\nSelect Difficulty Level:")
-        print("1. Easy (Slow speed)")
-        print("2. Medium (Normal speed)")
-        print("3. Hard (Fast speed)")
-        print("4. Expert (Very fast)")
-        print(LINE)
+        self.io.write("\nSelect Difficulty Level:")
+        self.io.write("1. Easy (Slow speed)")
+        self.io.write("2. Medium (Normal speed)")
+        self.io.write("3. Hard (Fast speed)")
+        self.io.write("4. Expert (Very fast)")
+        self.io.write(LINE)
         try:
-            diff = int(input("Choose your difficulty (1/2/3/4): ").strip())
+            diff = int(self.io.read("Choose your difficulty (1/2/3/4): ").strip())
         except ValueError:
             diff = 1
         if diff not in range(1, 5):
@@ -305,8 +309,7 @@ class Tetris(MinigameStrategy):
 
     def build_game(self):
         """Run the interactive portion where the user provides moves."""
-
-        print("\nStarting Tetris...")
+        self.io.write("\nStarting Tetris...")
         time.sleep(1)
         score = curses.wrapper(self.game_loop)
         return {
@@ -328,7 +331,6 @@ class Tetris(MinigameStrategy):
 
     def reward(self, result):
         """Convert evaluation results into currency/pet happiness rewards."""
-
         score = result.get('score', 0)
         lines_cleared = result.get('lines_cleared', 0)
         passed = result.get('passed', False)
@@ -336,14 +338,14 @@ class Tetris(MinigameStrategy):
         if passed:
             coins = 20 + (score // 100) * 5 + lines_cleared * 2
             pet_happiness = 10 + min(lines_cleared, 10)
-            print(f"\n🎉 Great job! You cleared {lines_cleared} lines!")
+            self.io.write(f"\n🎉 Great job! You cleared {lines_cleared} lines!")
         else:
             coins = max(5, score // 50)
             pet_happiness = 5
-            print("\n💪 Keep practicing! You'll get better!")
+            self.io.write("\n💪 Keep practicing! You'll get better!")
 
-        print(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
-        print(green(f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉"))
+        self.io.write(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
+        self.io.write(green(f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉"))
 
         return {"currency": coins, "pet_happiness": pet_happiness}
 
@@ -354,7 +356,7 @@ class Tetris(MinigameStrategy):
         self.build_question()
         choice_val = self.get_input()
         if choice_val.lower() == 'q':
-            print("\nReturning to main menu...")
+            self.io.write("\nReturning to main menu...")
             return {"currency": 0, "pet_happiness": 0}
 
         summary = self.build_game()

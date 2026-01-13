@@ -1,13 +1,15 @@
 """Battle Contest minigame implementation (conforms to MinigameStrategy interfaces)."""
 
-from .baseClass import MinigameStrategy
 import time
 from random import randint, choice
+from typing import Any
+
+from colorama import init
+
+from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from utils.colorize import red, green
 from constants.configs import LINE
 from features.user import User
-from typing import Any
-from colorama import init
 
 init(autoreset=True)
 
@@ -16,6 +18,9 @@ class BattleContest(MinigameStrategy):
     """Simple multi-round pet-battle simulation against another player's pet."""
 
     name = "Battle Tournament"
+
+    def __init__(self, io: InputPort | OutputPort | None = None):
+        self.io: InputPort | OutputPort = io or ConsoleIO()
 
     def setup(self, player, pet):
         self.player = player
@@ -32,7 +37,7 @@ class BattleContest(MinigameStrategy):
             self.opponent = choice(other_players_with_pets)
             self.opponent_pet = choice(self.opponent.pets)
         else:
-            print(red("\nOther players currently doesn't have any pets yet!\n"))
+            self.io.write(red("\nOther players currently doesn't have any pets yet!\n"))
             return False
         self.opponent_health = self.opponent_pet.health * 1000
         self.opponent_won = 0
@@ -48,50 +53,49 @@ class BattleContest(MinigameStrategy):
 
     def display_menu(self):
         """Display battle status and available actions for the current round."""
-        print("\n" + LINE)
-        print(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(LINE)))
-        print(LINE)
-        print("\n" + LINE)
-        print(f"Your Pet: {self.player_pet.name} {self.player_pet.emoji}")
-        print(f"Health: {self.player_health}")
-        print(f"Strength: {self.player_pet_stats['strength']}")
-        print(f"Agility: {self.player_pet_stats['agility']}")
-        print('-' * len(LINE))
+        self.io.write("\n" + LINE)
+        self.io.write(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(LINE)))
+        self.io.write(LINE)
+        self.io.write("\n" + LINE)
+        self.io.write(f"Your Pet: {self.player_pet.name} {self.player_pet.emoji}")
+        self.io.write(f"Health: {self.player_health}")
+        self.io.write(f"Strength: {self.player_pet_stats['strength']}")
+        self.io.write(f"Agility: {self.player_pet_stats['agility']}")
+        self.io.write('-' * len(LINE))
 
         if self.opponent_pet:
-            print(f"Opponent: {self.opponent_pet.name} {self.opponent_pet.emoji}")
-            print(f"Health: {self.opponent_health}")
-            print(f"Strength: {self.player_pet_stats['strength']}")
-            print(f"Agility: {self.player_pet_stats['agility']}")
+            self.io.write(f"Opponent: {self.opponent_pet.name} {self.opponent_pet.emoji}")
+            self.io.write(f"Health: {self.opponent_health}")
+            self.io.write(f"Strength: {self.player_pet_stats['strength']}")
+            self.io.write(f"Agility: {self.player_pet_stats['agility']}")
 
-        print(LINE)
-        print("\nBattle Options:")
-        print(LINE)
-        print("1. Attack 🗡️")
-        print("2. Defend 🛡️")
-        print("3. Special Move ✨")
-        print("4. Heal ❤️‍🩹")
-        print(LINE)
+        self.io.write(LINE)
+        self.io.write("\nBattle Options:")
+        self.io.write(LINE)
+        self.io.write("1. Attack 🗡️")
+        self.io.write("2. Defend 🛡️")
+        self.io.write("3. Special Move ✨")
+        self.io.write("4. Heal ❤️‍🩹")
+        self.io.write(LINE)
 
     def get_input(self):
         """Prompt and validate a numeric choice for the battle action."""
         while True:
             try:
-                choice_val = int(input("Choose your action (1-4): "))
+                choice_val = int(self.io.read("Choose your action (1-4): "))
                 if 1 <= choice_val <= 4:
                     return choice_val
-                else:
-                    print(red("Please enter a number between 1-4!"))
+                self.io.write(red("Please enter a number between 1-4!"))
             except ValueError:
-                print(red("Please enter a valid number!"))
+                self.io.write(red("Please enter a valid number!"))
 
     def build_question(self) -> Any:
         """Prepare the battle sequence and announce start."""
-        print("\n" + LINE)
-        print("Battle Starting!")
-        print(LINE)
-        print(f"{self.player_pet.name} {self.player_pet.emoji} VS {self.opponent_pet.name} {self.opponent_pet.emoji}")
-        print("Prepare for battle!")
+        self.io.write("\n" + LINE)
+        self.io.write("Battle Starting!")
+        self.io.write(LINE)
+        self.io.write(f"{self.player_pet.name} {self.player_pet.emoji} VS {self.opponent_pet.name} {self.opponent_pet.emoji}")
+        self.io.write("Prepare for battle!")
         time.sleep(2)
 
     def build_game(self) -> Any:
@@ -145,77 +149,77 @@ class BattleContest(MinigameStrategy):
         """Player attacks the opponent."""
         damage = (randint(5, 10) + self.player_pet_stats["strength"] // 3) * 300
         self.opponent_health -= damage
-        print(f"\n{self.player_pet.name} attacks for {damage} damage ⚔️!")
+        self.io.write(f"\n{self.player_pet.name} attacks for {damage} damage ⚔️!")
 
     def _player_defend(self) -> None:
         """Player defends, temporarily reducing incoming damage (display only)."""
         defense_bonus = randint(2, 5) * 3000
-        print(f"\n{self.player_pet.name} defends 🛡️!")
-        print(f"Damage reduction: {defense_bonus}")
+        self.io.write(f"\n{self.player_pet.name} defends 🛡️!")
+        self.io.write(f"Damage reduction: {defense_bonus}")
 
     def _player_special_move(self) -> None:
         """Player uses special move (only on even rounds)."""
         if self.current_round % 2 == 0:
             special_damage = (randint(10, 15) + self.player_pet_stats["strength"] // 2) * 600
             self.opponent_health -= special_damage
-            print(f"\n{self.player_pet.name} uses special move for {special_damage} damage ✨!")
+            self.io.write(f"\n{self.player_pet.name} uses special move for {special_damage} damage ✨!")
         else:
-            print(red("\nSpecial moves are locked in odd rounds!"))
+            self.io.write(red("\nSpecial moves are locked in odd rounds!"))
 
     def _player_heal(self) -> None:
         """Player heals if heal limit not exceeded."""
         if self.player_heal_count < self.player_heal_limit:
             heal_amount = randint(8, 12) * 500
             self.player_health += heal_amount
-            print(f"\n{self.player_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+            self.io.write(f"\n{self.player_pet.name} heals for {heal_amount} health ❤️‍🩹!")
             self.player_heal_count += 1
         else:
-            print(red("\nYou already healed 3 times!"))
+            self.io.write(red("\nYou already healed 3 times!"))
 
     def _opponent_attack(self) -> None:
         """Opponent attacks the player."""
         damage = (randint(4, 8) + self.opponent_pet_stats["strength"] // 3) * 300
         self.player_health -= damage
-        print(f"{self.opponent_pet.name} attacks for {damage} damage ⚔️!")
+        self.io.write(f"{self.opponent_pet.name} attacks for {damage} damage ⚔️!")
 
     def _opponent_defend(self) -> None:
         """Opponent defends (display only)."""
         defense_bonus = randint(1, 4) * 3000
-        print(f"{self.opponent_pet.name} defends 🛡️!")
-        print(f"Damage reduction: {defense_bonus}")
+        self.io.write(f"{self.opponent_pet.name} defends 🛡️!")
+        self.io.write(f"Damage reduction: {defense_bonus}")
 
     def _opponent_special_move(self) -> None:
         """Opponent special move (only on odd rounds)."""
         if self.current_round % 2 != 0:
             special_damage = (randint(8, 12) + self.opponent_pet_stats["strength"] // 2) * 600
             self.player_health -= special_damage
-            print(f"{self.opponent_pet.name} uses special move for {special_damage} damage ✨!")
+            self.io.write(f"{self.opponent_pet.name} uses special move for {special_damage} damage ✨!")
         else:
-            print(red("\nOpponent's special moves are restricted on even rounds!"))
+            self.io.write(red("\nOpponent's special moves are restricted on even rounds!"))
 
     def _opponent_heal(self) -> None:
         """Opponent heals if heal limit not exceeded."""
         if self.opponent_heal_count < self.opponent_heal_limit:
             heal_amount = randint(6, 10) * 500
             self.opponent_health += heal_amount
-            print(f"{self.opponent_pet.name} heals for {heal_amount} health ❤️‍🩹!")
+            self.io.write(f"{self.opponent_pet.name} heals for {heal_amount} health ❤️‍🩹!")
             self.opponent_heal_count += 1
         else:
-            print(red("\nOpponent's healing ability are restricted to 5 times only!"))
+            self.io.write(red("\nOpponent's healing ability are restricted to 5 times only!"))
 
     def _determine_battle_outcome(self) -> None:
         """Determine and display the battle outcome and update counters."""
         if self.opponent_health <= 0:
-            print(f"{self.opponent_pet.name} was defeated 🎉!")
+            self.io.write(f"{self.opponent_pet.name} was defeated 🎉!")
             self.player_won += 1
             self.current_round += 1
 
         if self.player_health <= 0:
-            print(f"{self.player_pet.name} was defeated 🎉!")
+            self.io.write(f"{self.player_pet.name} was defeated 🎉!")
             self.opponent_won += 1
 
         if self.player_health <= 0 and self.opponent_health <= 0:
-            print("It's a draw! 🤺")
+            self.io.write("It's a draw! 🤺")
 
     def evaluate(self, answer):
         """Construct a richer evaluation dict from raw battle results."""
@@ -246,19 +250,19 @@ class BattleContest(MinigameStrategy):
         if victory:
             coins = 20 + (performance_score // 10)
             pet_happiness = 15 + ((player_health_remaining - 1000) // 5)
-            print(green(f"🎉 VICTORY! {self.player_pet.name} won the battle!"))
+            self.io.write(green(f"🎉 VICTORY! {self.player_pet.name} won the battle!"))
         else:
             coins = 5 + (performance_score // 20)
             pet_happiness = 5 + ((player_health_remaining - 1000) // 10)
-            print(red(f"💔 Defeat... {self.player_pet.name} was defeated."))
-        print("\n" + LINE)
-        print("BATTLE RESULTS")
-        print(LINE)
-        print(f"Performance Score: {performance_score}/100")
-        print(f"Health Remaining: {player_health_remaining}")
-        print(f"Coins Earned: {'{:,}'.format(coins * 1000)}")
-        print(f"Pet Happiness: (+{pet_happiness})")
-        print(LINE)
+            self.io.write(red(f"💔 Defeat... {self.player_pet.name} was defeated."))
+        self.io.write("\n" + LINE)
+        self.io.write("BATTLE RESULTS")
+        self.io.write(LINE)
+        self.io.write(f"Performance Score: {performance_score}/100")
+        self.io.write(f"Health Remaining: {player_health_remaining}")
+        self.io.write(f"Coins Earned: {'{:,}'.format(coins * 1000)}")
+        self.io.write(f"Pet Happiness: (+{pet_happiness})")
+        self.io.write(LINE)
 
         return {"currency": coins, "pet_happiness": pet_happiness}
 
@@ -270,3 +274,4 @@ class BattleContest(MinigameStrategy):
             battle_result = self.build_game()
             evaluation = self.evaluate(battle_result)
             return self.reward(evaluation)
+        return {"currency": 0, "pet_happiness": 0}

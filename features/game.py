@@ -1,18 +1,18 @@
-"""Game module: business logic for pet interactions with decoupled I/O and content loading.
-
-This module introduces injectable I/O (InputPort/OutputPort) and content loading abstractions
-to satisfy dependency inversion and remove hard-coded console/file dependencies.
+"""
+Game module: business logic for pet interactions with decoupled I/O and content loading.
 """
 
 import datetime
-from typing import Protocol, Callable, Iterable
-from random import randrange, choice as ch
 import json
+from random import randrange, choice as ch
+from typing import Protocol, Iterable
+
 from colorama import init
+
 from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
-from utils.formatter import Formatter
-from constants.configs import LINE, NO_STOCK_MSG, FOOD_DEF, SOAP_DEF, POTION_DEF
 from .user import User
+from constants.configs import LINE, NO_STOCK_MSG, FOOD_DEF, SOAP_DEF, POTION_DEF
+from utils.formatter import Formatter
 from utils.colorize import red, green, yellow, cyan, reset_color
 
 init(autoreset=True)
@@ -55,7 +55,7 @@ class Game:
     def __init__(
         self,
         user,
-        io: InputPort | OutputPort = None,
+        io: InputPort | OutputPort | None = None,
         content_loader: ContentLoader | None = None,
     ):
         self.animal_list = []
@@ -66,7 +66,7 @@ class Game:
         self.jokes = []
         self.conversations = []
         self.topics_used = []
-        self.io: ConsoleIO = io or ConsoleIO()
+        self.io: InputPort | OutputPort = io or ConsoleIO()
         self.content_loader = content_loader or FileContentLoader()
         self.user = user
         self.load_jokes()
@@ -103,21 +103,16 @@ class Game:
         flag, species = self.create_species(name)
         return flag, name, species
 
-    @classmethod
-    def create_species(cls, name: str) -> tuple[bool, VirtualPet | None]:
-        """Prompt species selection and create the chosen pet."""
-        def print_menu(out: Callable[[str], None]) -> None:
-            out(LINE)
-            out("Here's five types of species you can choose: ")
-            out("1. Cat (🐈)")
-            out("2. Rabbit (🐇)")
-            out("3. Dinosaur (🦖)")
-            out("4. Dragon (🐉)")
-            out("5. Pou (💩)")
-            out(LINE)
-
-        io = ConsoleIO()
-        print_menu(io.write)
+    def create_species(self, name: str) -> tuple[bool, VirtualPet | None]:
+        """Prompt species selection and create the chosen pet using injected IO."""
+        self.io.write(LINE)
+        self.io.write("Here's five types of species you can choose: ")
+        self.io.write("1. Cat (🐈)")
+        self.io.write("2. Rabbit (🐇)")
+        self.io.write("3. Dinosaur (🦖)")
+        self.io.write("4. Dragon (🐉)")
+        self.io.write("5. Pou (💩)")
+        self.io.write(LINE)
 
         species_map = {
             "1": Cat,
@@ -128,29 +123,31 @@ class Game:
         }
 
         while True:
-            species = io.read("Choose his/her species (1/2/3/4/5): ").strip()
+            species = self.io.read("Choose his/her species (1/2/3/4/5): ").strip()
             cls_type = species_map.get(species)
             if cls_type:
                 animal = cls_type(name, 0)
                 return True, animal
-            else:
-                io.write(red("\nUnknown species choice! Please try again.\n"))
+            self.io.write(red("\nUnknown species choice! Please try again.\n"))
 
     def create(self) -> bool:
         """High-level pet creation flow combining name and species selection."""
         while True:
             flag, name, species = self.create_name()
 
-            if (species and flag):
+            if species and flag:
                 if not any(animal.name == name for animal in User.current_user.pets):
-                    self.animal_list.append((species))
-                    self.io.write(green(f"\nCongratulations! You have successfully give birth to {name}, the {species.type}!"))
+                    self.animal_list.append(species)
+                    self.io.write(green(
+                        f"\nCongratulations! You have successfully give birth to {name}, the {species.type}!"
+                    ))
                     return True
-                else:
-                    self.io.write(red(f"\n{name} has been created! Please create another pet with different name and species.\n"))
-                    flag = False
+                self.io.write(red(
+                    f"\n{name} has been created! Please create another pet with different name and species.\n"
+                ))
+                flag = False
 
-            if (not flag):
+            if not flag:
                 retry = self.io.read(
                     "Would you like to create your pet again? (Y/N)\n"
                     "(Note: input other than Y and N will be considered as N): "
@@ -178,12 +175,11 @@ class Game:
 
     @staticmethod
     def _render_lines(items: Iterable[str]) -> str:
-        """Join lines for menu rendering."""
         return "\n".join(items)
 
     def _print_main_interact_menu(self) -> None:
         menu = [
-            "="*120,
+            "=" * 120,
             "1. Feed",
             "2. Play",
             "3. Bath",
@@ -198,14 +194,12 @@ class Game:
 
     @staticmethod
     def _input_int(prompt: str, reader: InputPort):
-        """Read integer input safely via provided reader."""
         try:
             return int(reader.read(prompt))
         except ValueError:
             return None
 
     def _print_stock(self, title: str, defs: dict, category: str) -> None:
-        """Render inventory stock listing for a category."""
         lines = ["", LINE, title, LINE + "\n"]
         inv = self.user.inventory[category]
         is_food = category == "food"
@@ -216,15 +210,18 @@ class Game:
             qty = inv.get(key, 0)
             stock_text = f"{qty}" if qty > 0 else f"{red(NO_STOCK_MSG)}"
             if is_food:
-                lines.append(f"{idx}. {key} {emoji} (Hunger: {v['hunger']}, Happiness: {v['happiness']}, Available: {stock_text})")
+                lines.append(
+                    f"{idx}. {key} {emoji} (Hunger: {v['hunger']}, Happiness: {v['happiness']}, Available: {stock_text})"
+                )
             elif is_soap:
-                lines.append(f"{idx}. {key} {emoji} (Sanity: {v['sanity']}, Happiness: {v['happiness']}, Available: {stock_text})")
+                lines.append(
+                    f"{idx}. {key} {emoji} (Sanity: {v['sanity']}, Happiness: {v['happiness']}, Available: {stock_text})"
+                )
             else:
                 lines.append(f"{idx}. {key} {emoji} (Available: {stock_text}, Effect: {v['delta']})")
         self.io.write("\n".join(lines))
 
     def _print_potion_requirement(self, title: str) -> None:
-        """Display potion usage requirements."""
         lines = [
             "",
             LINE,
@@ -238,9 +235,7 @@ class Game:
         ]
         self.io.write("\n".join(lines))
 
-    @staticmethod
-    def _food_choice_from_number(food: str) -> str | None:
-        """Translate menu index to food name."""
+    def _food_choice_from_number(self, food: str) -> str | None:
         food_choice_map = {
             "1": "kentucky fried chicken", "2": "ice cream", "3": "fried rice",
             "4": "salad", "5": "french fries", "6": "mashed potato", "7": "mozarella nugget",
@@ -248,10 +243,10 @@ class Game:
         try:
             return food_choice_map[food].title()
         except KeyError:
-            ConsoleIO().write(red("\nUnknown food choice! Please choose (1/2/3/4/5/6/7)!\n"))
+            self.io.write(red("\nUnknown food choice! Please choose (1/2/3/4/5/6/7)!\n"))
+            return None
 
     def _feed(self, pet: VirtualPet) -> None:
-        """Handle feeding action using user inventory."""
         food = self.io.read("\nWhich food (1/2/3/4/5/6/7)? ").strip()
         choice = self._food_choice_from_number(food)
         if not choice:
@@ -268,7 +263,6 @@ class Game:
             self.io.write(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     def _play(self, self_pet: VirtualPet) -> None:
-        """Play interaction that adjusts pet stats and user currency."""
         pet = self_pet
         if pet.energy < 10:
             self.io.write(red(f"\n{pet.name} is too tired to play..\n"))
@@ -302,9 +296,7 @@ class Game:
 
         self.io.write(yellow(pet.joy_upgrade_stats()))
 
-    @staticmethod
-    def _soap_choice_from_number(soap: str) -> str | None:
-        """Translate menu index to soap name."""
+    def _soap_choice_from_number(self, soap: str) -> str | None:
         soap_choice_map = {
             "1": "rainbow bubble soap", "2": "pink bubble soap",
             "3": "white silk soap", "4": "flower bubble soap",
@@ -312,10 +304,10 @@ class Game:
         try:
             return soap_choice_map[soap].title()
         except KeyError:
-            ConsoleIO().write(red("\nUnknown soap choice! Please choose (1/2/3/4)!\n"))
+            self.io.write(red("\nUnknown soap choice! Please choose (1/2/3/4)!\n"))
+            return None
 
     def _bath(self, pet: VirtualPet) -> None:
-        """Handle bathing action using user inventory."""
         soap = self.io.read("\nWhich soap (1/2/3/4)? ").strip()
         choice = self._soap_choice_from_number(soap)
         if not choice:
@@ -331,19 +323,17 @@ class Game:
             emoji = str(SOAP_DEF[choice]["emoji"])
             self.io.write(f"Remaining {choice} ({emoji}): {remaining}\n")
 
-    @staticmethod
-    def _potion_choice_from_number(potion: str) -> str | None:
-        """Translate menu index to potion name."""
+    def _potion_choice_from_number(self, potion: str) -> str | None:
         potion_choice_map = {
             "1": "fat burner", "2": "health potion", "3": "energizer", "4": "adult potion",
         }
         try:
             return potion_choice_map[potion].title()
         except KeyError:
-            ConsoleIO().write(red("\nUnknown potion choice! Please choose (1/2/3/4)!\n"))
+            self.io.write(red("\nUnknown potion choice! Please choose (1/2/3/4)!\n"))
+            return None
 
     def _give_potion(self, pet: VirtualPet) -> None:
-        """Handle potion usage with validation."""
         potion = self.io.read("\nWhich potion (1/2/3/4)? ").strip()
         choice = self._potion_choice_from_number(potion)
         if not choice:
@@ -360,7 +350,6 @@ class Game:
             self.io.write(f"Remaining {choice} ({emoji}): {remaining}\n")
 
     def _sleep(self, pet: VirtualPet) -> None:
-        """Handle sleep interaction with bounds checking."""
         hours = self._input_int(f"\n{pet.name}'s sleep duration (1-12): ", self.io)
 
         if hours is None:
@@ -373,7 +362,6 @@ class Game:
         pet.sleep(hours)
 
     def _walk(self, self_pet: VirtualPet) -> None:
-        """Handle walk interaction with random events."""
         pet = self_pet
         if pet.energy < 10:
             self.io.write(red(f"\n{pet.name} is too tired to take a walk..\n"))
@@ -419,11 +407,9 @@ class Game:
         self.io.write(f"{pet.name}'s energy decreased by 15.")
 
         pet.limit_stat()
-
         self.io.write(yellow(pet.joy_upgrade_stats()))
 
     def _print_talk_menu(self) -> None:
-        """Render top-level talk topics menu."""
         lines = [
             "\n" + LINE,
             "Topics of Conversation: ",
@@ -439,7 +425,6 @@ class Game:
         self.io.write("\n".join(lines))
 
     def _topic_plan(self, pet: VirtualPet) -> bool:
-        """Plan topic handler."""
         ans = [
             f"I want to eat {pet.fav_food}!", "I want to play :D",
             "I want to take a walk 🌳.", "I want to take a bath :)",
@@ -449,12 +434,10 @@ class Game:
         return True
 
     def _topic_fav_food(self, pet: VirtualPet) -> bool:
-        """Favourite food topic handler."""
         self.io.write(cyan(f"\n{pet.name} {pet.emoji} : My favourite food is {pet.fav_food}. :D"))
         return True
 
     def _topic_money(self, pet: VirtualPet) -> bool:
-        """Money request topic handler with generosity gating."""
         if all(val < 50 for val in [pet.hunger, pet.sanity, pet.happiness, pet.health]):
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : I will consider it if you take care of me properly!\n"))
             return False
@@ -469,7 +452,6 @@ class Game:
         return False
 
     def _print_conversation_menu(self) -> None:
-        """Render conversation subtopics."""
         lines = [
             "\n" + LINE,
             "1. Music Taste",
@@ -480,38 +462,32 @@ class Game:
         self.io.write("\n".join(lines))
 
     def _music_topic(self, pet: VirtualPet) -> bool:
-        """Handle music-related conversation topics."""
         if not self.conversations:
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : I'm all out of topics right now! Sorry!"))
             return False
 
         music_questions = [q for q in self.conversations if q["type"] == "Music Taste"]
-
         if not music_questions:
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : I don't have any music topics right now! Sorry!"))
             return False
 
         random_music_topics = self._select_unused_topic(music_questions)
-
-        question = random_music_topics.get('question', '')
-        choose_text = random_music_topics.get('choose', '')
+        question = random_music_topics.get("question", "")
+        choose_text = random_music_topics.get("choose", "")
         ans = self.io.read(cyan(f"\n{pet.name} {pet.emoji} : {question}\n{choose_text}")).lower().strip()
 
         like_topic = "dislike" not in question
 
         if random_music_topics.get("answer") is not None:
             self._handle_answer_type(pet, random_music_topics, ans, like_topic)
-
         elif random_music_topics.get("option") is not None:
             self._handle_option_type(pet, random_music_topics, ans)
-
         else:
             self._handle_list_type(pet, ans)
 
         return True
 
     def _select_unused_topic(self, questions: list) -> dict:
-        """Return a random unused topic, cycling when exhausted."""
         while True:
             random_topic = ch(questions)
 
@@ -525,37 +501,42 @@ class Game:
         return random_topic
 
     def _handle_answer_type(self, pet: VirtualPet, topic: dict, ans: str, like_topic: bool) -> None:
-        """Process free-text answers with validation list."""
         is_valid_answer = ans in topic.get("answer", [])
 
         if is_valid_answer and like_topic:
-            self.io.write(cyan(f"\n{pet.name} {pet.emoji} : So, that's your fav! Mine is {getattr(pet, 'music_taste', 'unknown')}."))
+            self.io.write(cyan(
+                f"\n{pet.name} {pet.emoji} : So, that's your fav! Mine is {getattr(pet, 'music_taste', 'unknown')}."
+            ))
             User.current_user.music["Fav_Music"] = ans
-
         elif is_valid_answer and not like_topic:
-            self.io.write(cyan(f"\n{pet.name} {pet.emoji} : So, that's not your cup of tea, Mine is {getattr(pet, 'dislike_music', 'unknown')}."))
+            self.io.write(cyan(
+                f"\n{pet.name} {pet.emoji} : So, that's not your cup of tea, Mine is {getattr(pet, 'dislike_music', 'unknown')}."
+            ))
             User.current_user.music["Dislike_Music"] = ans
-
         else:
-            self.io.write(cyan(f"\n{pet.name} {pet.emoji} : Not sure I've ever heard that genre, but thanks for telling me!"))
+            self.io.write(cyan(
+                f"\n{pet.name} {pet.emoji} : Not sure I've ever heard that genre, but thanks for telling me!"
+            ))
             key = "Fav_Music" if like_topic else "Dislike_Music"
             User.current_user.music[key] = ans
 
     def _handle_option_type(self, pet: VirtualPet, topic: dict, ans: str) -> None:
-        """Process option-based music topics."""
         first_option = topic.get("option")[0]
         is_first_option = ans == first_option
         is_valid_option = ans in topic.get("option", [])
 
         if is_valid_option and not is_first_option:
-            self.io.write(cyan(f"\n{pet.name} {pet.emoji} : You should try it now! They had added your fav music playlist there! "))
+            self.io.write(cyan(
+                f"\n{pet.name} {pet.emoji} : You should try it now! They had added your fav music playlist there! "
+            ))
             User.current_user.music["Have_Used_Spotify"] = True
         else:
-            self.io.write(cyan(f"\n{pet.name} {pet.emoji} : Have you heard your new fav music playlist come out there?  Go check it now!"))
+            self.io.write(cyan(
+                f"\n{pet.name} {pet.emoji} : Have you heard your new fav music playlist come out there?  Go check it now!"
+            ))
             User.current_user.music["Have_Used_Spotify"] = False
 
     def _handle_list_type(self, pet: VirtualPet, ans: str) -> None:
-        """Process list-style music responses."""
         list_ans = [x.strip() for x in ans.split(",")]
 
         if len(list_ans) == 3:
@@ -566,20 +547,19 @@ class Game:
             User.current_user.music["Fav_Lyrics"] = list_ans[0] if list_ans else ""
 
     def _food_topic(self, pet: VirtualPet) -> bool:
-        """Handle food-related conversation topics."""
         if not self.conversations:
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : I'm all out of topics right now! Sorry!"))
             return False
 
         food_questions = [q for q in self.conversations if q["type"] == "Favourite Food/Drink"]
-
         if not food_questions:
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : I don't have any food topics right now! Sorry!"))
             return False
 
         random_food_topics = self._select_unused_topic(food_questions)
-
-        ans = self.io.read(cyan(f"\n{pet.name} {pet.emoji} : {random_food_topics.get('question','')}\n")).lower().strip()
+        ans = self.io.read(cyan(
+            f"\n{pet.name} {pet.emoji} : {random_food_topics.get('question', '')}\n"
+        )).lower().strip()
 
         if random_food_topics.get("option") is not None:
             self._handle_food_option_type(pet, random_food_topics, ans)
@@ -589,7 +569,6 @@ class Game:
         return True
 
     def _handle_food_option_type(self, pet: VirtualPet, topic: dict, ans: str) -> None:
-        """Process option-based food topics."""
         first_option = topic.get("option")[0]
         is_first_option = ans == first_option
         is_valid_option = ans in topic.get("option", [])
@@ -603,39 +582,44 @@ class Game:
             self._handle_food_origin_preference(pet, ans, is_first_option)
 
     def _handle_sweet_salty_preference(self, pet: VirtualPet, ans: str, is_sweet: bool) -> None:
-        """Record sweet/salty preference."""
         if is_sweet:
-            self.io.write(cyan(f"\n{pet.name} {pet.emoji} : Owh, so you like sweet. I think you'd love Belgian Chocolate! "))
+            self.io.write(cyan(
+                f"\n{pet.name} {pet.emoji} : Owh, so you like sweet. I think you'd love Belgian Chocolate! "
+            ))
             User.current_user.food["Like_Sweet_Salty"] = ans
         else:
-            self.io.write(cyan(f"\n{pet.name} {pet.emoji} : Owh, so you like salty food. I think you'd love Egg and Toast!"))
+            self.io.write(cyan(
+                f"\n{pet.name} {pet.emoji} : Owh, so you like salty food. I think you'd love Egg and Toast!"
+            ))
             User.current_user.food["Like_Sweet_Salty"] = ans
 
     def _handle_food_origin_preference(self, pet: VirtualPet, ans: str, is_traditional: bool) -> None:
-        """Record international vs traditional preference."""
         if is_traditional:
-            self.io.write(cyan(f"\n{pet.name} {pet.emoji} : Our own country food is the best! I will give it a five star ⭐!"))
+            self.io.write(cyan(
+                f"\n{pet.name} {pet.emoji} : Our own country food is the best! I will give it a five star ⭐!"
+            ))
             User.current_user.food["Inter_Trad_Food"] = ans
         else:
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : Well, International Food also tastes better!"))
             User.current_user.food["Inter_Trad_Food"] = ans
 
     def _handle_food_free_response(self, pet: VirtualPet, topic: dict, ans: str) -> None:
-        """Record free-form food preferences."""
         if "What is your favorite food?" in topic.get("question", ""):
-            self.io.write(cyan(f"\n{pet.name} {pet.emoji} : That's great! My favourite food is {pet.fav_food}!"))
+            self.io.write(cyan(
+                f"\n{pet.name} {pet.emoji} : That's great! My favourite food is {pet.fav_food}!"
+            ))
             User.current_user.food["Fav_Food"] = ans
         else:
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : I'm glad to hear that! Thanks for sharing."))
 
     def _end_topic(self, pet: VirtualPet) -> None:
-        """End conversation and boost happiness."""
-        self.io.write(cyan(f"\n{pet.name} {pet.emoji} : Okay, I have gotten to know you more, thanks for sharing yours!"))
+        self.io.write(cyan(
+            f"\n{pet.name} {pet.emoji} : Okay, I have gotten to know you more, thanks for sharing yours!"
+        ))
         self.io.write(green(f"{pet.name}'s happiness has increased by 10."))
         pet.happiness += 10
 
     def _topic_conversation_menu(self, pet: VirtualPet) -> bool:
-        """Conversation sub-loop for selected topics."""
         while True:
             self._print_conversation_menu()
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : What would you like to talk today? "))
@@ -644,18 +628,13 @@ class Game:
                 self.io.write(red("\nPlease type a number."))
                 continue
 
-            actions = {
-                1: self._music_topic,
-                2: self._food_topic,
-                3: self._end_topic,
-            }
-
+            actions = {1: self._music_topic, 2: self._food_topic, 3: self._end_topic}
             keep_talking = actions.get(topic, self._invalid_topic)(pet)
             if keep_talking is None:
                 break
+        return True
 
     def _can_tell_joke(self, pet: VirtualPet) -> tuple[bool, str | None]:
-        """Check whether pet is in condition to tell a joke."""
         if pet.hunger < 30:
             return False, f"\n{pet.name} is too hungry to joke right now.."
         if pet.health < 20:
@@ -667,7 +646,6 @@ class Game:
         return True, None
 
     def _topic_joke(self, pet: VirtualPet) -> bool:
-        """Handle joke topic with optional stored punchline."""
         ok, reason = self._can_tell_joke(pet)
         if not ok:
             self.io.write(red(reason + "\n"))
@@ -678,34 +656,29 @@ class Game:
             return True
 
         random_jokes = ch(self.jokes)
-
-        question = random_jokes.get('question', '')
-        answer_expected = random_jokes.get('answer', '')
+        question = random_jokes.get("question", "")
+        answer_expected = random_jokes.get("answer", "")
         ans = self.io.read(cyan(f"\n{pet.name} {pet.emoji} : {question} ")).strip()
 
-        if (ans.lower() == (answer_expected or "").lower()):
+        if ans.lower() == (answer_expected or "").lower():
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : Wait! How did you know? 😱"))
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : You absolutely killed the joke LOL. Great Job! 🫠"))
         else:
             resp = (answer_expected.capitalize() if answer_expected else "No punchline")
             self.io.write(cyan(f"\n{pet.name} {pet.emoji} : {resp}! GOT YOU! 🤪"))
-
         return True
 
     def _topic_goodbye(self, pet: VirtualPet) -> bool:
-        """Goodbye topic handler."""
         self.io.write(cyan(f"\n{pet.name} {pet.emoji} : Okay, goodbye!"))
         self.io.write(green(f"{pet.name}'s happiness has increased by 10.\n"))
         pet.happiness += 10
         return False
 
-    def _invalid_topic(self) -> bool:
-        """Fallback for invalid topic selection."""
+    def _invalid_topic(self, *_args, **_kwargs) -> bool:
         self.io.write(red("\nPlease choose based on choices we have!"))
         return True
 
     def _talk_menu(self, pet: VirtualPet) -> None:
-        """Top-level conversation menu loop."""
         while True:
             self._print_talk_menu()
             topic = self._input_int("Choose a topic: ", self.io)
@@ -722,7 +695,6 @@ class Game:
                 6: self._topic_goodbye,
             }
             action = actions.get(topic)
-
             if action is None:
                 self._invalid_topic()
                 continue
@@ -732,7 +704,6 @@ class Game:
                 break
 
     def _stocks(self) -> dict:
-        """Return stock metadata keyed by menu selection."""
         return {
             1: ["List of Foods:", FOOD_DEF, "food"],
             3: ["List of Soaps:", SOAP_DEF, "soap"],
@@ -740,7 +711,6 @@ class Game:
         }
 
     def _actions(self):
-        """Return mapping of menu choices to action handlers."""
         return {
             1: self._feed,
             2: self._play,
@@ -752,22 +722,18 @@ class Game:
         }
 
     def _action_potion(self, pet: VirtualPet) -> None:
-        """Print potion requirements then execute potion flow."""
         self._print_potion_requirement("Potion Usage Requirement")
         self._give_potion(pet)
 
     @staticmethod
     def _is_valid_choice(choice: int) -> bool:
-        """Validate main interaction choice range."""
         return 1 <= choice <= 8
 
     def _should_show_stock(self, choice: int) -> bool:
-        """Check if stock display is needed for given choice."""
         return choice in self._stocks()
 
     def interact(self, pet) -> None:
-        """Main loop for interacting with a specific pet and executing chosen actions."""
-        self.io.write(reset_color("\n" + "="*120))
+        self.io.write(reset_color("\n" + "=" * 120))
         self.io.write(f"Playing with {pet.name}, the {pet.type}:".center(len(LINE)))
         while True:
             self._print_main_interact_menu()

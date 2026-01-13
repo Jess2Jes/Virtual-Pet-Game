@@ -8,8 +8,18 @@ USERNAME_INPUTTING = "Username: "
 PASSWORD_INPUTTING = "Password: "
 VALID_PASSWORD = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$"
 
-GAME_LIST = ["Math Quiz", "Tic Tac Toe", "Memory Match", 
+GAME_LIST = ["Math Quiz", "Tic Tac Toe", "Memory Match",
             "Battle Contest", "Sudoku", "Tetris", "Uno"]
+
+MINIGAME_SPECS = {
+    "Math Quiz": {"module": "features.minigame.mathQuiz", "class": "MathQuiz"},
+    "Tic Tac Toe": {"module": "features.minigame.ticTacToe", "class": "TicTacToe"},
+    "Memory Match": {"module": "features.minigame.memoryMatch", "class": "MemoryMatch"},
+    "Battle Contest": {"module": "features.minigame.battleContest", "class": "BattleContest"},
+    "Sudoku": {"module": "features.minigame.sudoku", "class": "Sudoku"},
+    "Tetris": {"module": "features.minigame.tetris", "class": "Tetris"},
+    "Uno": {"module": "features.minigame.uno", "class": "Uno"},
+}
 
 FAT_BURNER = "Fat Burner"
 HEALTH_POTION = "Health Potion"

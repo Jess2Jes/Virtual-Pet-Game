@@ -1,12 +1,14 @@
 """UNO minigame implementation (conforms to MinigameStrategy interfaces)."""
 
-from .baseClass import MinigameStrategy
-from random import choice, shuffle
-from features.user import User
-from constants.configs import LINE, UnoConstants as UC
-from utils.colorize import red, green, blue
 import time
+from random import choice, shuffle
+
 from colorama import init
+
+from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
+from constants.configs import LINE, UnoConstants as UC
+from features.user import User
+from utils.colorize import red, green, blue
 
 init(autoreset=True)
 
@@ -15,6 +17,9 @@ class Uno(MinigameStrategy):
     """A simple UNO card minigame to play with your little pet."""
 
     name = "UNO Card"
+
+    def __init__(self, io: InputPort | OutputPort | None = None):
+        self.io: InputPort | OutputPort = io or ConsoleIO()
 
     def setup(self, player, pet):
         self.player = player
@@ -41,7 +46,6 @@ class Uno(MinigameStrategy):
 
     def build_deck(self):
         """Builds and returns a full UNO deck."""
-
         self.deck = []
 
         for color in UC.COLORS:
@@ -62,23 +66,22 @@ class Uno(MinigameStrategy):
         shuffle(self.deck)
         return self.deck
 
-    @staticmethod
-    def display_menu():
+    def display_menu(self):
         """Show a description and choices to the player."""
-        print("\n" + LINE)
-        print("🃏 UNO Card Minigame 🃏")
-        print(LINE)
-        print("Play this classic UNO card minigame with your pet!")
-        print("\nRules:")
-        print(LINE)
-        print("- Each player will be given cards depending on game choices.")
-        print("- Play one card matching the discard in color, number or symbol.")
-        print("- Skip: Next player misses turn")
-        print("- Reverse: Changes direction (3+ players)")
-        print("- DrawTwo: Next player draws 2 cards")
-        print("- Wild: Choose any color")
-        print("- Wild DrawFour: Choose color and next player draws 4")
-        print(LINE)
+        self.io.write("\n" + LINE)
+        self.io.write("🃏 UNO Card Minigame 🃏")
+        self.io.write(LINE)
+        self.io.write("Play this classic UNO card minigame with your pet!")
+        self.io.write("\nRules:")
+        self.io.write(LINE)
+        self.io.write("- Each player will be given cards depending on game choices.")
+        self.io.write("- Play one card matching the discard in color, number or symbol.")
+        self.io.write("- Skip: Next player misses turn")
+        self.io.write("- Reverse: Changes direction (3+ players)")
+        self.io.write("- DrawTwo: Next player draws 2 cards")
+        self.io.write("- Wild: Choose any color")
+        self.io.write("- Wild DrawFour: Choose color and next player draws 4")
+        self.io.write(LINE)
 
     @staticmethod
     def can_play(card, top_card):
@@ -121,44 +124,42 @@ class Uno(MinigameStrategy):
 
     def get_input(self, player):
         """Get and validate user input for their turn."""
-        print(f"\n{player['name']}'s Turn:")
-        print(LINE)
-        print("Top Card:", self.top_card)
+        self.io.write(f"\n{player['name']}'s Turn:")
+        self.io.write(LINE)
+        self.io.write(f"Top Card: {self.top_card}")
 
-        print("\nYour Hand:")
+        self.io.write("\nYour Hand:")
         for i, c in enumerate(player['hand']):
-            print(f" {i + 1}. {c}")
-        print(LINE)
+            self.io.write(f" {i + 1}. {c}")
+        self.io.write(LINE)
 
         valid_moves = self.get_valid_moves(player['hand'])
 
         if valid_moves:
-            print("\nValid moves:")
+            self.io.write("\nValid moves:")
             for i, c in enumerate(valid_moves):
-                print(f"{i + 1}. {c}")
-            print(LINE)
-            choice_val = input("Play (h) or draw (p)? ").strip().lower()
+                self.io.write(f"{i + 1}. {c}")
+            self.io.write(LINE)
+            choice_val = self.io.read("Play (h) or draw (p)? ").strip().lower()
             return choice_val, valid_moves
-        else:
-            print(red("\nThere is no more valid moves for player!"))
-            return 'p', None
+        self.io.write(red("\nThere is no more valid moves for player!"))
+        return 'p', None
 
     def build_question(self):
         """Build the game setup - optional difficulty or rules."""
-
         total_players = self._multiplayer_choice()
         if total_players > 2:
             self._setup_player(total_players)
 
-        print("\nUNO Games:")
-        print(LINE)
-        print("1. Standard UNO (7 cards each)")
-        print("2. Quick UNO (5 cards each)")
-        print("3. Challenge UNO (10 cards each)")
-        print(LINE)
+        self.io.write("\nUNO Games:")
+        self.io.write(LINE)
+        self.io.write("1. Standard UNO (7 cards each)")
+        self.io.write("2. Quick UNO (5 cards each)")
+        self.io.write("3. Challenge UNO (10 cards each)")
+        self.io.write(LINE)
 
         try:
-            choice_val = int(input("Choose your game modes (1/2/3/4): ").strip())
+            choice_val = int(self.io.read("Choose your game modes (1/2/3/4): ").strip())
         except ValueError:
             choice_val = 1
         if choice_val not in range(1, 5):
@@ -186,16 +187,15 @@ class Uno(MinigameStrategy):
 
     def _multiplayer_choice(self):
         """Choose number of players."""
-
-        print("\nUNO Multiplayer Games:")
-        print(LINE)
-        print("1. 2 Players")
-        print("2. 3 Players")
-        print("3. 4 Players")
-        print("4. 5 Players")
-        print(LINE)
+        self.io.write("\nUNO Multiplayer Games:")
+        self.io.write(LINE)
+        self.io.write("1. 2 Players")
+        self.io.write("2. 3 Players")
+        self.io.write("3. 4 Players")
+        self.io.write("4. 5 Players")
+        self.io.write(LINE)
         try:
-            player_count = int(input("Choose your game modes (1/2/3/4): ").strip())
+            player_count = int(self.io.read("Choose your game modes (1/2/3/4): ").strip())
         except ValueError:
             player_count = 1
 
@@ -208,12 +208,11 @@ class Uno(MinigameStrategy):
 
     def _setup_player(self, total_players=3):
         """Setup players list based on total players."""
-
         if not self.opponent:
-            print(red("\nNo other players available!"))
+            self.io.write(red("\nNo other players available!"))
 
         elif len(self.opponent.pets) < total_players - 2:
-            print(red("\nNot enough player!"))
+            self.io.write(red("\nNot enough player!"))
         else:
             list_player_names = [player['name'] for player in self.players]
             for _ in range(total_players - 2):
@@ -232,7 +231,7 @@ class Uno(MinigameStrategy):
 
         if card in player['hand']:
             player['hand'].remove(card)
-            print(f"\n{player['emoji']} {player['name']}: {card}")
+            self.io.write(f"\n{player['emoji']} {player['name']}: {card}")
 
         if 'Wild' in card:
             played_card = self._handle_wild(player, card, next_player_idx)
@@ -248,7 +247,7 @@ class Uno(MinigameStrategy):
 
         if 'Reverse' in card and len(self.players) > 2:
             self.direction *= -1
-            print(f"Direction reversed! Now going {'↻ clockwise' if self.direction == 1 else '↺ counter-clockwise'}")
+            self.io.write(f"Direction reversed! Now going {'↻ clockwise' if self.direction == 1 else '↺ counter-clockwise'}")
 
         self.discard.append(card)
         return card
@@ -258,10 +257,10 @@ class Uno(MinigameStrategy):
         color = None
         if player['name'].lower() != 'you':
             color = choice(UC.COLORS)
-            print(f"{player['emoji']} {player['name'].title()} changes color to:", color)
+            self.io.write(f"{player['emoji']} {player['name'].title()} changes color to: {color}")
         else:
             while color not in UC.COLORS:
-                color = input("Choose color (RED/YELLOW/GREEN/BLUE): ").strip().upper()
+                color = self.io.read("Choose color (RED/YELLOW/GREEN/BLUE): ").strip().upper()
 
         if 'DrawFour' in card:
             for _ in range(4):
@@ -277,30 +276,27 @@ class Uno(MinigameStrategy):
 
     def _handle_draw(self, player):
         """Handle drawing a card when no valid moves."""
-
-        print(blue("\nDrawing..."))
+        self.io.write(blue("\nDrawing..."))
         new_card = self.draw_card()
         player['hand'].append(new_card)
 
-        print(f"{player['emoji']} {player['name'].title()} drew:", new_card)
+        self.io.write(f"{player['emoji']} {player['name'].title()} drew: {new_card}")
 
         if self.can_play(new_card, self.top_card):
-            print(green(f"{player['name']} can play it!"))
+            self.io.write(green(f"{player['name']} can play it!"))
             return self._play_card(player, new_card)
-        else:
-            print(red("Cannot play. Turn ends."))
-            return self.top_card
+        self.io.write(red("Cannot play. Turn ends."))
+        return self.top_card
 
     def next_player(self):
         """Move to next player based on direction."""
-
         if self.skip:
             self.skip = False
             self.current_player_index = (self.current_player_index + self.direction) % len(self.players)
             if self.players[self.current_player_index]['name'].lower() == 'you':
-                print(blue("Your turn skipped!"))
+                self.io.write(blue("Your turn skipped!"))
             else:
-                print(blue(f"{self.players[self.current_player_index]['name']}'s turn skipped!"))
+                self.io.write(blue(f"{self.players[self.current_player_index]['name']}'s turn skipped!"))
             self.current_player_index = (self.current_player_index + self.direction) % len(self.players)
         else:
             self.current_player_index = (self.current_player_index + self.direction) % len(self.players)
@@ -312,44 +308,40 @@ class Uno(MinigameStrategy):
 
             if choice_val == 'h' and valid_moves:
                 try:
-                    card_number = int(input('\nEnter card number: '))
+                    card_number = int(self.io.read('\nEnter card number: '))
                     card = valid_moves[card_number - 1]
                     return self._play_card(player, card)
                 except (ValueError, IndexError):
-                    print(red("Invalid input! Please try again."))
+                    self.io.write(red("Invalid input! Please try again."))
             else:
                 return self._handle_draw(player)
 
     def opponent_turn(self, player):
         """Handle pet(s) move."""
-
-        print(f"\n{player['name']}'s Turn...")
-        print(LINE)
+        self.io.write(f"\n{player['name']}'s Turn...")
+        self.io.write(LINE)
         time.sleep(1)
         valid_moves = self.get_valid_moves(player['hand'])
 
         if valid_moves:
             card = choice(valid_moves)
-
             return self._play_card(player, card)
 
-        else:
-            return self._handle_draw(player)
+        return self._handle_draw(player)
 
     def build_game(self):
         """Run the interactive game loop."""
-
-        print("\nList of UNO Participants: ")
-        print(LINE)
+        self.io.write("\nList of UNO Participants: ")
+        self.io.write(LINE)
         for i, p in enumerate(self.players):
-            print(f" {i + 1}. {p['name']}")
+            self.io.write(f" {i + 1}. {p['name']}")
 
-        print(f"\nDealing with {len(self.players[0]['hand'])} cards each...")
+        self.io.write(f"\nDealing with {len(self.players[0]['hand'])} cards each...")
         time.sleep(1)
 
         while True:
             current_player = self.players[self.current_player_index]
-            print(f"Top Card: {self.top_card}")
+            self.io.write(f"Top Card: {self.top_card}")
             if current_player['name'].lower() == "you":
                 card = self.player_turn(current_player)
             else:
@@ -363,7 +355,7 @@ class Uno(MinigameStrategy):
                 self.top_card = card
 
             if len(current_player['hand']) == 1 and current_player['name'].lower() != 'you':
-                print(green(f"\n{current_player['emoji']} {current_player['name']}: UNO!"))
+                self.io.write(green(f"\n{current_player['emoji']} {current_player['name']}: UNO!"))
 
             self.next_player()
             self.turns += 1
@@ -378,15 +370,11 @@ class Uno(MinigameStrategy):
 
     def evaluate(self, answer):
         """Evaluate the game results."""
-
         winner = answer.get('winner')
         turns = answer.get('turns', 0)
         player_cards = answer.get('player_cards_left', 0)
 
-        if winner == "You":
-            outcome = "Win"
-        else:
-            outcome = "Lose"
+        outcome = "Win" if winner == "You" else "Lose"
 
         return {
             "outcome": outcome,
@@ -405,20 +393,20 @@ class Uno(MinigameStrategy):
         if outcome == "Win":
             coins = 30 + max(0, 20 - turns) + max(0, 10 - player_cards)
             pet_happiness = 2
-            print(green(f"\n🎉 You won in {turns} turns!"))
+            self.io.write(green(f"\n🎉 You won in {turns} turns!"))
         else:
             if winner == self.pet.name:
                 coins = max(5, 15 - player_cards)
                 pet_happiness = 10
-                print(green(f"\n🎉 Your pet won in {turns} turns!"))
+                self.io.write(green(f"\n🎉 Your pet won in {turns} turns!"))
             else:
                 coins = max(5, 35 - player_cards)
                 pet_happiness = 5
-                print(f"\nThe winner is: {winner}!")
-                print(red("\n💪 Better luck next time!"))
+                self.io.write(f"\nThe winner is: {winner}!")
+                self.io.write(red("\n💪 Better luck next time!"))
 
-        print(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
-        print(green(f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉"))
+        self.io.write(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
+        self.io.write(green(f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉"))
 
         return {"currency": coins, "pet_happiness": pet_happiness}
 
