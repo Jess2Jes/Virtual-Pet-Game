@@ -1,11 +1,13 @@
 """Tic Tac Toe minigame implementation (conforms to MinigameStrategy interfaces)."""
 
-from .baseClass import MinigameStrategy
-from typing import Any, Dict, List, Tuple
 from random import choice
+from typing import Any, Dict, List, Tuple
+
+from colorama import init
+
+from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from utils.colorize import red, green, yellow
 from constants.configs import LINE
-from colorama import init
 
 init(autoreset=True)
 
@@ -14,6 +16,9 @@ class TicTacToe(MinigameStrategy):
     """n x n Tic-Tac-Toe with your pet and configurable board sizes."""
 
     name = "Tic Tac Toe"
+
+    def __init__(self, io: InputPort | OutputPort | None = None):
+        self.io: InputPort | OutputPort = io or ConsoleIO()
 
     def setup(self, player, pet):
         self.player = player
@@ -30,39 +35,39 @@ class TicTacToe(MinigameStrategy):
 
     def display_menu(self):
         """Show rules and rewards for the Tic Tac Toe minigame."""
-        print("\n" + LINE)
-        print("⭕ Tic Tac Toe ✖️")
-        print(LINE)
-        print("Let's play classic Tic-Tac-Toe with your pet!")
-        print("You are X, your pet is O.")
-        print(LINE)
-        print("Win ---> more currency")
-        print("Draw ---> small currency")
-        print("Loss ---> no currency")
-        print(LINE)
+        self.io.write("\n" + LINE)
+        self.io.write("⭕ Tic Tac Toe ✖️")
+        self.io.write(LINE)
+        self.io.write("Let's play classic Tic-Tac-Toe with your pet!")
+        self.io.write("You are X, your pet is O.")
+        self.io.write(LINE)
+        self.io.write("Win ---> more currency")
+        self.io.write("Draw ---> small currency")
+        self.io.write("Loss ---> no currency")
+        self.io.write(LINE)
 
     def get_input(self):
         """Ask if the player wants to play first (Y/N)."""
         while True:
-            choice_val = input("\nDo you want to play first (Y/N)? ").strip().lower()
+            choice_val = self.io.read("\nDo you want to play first (Y/N)? ").strip().lower()
             if choice_val == "y":
                 self.first = True
                 break
-            elif choice_val == "n":
+            if choice_val == "n":
                 self.first = False
                 break
-            print(red("Please answer Y/N!"))
+            self.io.write(red("Please answer Y/N!"))
 
     def build_question(self):
         """Collect board-size choice and prepare an empty board."""
-        print(yellow("Choose the size of your Tic Tac Toe board!"))
-        print(LINE)
-        print("1. 3 x 3 board")
-        print("2. 4 x 4 board")
-        print("3. 5 x 5 board")
-        print(LINE)
+        self.io.write(yellow("Choose the size of your Tic Tac Toe board!"))
+        self.io.write(LINE)
+        self.io.write("1. 3 x 3 board")
+        self.io.write("2. 4 x 4 board")
+        self.io.write("3. 5 x 5 board")
+        self.io.write(LINE)
         try:
-            diff = int(input("Choose your size of board (1/2/3): ").strip())
+            diff = int(self.io.read("Choose your size of board (1/2/3): ").strip())
         except ValueError:
             diff = 1
         if diff not in range(1, 4):
@@ -84,14 +89,16 @@ class TicTacToe(MinigameStrategy):
 
     def render_board(self):
         """Render the current board to the console."""
-        print()
-        print("   " + " ".join(f"{c+1:3}" for c in range(self.col_length)))
-        print("  +" + "---+" * self.col_length)
+        lines = []
+        lines.append("")
+        lines.append("   " + " ".join(f"{c+1:3}" for c in range(self.col_length)))
+        lines.append("  +" + "---+" * self.col_length)
         for r in range(self.row_length):
             row_cells = " | ".join(self.board[r][c] if self.board[r][c] != " " else " " for c in range(self.col_length))
-            print(f"{r+1:2}| {row_cells} |")
-            print("  +" + "---+" * self.col_length)
-        print()
+            lines.append(f"{r+1:2}| {row_cells} |")
+            lines.append("  +" + "---+" * self.col_length)
+        lines.append("")
+        self.io.write("\n".join(lines))
 
     def available_moves(self):
         """Return list of empty cells as (row, col) tuples."""
@@ -105,12 +112,10 @@ class TicTacToe(MinigameStrategy):
     def check_winner(self):
         """Check the board for winning sequences in all directions and return counts per mark."""
         counts = {}
-
         self._check_horizontal_wins(counts)
         self._check_vertical_wins(counts)
         self._check_diagonal_wins(counts)
         self._check_anti_diagonal_wins(counts)
-
         return counts
 
     def _check_horizontal_wins(self, counts: dict) -> None:
@@ -200,9 +205,7 @@ class TicTacToe(MinigameStrategy):
     def _choose_center(self):
         """Return the center cell if available, else None."""
         center = (self.row_length // 2, self.col_length // 2)
-        if center in self.available_moves():
-            return center
-        return None
+        return center if center in self.available_moves() else None
 
     def _choose_corner(self):
         """Return the first available corner, else None."""
@@ -271,7 +274,7 @@ class TicTacToe(MinigameStrategy):
 
         if self.row_length == 4:
             return self._best_edge_4(edges)
-        elif self.row_length == 5:
+        if self.row_length == 5:
             return self._best_edge_5(edges)
 
         return edges[0]
@@ -330,24 +333,24 @@ class TicTacToe(MinigameStrategy):
 
     def player_move(self):
         """Prompt the player for a row/column move and validate it."""
-        print("\n" + LINE)
-        print("It's your turn! Pick your cell now!")
-        print(LINE)
+        self.io.write("\n" + LINE)
+        self.io.write("It's your turn! Pick your cell now!")
+        self.io.write(LINE)
         try:
-            row, col = map(int, input(f"\nEnter row (1-{self.row_length}) and column (1-{self.col_length}) --> ex: 2 3: ").strip().split())
+            row, col = map(int, self.io.read(f"\nEnter row (1-{self.row_length}) and column (1-{self.col_length}) --> ex: 2 3: ").strip().split())
             row -= 1
             col -= 1
         except ValueError:
-            print(red("Please input two numbers separated by space (e.g. '2 3')."))
+            self.io.write(red("Please input two numbers separated by space (e.g. '2 3')."))
             return None
         if row < 0 or row >= self.row_length:
-            print(red(f"Row number cannot be less than 1 or more than {self.row_length}!"))
+            self.io.write(red(f"Row number cannot be less than 1 or more than {self.row_length}!"))
             return None
         if col < 0 or col >= self.col_length:
-            print(red(f"Column number cannot be less than 1 or more than {self.col_length}!"))
+            self.io.write(red(f"Column number cannot be less than 1 or more than {self.col_length}!"))
             return None
         if (row, col) not in self.available_moves():
-            print(yellow("Cell has been placed with mark!"))
+            self.io.write(yellow("Cell has been placed with mark!"))
             return None
 
         return row, col
@@ -398,7 +401,7 @@ class TicTacToe(MinigameStrategy):
         """Handle the pet's turn."""
         row, col = self.pet_move()
         self.make_move(row, col, self.pet_mark)
-        print(f"Pet placed '{self.pet_mark}' at (row-{row + 1} col-{col + 1}).")
+        self.io.write(f"Pet placed '{self.pet_mark}' at (row-{row + 1} col-{col + 1}).")
 
     def _check_game_over(self) -> bool:
         """Check if the game has ended and set the winner."""
@@ -432,18 +435,18 @@ class TicTacToe(MinigameStrategy):
         if outcome == "Win":
             coins = 20
             pet_happiness = 0
-            print("\nYou win! 🎉")
+            self.io.write("\nYou win! 🎉")
         elif outcome == "Draw":
             coins = 5
             pet_happiness = 2
-            print("\nIt's a draw!")
+            self.io.write("\nIt's a draw!")
         else:
             coins = 0
             pet_happiness = 5
-            print("\nYou lose.. 🥲")
-        print("Your pet is having fun playing with you!")
-        print(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
-        print(green(f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉"))
+            self.io.write("\nYou lose.. 🥲")
+        self.io.write("Your pet is having fun playing with you!")
+        self.io.write(f"Reward: Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})")
+        self.io.write(green(f"You received Rp. {'{:,}'.format(coins * 1000)} 🎉"))
         return {"currency": coins, "pet_happiness": pet_happiness}
 
     def play(self, player: Any, pet: Any) -> Dict[str, int]:

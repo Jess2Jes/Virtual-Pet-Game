@@ -1,4 +1,6 @@
-"""User domain model with injectable auth service and persistence helpers."""
+"""User domain model with injectable auth service and pet factory for restoration.
+
+"""
 
 import math
 import re
@@ -27,13 +29,43 @@ class BcryptAuthService:
         return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
+class PetFactory(Protocol):
+    """Factory abstraction for restoring pets from saved mementos."""
+    def create(self, pet_type: str, name: str, age: float): ...
+
+
+class DefaultPetFactory:
+    """Default pet factory mapping saved types to concrete pet classes."""
+    def __init__(self):
+        from .animal import Cat, Rabbit, Dino, Dragon, Pou
+        self._pet_class_map = {
+            "Cat": Cat,
+            "Rabbit": Rabbit,
+            "Dinosaur": Dino,
+            "Dragon": Dragon,
+            "Pou": Pou,
+        }
+        self._default_cls = Cat
+
+    def create(self, pet_type: str, name: str, age: float):
+        cls = self._pet_class_map.get(pet_type, self._default_cls)
+        return cls(name, age)
+
+
 class User:
     """Represents a player/account with inventory, pets, and profile data."""
     users: Dict[str, "User"] = {}
     current_user: Optional["User"] = None
 
-    def __init__(self, username: str, password: str, auth_service: AuthService | None = None):
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        auth_service: AuthService | None = None,
+        pet_factory: PetFactory | None = None,
+    ):
         self.auth_service = auth_service or BcryptAuthService()
+        self.pet_factory = pet_factory or DefaultPetFactory()
         self.username = username
         self.__password_hash = (
             self.auth_service.hash(password) if not password.startswith('$2b$') else password
@@ -78,16 +110,13 @@ class User:
         self.__password_hash = self.auth_service.hash(new_password)
 
     def add_pet(self, pet) -> None:
-        """Attach a new pet to this user's pet list."""
         self.pets.append(pet)
 
     def add_item(self, category: str, name: str, amount: int) -> None:
-        """Increase inventory count for a given category/name by amount."""
         if category in self.inventory and name in self.inventory[category]:
             self.inventory[category][name] += int(amount)
 
     def has_item(self, category: str, name: str, amount: int = 1) -> bool:
-        """Check whether the user has at least `amount` of a named item."""
         return (
             category in self.inventory
             and name in self.inventory[category]
@@ -95,7 +124,6 @@ class User:
         )
 
     def consume_item(self, category: str, name: str, amount: int = 1) -> bool:
-        """Consume (subtract) items from inventory when available; return True on success."""
         if self.has_item(category, name, amount):
             self.inventory[category][name] -= amount
             return True
@@ -103,7 +131,6 @@ class User:
 
     @classmethod
     def register(cls, username: str, password: str) -> Optional[int]:
-        """Register a new user."""
         print()
         key = username.casefold()
 
@@ -128,7 +155,6 @@ class User:
 
     @classmethod
     def login(cls, username: str, password: str) -> Optional[int]:
-        """Authenticate a user by username and plaintext password."""
         print()
         key = username.casefold()
         if key not in cls.users:
@@ -146,13 +172,11 @@ class User:
 
     @classmethod
     def _logout(cls) -> bool:
-        """Clear the current_user pointer (used by UI flows)."""
         cls.current_user = None
         print()
         return False
 
     def create_memento(self) -> Dict[str, Any]:
-        """Produce a serializable snapshot of the user and their pets suitable for saving."""
         pets_data = []
         for pet in self.pets:
             pet_data = {
@@ -182,9 +206,6 @@ class User:
         return user_data
 
     def restore_from_memento(self, memento: Dict[str, Any]) -> None:
-        """Restore this user's state from a previously created memento dict."""
-        from .animal import Cat, Rabbit, Dino, Dragon, Pou
-
         self.username = memento.get("username", self.username)
         self.__password_hash = memento.get("password", self.__password_hash)
         self._currency = memento.get("currency", 0)
@@ -193,19 +214,10 @@ class User:
         self.food = memento.get("food", {})
 
         self.pets = []
-        pet_class_map = {
-            "Cat": Cat,
-            "Rabbit": Rabbit,
-            "Dinosaur": Dino,
-            "Dragon": Dragon,
-            "Pou": Pou,
-        }
-
         for pet_data in memento.get("pets", []):
             pet_type = pet_data.get("type", "Cat")
-            pet_class = pet_class_map.get(pet_type, Cat)
+            pet = self.pet_factory.create(pet_type, pet_data["name"], pet_data.get("age", 0.0))
 
-            pet = pet_class(pet_data["name"], pet_data.get("age", 0.0))
             pet.happiness = pet_data.get("happiness", 50)
             pet.hunger = pet_data.get("hunger", 50)
             pet.sanity = pet_data.get("sanity", 50)

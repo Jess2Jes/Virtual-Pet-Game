@@ -2,11 +2,13 @@
 
 import time
 from random import randint, choice
-from .baseClass import MinigameStrategy
-from utils.colorize import yellow
 from typing import Any, Dict
-from constants.configs import LINE, ARITHMETIC_OPERATIONS
+
 from colorama import init
+
+from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
+from utils.colorize import yellow
+from constants.configs import LINE, ARITHMETIC_OPERATIONS
 
 init(autoreset=True)
 
@@ -14,6 +16,9 @@ init(autoreset=True)
 class MathQuiz(MinigameStrategy):
     """A short arithmetic quiz where speed and accuracy determine rewards."""
     name = "Math Quiz"
+
+    def __init__(self, io: InputPort | OutputPort | None = None):
+        self.io: InputPort | OutputPort = io or ConsoleIO()
 
     def setup(self, player, pet):
         self.player = player
@@ -27,27 +32,27 @@ class MathQuiz(MinigameStrategy):
 
     def display_menu(self):
         """Explain rules and difficulty options to the player."""
-        print("\n" + LINE)
-        print("➕ Math Quiz ➗")
-        print(LINE)
-        print("🔍 This game is created to test your logical thinking skill! 🔍")
-        print("🧠 Answer the given arithmetic questions as fast and accurately as you can... 🤓")
-        print("You will get your coin rewards and boost your pet's happiness! 😸")
-        print(LINE)
-        print("Before we start, please choose your difficulty: ")
-        print(LINE)
-        print("1. Easy")
-        print("2. Medium")
-        print("3. Hard")
-        print("4. Master")
-        print(LINE)
-        print("NOTE: Any user's input other than 1-4 will be considered 1 (Default: Difficulty Easy)")
-        print(LINE)
+        self.io.write("\n" + LINE)
+        self.io.write("➕ Math Quiz ➗")
+        self.io.write(LINE)
+        self.io.write("🔍 This game is created to test your logical thinking skill! 🔍")
+        self.io.write("🧠 Answer the given arithmetic questions as fast and accurately as you can... 🤓")
+        self.io.write("You will get your coin rewards and boost your pet's happiness! 😸")
+        self.io.write(LINE)
+        self.io.write("Before we start, please choose your difficulty: ")
+        self.io.write(LINE)
+        self.io.write("1. Easy")
+        self.io.write("2. Medium")
+        self.io.write("3. Hard")
+        self.io.write("4. Master")
+        self.io.write(LINE)
+        self.io.write("NOTE: Any user's input other than 1-4 will be considered 1 (Default: Difficulty Easy)")
+        self.io.write(LINE)
 
     def get_input(self):
         """Collect difficulty choice (1-4)."""
         try:
-            diff = int(input("Choose your difficulty (1-4): ").strip())
+            diff = int(self.io.read("Choose your difficulty (1-4): ").strip())
         except ValueError:
             diff = 1
         if diff not in range(1, 5):
@@ -68,7 +73,7 @@ class MathQuiz(MinigameStrategy):
             total_question = 20
             max_value = 50
             operators = ["+", "-", "*", "/", "**"]
-        elif self.difficulty == 4:
+        else:
             total_question = 20
             max_value = 60
             operators = ["+", "-", "*", "/", "%", "**"]
@@ -86,13 +91,13 @@ class MathQuiz(MinigameStrategy):
 
     def build_game(self):
         """Prompt the user with all questions and collect integer answers (None for invalid)."""
-        print(yellow(f"\nYou will be asked {len(self.questions)} questions. Type your answer (must be an int): "))
-        print(LINE)
+        self.io.write(yellow(f"\nYou will be asked {len(self.questions)} questions. Type your answer (must be an int): "))
+        self.io.write(LINE)
         self.start_time = time.time()
         user_answers = []
         for i, (a, op, b) in enumerate(self.questions, start=1):
             try:
-                ans = int(input(f"Q{i}: {a} {op} {b} = ").strip())
+                ans = int(self.io.read(f"Q{i}: {a} {op} {b} = ").strip())
             except ValueError:
                 ans = None
             user_answers.append(ans)
@@ -103,16 +108,13 @@ class MathQuiz(MinigameStrategy):
         """Evaluate provided answers against expected results and compute accuracy/timing metrics."""
         for (a, op, b), u in zip(self.questions, user_answers):
             func = ARITHMETIC_OPERATIONS.get(op)
-            if func:
-                expected = func(a, b)
-            else:
-                expected = None
+            expected = func(a, b) if func else None
             self.answers.append(expected)
             if expected and u == expected:
                 self.correct += 1
         elapsed = max(0.001, self.end_time - self.start_time) if self.start_time and self.end_time else 0.0
         accuracy = self.correct / len(self.questions) if self.questions else 0.0
-        user_stats = {
+        return {
             "correct": self.correct,
             "total": len(self.questions),
             "elapsed": elapsed,
@@ -120,7 +122,6 @@ class MathQuiz(MinigameStrategy):
             "answers": self.answers,
             "user_answers": user_answers
         }
-        return user_stats
 
     def reward(self, result):
         """Compute currency and pet happiness rewards from the evaluation result."""
@@ -133,8 +134,8 @@ class MathQuiz(MinigameStrategy):
 
         elapsed = result.get("elapsed", 0)
         accuracy = result.get("accuracy", 0.0)
-        print(f"\nResult: {correct}/{total} correct in {elapsed:.2f}s (accuracy {round(accuracy * 100)}%)")
-        print(f"You earned Rp. {'{:,}'.format(coins * 1000)} and your pet gains {pet_happiness} happiness.")
+        self.io.write(f"\nResult: {correct}/{total} correct in {elapsed:.2f}s (accuracy {round(accuracy * 100)}%)")
+        self.io.write(f"You earned Rp. {'{:,}'.format(coins * 1000)} and your pet gains {pet_happiness} happiness.")
         return {"currency": coins, "pet_happiness": pet_happiness}
 
     def play(self, player: Any, pet: Any) -> Dict[str, int]:

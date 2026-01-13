@@ -1,12 +1,14 @@
 """Memory Match minigame implementation (conforms to MinigameStrategy interfaces)."""
 
-from .baseClass import MinigameStrategy
 import time
 from random import choice, randint, random
+
+from colorama import init
+
+from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from constants.configs import LINE
 from utils.formatter import clear
 from utils.colorize import green
-from colorama import init
 
 init(autoreset=True)
 
@@ -15,6 +17,9 @@ class MemoryMatch(MinigameStrategy):
     """Memorize-and-recall game using digits, words or mixed tokens."""
 
     name = "Memory Match"
+
+    def __init__(self, io: InputPort | OutputPort | None = None):
+        self.io: InputPort | OutputPort = io or ConsoleIO()
 
     def load_words(self):
         with open("datas/words.txt") as word_file:
@@ -25,8 +30,7 @@ class MemoryMatch(MinigameStrategy):
         self.player = player
         self.pet = pet
         self.sequence = []
-        a = []
-        self.user_response = a
+        self.user_response = []
         self.length = None
         self.charset = "words"
         self.start_time = None
@@ -36,23 +40,23 @@ class MemoryMatch(MinigameStrategy):
 
     def display_menu(self):
         """Explain Memory Match rules and difficulty levels."""
-        print("\n" + LINE)
-        print("🧩 Memory Match 🧩")
-        print(LINE)
-        print("Memorize a short sequence, then reproduce it.")
-        print("Faster and more accurate answers give better rewards.")
-        print(LINE)
-        print("Choose difficulty:")
-        print(LINE)
-        print("1. Easy   (sequence length 5-6, digits)")
-        print("2. Medium (sequence length 3-4, words)")
-        print("3. Hard   (sequence length 6-8, mixed digits/words)")
-        print(LINE)
+        self.io.write("\n" + LINE)
+        self.io.write("🧩 Memory Match 🧩")
+        self.io.write(LINE)
+        self.io.write("Memorize a short sequence, then reproduce it.")
+        self.io.write("Faster and more accurate answers give better rewards.")
+        self.io.write(LINE)
+        self.io.write("Choose difficulty:")
+        self.io.write(LINE)
+        self.io.write("1. Easy   (sequence length 5-6, digits)")
+        self.io.write("2. Medium (sequence length 3-4, words)")
+        self.io.write("3. Hard   (sequence length 6-8, mixed digits/words)")
+        self.io.write(LINE)
 
     def get_input(self):
         """Collect difficulty choice."""
         try:
-            diff = int(input("Choose difficulty (1-3): ").strip())
+            diff = int(self.io.read("Choose difficulty (1-3): ").strip())
         except ValueError:
             diff = 1
         if diff not in range(1, 4):
@@ -87,17 +91,16 @@ class MemoryMatch(MinigameStrategy):
 
     def build_game(self):
         """Show the sequence briefly and then prompt the player to reproduce it."""
-        print("\n" + LINE)
-        print("Game started!")
-        print(LINE)
-        print("Memorize this sequence:")
-        print(" ".join(self.sequence))
+        self.io.write("\n" + LINE)
+        self.io.write("Game started!")
+        self.io.write(LINE)
+        self.io.write("Memorize this sequence:")
+        self.io.write(" ".join(self.sequence))
         time.sleep(1.0 + 0.5 * self.length)
         clear()
-        print("Now type the sequence separated by spaces (e.g. \"1 2 3\" or \"cat dog 5\" or \"cat dog fruit\").")
-        ans = input("Your answer: ").strip()
-        ans_list = ans.split()
-        return ans_list
+        self.io.write("Now type the sequence separated by spaces (e.g. \"1 2 3\" or \"cat dog 5\" or \"cat dog fruit\").")
+        ans = self.io.read("Your answer: ").strip()
+        return ans.split()
 
     def evaluate(self, answer):
         """Compare the user's response to the expected sequence and count correct items."""
@@ -109,15 +112,13 @@ class MemoryMatch(MinigameStrategy):
         total = len(self.sequence)
         exact = (correct == total) and (len(self.user_response) == total)
 
-        user_stats = {
+        return {
             "correct": correct,
             "total": total,
             "exact": exact,
             "sequence": self.sequence,
             "response": self.user_response,
         }
-
-        return user_stats
 
     def reward(self, result):
         """Compute rewards and print a summary for MemoryMatch."""
@@ -131,15 +132,15 @@ class MemoryMatch(MinigameStrategy):
 
         pet_happiness = correct // int(self.difficulty) if self.difficulty else correct
 
-        print("\n" + LINE)
-        print("RESULT".center(len(LINE)))
-        print(LINE)
-        print(f"Sequence was: {' '.join(result['sequence'])}")
-        print(f"Your response: {' '.join(result['response']) if result['response'] else '(none)'}")
-        print(f"\nCorrect: {correct}/{total}")
+        self.io.write("\n" + LINE)
+        self.io.write("RESULT".center(len(LINE)))
+        self.io.write(LINE)
+        self.io.write(f"Sequence was: {' '.join(result['sequence'])}")
+        self.io.write(f"Your response: {' '.join(result['response']) if result['response'] else '(none)'}")
+        self.io.write(f"\nCorrect: {correct}/{total}")
         if exact:
-            print(green("Perfect! Bonus awarded! 🎉"))
-        print(f"You earned Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})\n")
+            self.io.write(green("Perfect! Bonus awarded! 🎉"))
+        self.io.write(f"You earned Rp. {'{:,}'.format(coins * 1000)}. Pet happiness (+{pet_happiness})\n")
         return {"currency": coins, "pet_happiness": pet_happiness}
 
     def play(self, player, pet):

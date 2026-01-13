@@ -1,28 +1,33 @@
-"""Facade orchestrating game subsystems with a registry-based minigame factory."""
+"""Facade orchestrating game subsystems with a registry-based minigame factory.
+
+"""
 
 import datetime
 from importlib import import_module
 from typing import Callable, Dict, Type
 
 from features.shop import Shop
-from features.game import Game
+from features.game import Game, ConsoleIO, OutputPort
 from features.save_manager import SaveManager
 from features.user import User
 from utils.colorize import green, yellow
-from constants.configs import GAME_LIST
+from constants.configs import GAME_LIST, MINIGAME_SPECS
 
 
 class MinigameRegistry:
     """Registry/factory for minigames to decouple facade from concrete imports."""
+
     def __init__(self):
         self._factories: Dict[str, Callable[[], object]] = {}
 
-    def register(self, name: str, module_path: str, class_name: str):
+    def register(self, name: str, module_path: str, class_name: str) -> None:
         """Register a minigame by name with its module and class."""
+
         def factory():
             module = import_module(module_path)
             cls: Type = getattr(module, class_name)
             return cls()
+
         self._factories[name] = factory
 
     def create(self, name: str):
@@ -32,33 +37,30 @@ class MinigameRegistry:
             raise ValueError(f"Unknown minigame: {name}")
         return factory()
 
+    @classmethod
+    def from_specs(cls, specs: Dict[str, Dict[str, str]]) -> "MinigameRegistry":
+        """Build a registry from a spec mapping: name -> {module, class}."""
+        registry = cls()
+        for name, spec in specs.items():
+            registry.register(name, spec["module"], spec["class"])
+        return registry
+
 
 class GameFacade:
     """High-level interface coordinating user, game, saves, shop, and minigames."""
-    def __init__(self):
+
+    def __init__(self, io: OutputPort | None = None):
+        self.io: OutputPort = io or ConsoleIO()
         self.game = None
         self.current_user = User.current_user
         self.save_manager = SaveManager.get_instance()
-        self._minigame_registry = self._init_minigame_registry()
+        self._minigame_registry = MinigameRegistry.from_specs(MINIGAME_SPECS)
         self._load_all_users_from_saves()
-
-    @staticmethod
-    def _init_minigame_registry() -> MinigameRegistry:
-        """Initialize registry with available minigames."""
-        registry = MinigameRegistry()
-        registry.register("Math Quiz", "features.minigame.mathQuiz", "MathQuiz")
-        registry.register("Tic Tac Toe", "features.minigame.ticTacToe", "TicTacToe")
-        registry.register("Memory Match", "features.minigame.memoryMatch", "MemoryMatch")
-        registry.register("Battle Contest", "features.minigame.battleContest", "BattleContest")
-        registry.register("Sudoku", "features.minigame.sudoku", "Sudoku")
-        registry.register("Tetris", "features.minigame.tetris", "Tetris")
-        registry.register("Uno", "features.minigame.uno", "Uno")
-        return registry
 
     def _connect_to_game(self):
         """Ensure game instance is initialized for the current user."""
         if self.current_user and (not self.game or self.game.user != self.current_user):
-            self.game = Game(self.current_user)
+            self.game = Game(self.current_user, io=self.io)
 
     def register_user(self, username: str, password: str) -> bool:
         """Register and connect a new user."""
@@ -75,11 +77,11 @@ class GameFacade:
         if auth is not None:
             self.current_user = User.current_user
             self._connect_to_game()
-            print("\n💾 Checking for saved game...")
+            self.io.write("\n💾 Checking for saved game...")
             if self._load_game(username):
-                print(green("🔃 Previous game loaded!\n"))
+                self.io.write(green("🔃 Previous game loaded!\n"))
             else:
-                print(yellow("ℹ️ Starting fresh game.\n"))
+                self.io.write(yellow("ℹ️ Starting fresh game.\n"))
             return True
         return False
 
@@ -94,12 +96,12 @@ class GameFacade:
         if key not in User.users:
             return False
         user = User.users[key]
-        if not User._check_password(old_password, user.password):
+        if not user.auth_service.verify(old_password, user.password):
             return False
         if new_password == old_password:
             return False
         user.password = new_password
-        if not User._check_password(new_password, user.password):
+        if not user.auth_service.verify(new_password, user.password):
             return False
         game_state = {
             "user": user.create_memento(),
@@ -112,6 +114,7 @@ class GameFacade:
         self.save_manager.save_game(user.username, game_state)
         return True
 
+    # === Pet Management ===
     def create_pet(self) -> bool:
         """Create a pet via Game and attach to current user."""
         self._connect_to_game()
@@ -155,6 +158,7 @@ class GameFacade:
         else:
             return pet.elder()
 
+    # === Game State Management ===
     def get_current_time(self) -> str:
         """Return current in-game clock."""
         self._connect_to_game()
@@ -213,6 +217,7 @@ class GameFacade:
             return True
         return False
 
+    # === Private Methods ===
     def _load_all_users_from_saves(self):
         """Load all saved users into in-memory registry."""
         try:
