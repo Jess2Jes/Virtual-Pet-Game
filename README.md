@@ -1,19 +1,32 @@
+<div align="center">
+
 English | [Indonesian](READMEID.md) | [中文](READMECN.md)
+
+</div>
+
+<div align="center">
+
 # 🐾 Virtual Pet Game
 
-![Python](https://img.shields.io/badge/python-3.x-blue.svg)
-![Concepts](https://img.shields.io/badge/concepts-OOP_&_Inheritance-blueviolet.svg)
+</div>
 
-A captivating, console-based virtual pet simulation game built with Object-Oriented Programming in Python. Choose a pet, give it a name, and take on the responsibility of raising it from a tiny baby to a wise elder. Manage its stats, play with it, and keep it healthy and happy!
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.x-blue.svg" />
+  <img alt="Concepts" src="https://img.shields.io/badge/concepts-OOP_%26_Inheritance-blueviolet.svg" />
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-green.svg" />
+  <img alt="Status" src="https://img.shields.io/badge/status-Complete-brightgreen.svg" />
+</p>
+
+A console-based virtual pet simulation game built with Object-Oriented Programming (OOP) in Python. Choose a pet, name it, and take care of it as it grows through multiple life stages. Manage stats, play with it, and keep it healthy and happy.
 
 ---
 
 ## 🎮 Gameplay Demo
 
-The entire game runs in your terminal, featuring detailed status boxes and charming ASCII art for each pet's life stage.
+The entire game runs in your terminal, featuring detailed status boxes and ASCII art for each pet’s life stage.
 
 **Create your own unique pet:**
-```
+```text
 ───────────────────────────────── Create Your Own Pet ─────────────────────────────────────────
 Name your pet: Mochi
 ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -32,7 +45,7 @@ Mochi, a cat, has born!
 ```
 
 **Watch it grow and see its unique art for each life stage:**
-```
+```text
 ==================================================================================================
 
 /|、      ......
@@ -40,89 +53,112 @@ Mochi, a cat, has born!
  |、˜〵   ......
 じしˍ,)ノ
 ~~~~~~~~~~~~~~~
-
 ```
 
 **Keep track of its needs with a detailed status panel:**
 
-<img src="assets/pet_stats.png" alt="Pet Stats Panel">
+<img src="assets/pet_stats.png" alt="Pet Stats Panel" />
 
 ---
 
 ## ✨ Core Features
 
--   **Diverse & Evolving Pets**: Choose from 5 unique species: **Cat, Rabbit, Dinosaur, Dragon, and Pou**. Watch your pet grow through four distinct life stages (Baby, Teen, Adult, Elder), each with its own beautifully crafted ASCII art.
--   **Deep Pet Simulation**: Manage a complex set of stats including **Hunger, Sanity, Happiness, Health, Fat, and Energy**. Each stat affects your pet's mood and overall well-being. Neglecting their needs can lead to critical health!
--   **Interactive Care System**: Engage with your pet through a variety of actions:
-    -   **Feed**: Choose from a menu of foods with different effects.
-    -   **Bathe**: Keep your pet clean and sane with different soaps.
-    -   **Play**: Increase happiness with species-specific activities.
-    -   **Talk**: Interact with your pet to hear their thoughts or even get a joke!
-    -   **Walk**: Take your pet for a walk, but beware of random events that could be good or bad!
-    -   **Sleep**: Restore your pet's energy.
--   **In-Game Economy & Shop**: Earn in-game currency by playing with your pet. Spend it at the Pet Shop on a variety of foods, soaps, and powerful potions like the "Fat Burner" or "Adult Potion".
--   **User Authentication**: A secure user system allows players to register, log in, and change their passwords, with validation rules to ensure strong credentials.
--   **Time System**: The game tracks time passing with an in-game clock and day counter, and your pet's stats will passively change over time, requiring constant care.
+- **Diverse & Evolving Pets**: Choose from 5 species (**Cat, Rabbit, Dinosaur, Dragon, Pou**) and watch them grow through life stages (**Baby, Teen, Adult, Elder**) with unique ASCII art.
+- **Deep Pet Simulation**: Manage stats like **Hunger, Sanity, Happiness, Health, Fat, Energy**. Neglect can lead to critical conditions.
+- **Interactive Care Actions**:
+  - **Feed**, **Bathe**, **Play**, **Talk**, **Walk**, **Sleep**
+- **In-Game Economy & Shop**: Earn currency and buy foods, soaps, and special potions.
+- **User Authentication**: Register, log in, and change passwords with validation.
+- **Time System**: In-game time/day system with passive stat changes.
 
 ---
 
 ## 🛠️ Technical Showcase
 
-This project is a practical demonstration of key Object-Oriented Programming principles:
--   **Object-Oriented Programming (OOP)**: The entire project is built around classes like `VirtualPet`, `User`, `Game`, and `Shop`, creating a logical and scalable structure.
--   **Inheritance & Polymorphism**: Each animal (`Cat`, `Rabbit`, etc.) inherits from the base `VirtualPet` class. They share common methods (`feed`, `bath`) but have unique properties (like favorite food) and unique ASCII art displays (polymorphism).
--   **Class Methods & Properties**: The `User` class utilizes `@classmethod` for registration/login and `@property` for secure password and currency handling.
--   **Data Encapsulation**: Key attributes in classes like `User` are encapsulated to protect data integrity.
--   **Modular Design**: The code is cleanly separated into different files (`user.py`, `pet.py`, `game.py`, etc.), each with a single responsibility, making the project easy to maintain and understand.
+- **OOP Design**: Built around core modules (`game`, `pet`, `user`, `shop`).
+- **Inheritance & Polymorphism**: Species classes inherit from a base pet model and implement unique behaviors/art.
+- **Modular Codebase**: Features and utilities are separated into focused files and folders.
 
 ---
 
-## 🏛️ Architecture & Class Diagram
-
-The game's architecture is centered around the `VirtualPet` base class, with specialized animal classes inheriting from it. The `Main` class orchestrates the game flow, utilizing `User`, `Game`, and `Shop` objects to manage the overall experience.
-
-<img src="docs/Class-Diagram.png">
-
-
 ## 🚀 Getting Started
-
-No special libraries are needed to run this game, just a standard Python installation.
 
 ### Prerequisites
 - Python 3.x
 
 ### Installation & Running
-1.  Clone or download the repository.
-    ```bash
-    git clone [https://github.com/Jess2Jes/Virtual-Pet-Game.git](https://github.com/Jess2Jes/Virtual-Pet-Game.git)
-    cd Virtual-Pet-Game
-    ```
-2.  Run the `main.py` file from your terminal.
-    ```bash
-    python main.py
-    ```
-3.  Follow the on-screen instructions to register a user and start playing!
+1. Clone the repo
+```bash
+git clone https://github.com/Jess2Jes/Virtual-Pet-Game.git
+cd Virtual-Pet-Game
+```
+
+2. Run the game
+```bash
+python main.py
+```
+
+3. Follow the prompts to register and start playing.
 
 ---
+
 ## 📂 Project Structure
-- `main.py` – The main entry point, handles menus and game state.
-- `game.py` – Manages the core gameplay loop and pet interactions.
-- `pet.py` – Defines the base `VirtualPet` class, stats, and core logic.
-- `animal.py` – Contains the specific animal subclasses with their unique ASCII art.
-- `formatter.py` – A utility class to create the formatted status box UI.
-- `shop.py` – Contains the `Shop` class, item catalogs, and purchase logic.
-- `user.py` – Handles user registration, authentication, currency, and pet ownership.
+
+```bash
+Virtual-Pet-Game/
+├── assets/
+│   └── pet_stats.png
+├── constants/
+│   ├── arts/
+│   │   ├── cat.py
+│   │   ├── dino.py
+│   │   ├── dragon.py
+│   │   ├── pou.py
+│   │   ├── rabbits.py
+│   │   └── animalsArt.py
+│   └── configs.py
+├── datas/
+│   ├── conversations.json
+│   ├── jokes.json
+│   └── words.txt
+├── docs/
+├── features/
+│   ├── minigame/
+│   ├── animal.py
+│   ├── game.py
+│   ├── memento.py
+│   ├── pet.py
+│   ├── save_manager.py
+│   ├── shop.py
+│   └── user.py
+├── program_testing/
+├── saves/
+│   └── player_saves.json
+├── utils/
+├── main.py
+├── README.md
+├── READMEID.md
+├── READMECN.md
+└── LICENSE
+```
+
+> Folder/filename notes:
+> - `constants/arts/` contains species ASCII art modules.
+> - `datas/` contains game text content (conversations, jokes, words).
+> - `features/` contains the main game logic modules.
 
 ---
+
 ## 🗺️ Roadmap
 
--   **Persistence**: Save/load game state for users and their pets (using JSON, pickle, or a database).
--   **GUI Implementation**: Port the game to a graphical interface using a library like Tkinter or PyQT.
--   **More Content**: Add more animal types, items, and random events.
--   **Mini-Games**: Introduce interactive mini-games to earn currency and boost stats.
--   **Testing**: Implement unit tests to ensure code quality and prevent bugs.
+- **Persistence**: Improve save/load system (or migrate to SQLite).
+- **GUI Implementation**: Build a graphical version (Tkinter / PyQT).
+- **More Content**: More species, items, and random events.
+- **Mini-Games**: Expand mini-games and rewards.
+- **Testing**: Add unit tests and CI.
 
 ---
+
 ## 👥 Author & Contributors
 
 <table border="0" cellspacing="10" cellpadding="5">
@@ -150,3 +186,9 @@ No special libraries are needed to run this game, just a standard Python install
     </td>
   </tr>
 </table>
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License. See [`LICENSE`](LICENSE) for details.

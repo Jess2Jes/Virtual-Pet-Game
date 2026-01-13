@@ -32,3 +32,6 @@ saves/
 dist/
 build/
 *.egg-info/
+
+# pytest
+.pytest_cache/
