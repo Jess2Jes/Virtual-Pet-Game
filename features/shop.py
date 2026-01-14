@@ -1,14 +1,10 @@
 from typing import List, Tuple
 import asyncio
-from colorama import init
-
 from utils.formatter import clear
 from utils.loading import loading_bar
 from .user import User
 from constants.configs import LINE, SOAP_DEF, FOOD_DEF, POTION_DEF, NO_STOCK_MSG
 from utils.colorize import red, green
-
-init(autoreset=True)
 
 
 
@@ -64,66 +60,43 @@ class Shop:
             print(f"🐼 : Your current currency: Rp. {money}")
         print(red("🐼 : You are broke... 💸") if money < 5000 else green("🐼 : You still have lots... 💰"))
         print(LINE + "\n")
-
-    def _list_food_items(self) -> List[Tuple[str, str, int, int, int]]:
-        """Return a list of tuples describing available food items (name, emoji, price, qty, index)."""
-        inv = self.user.inventory["food"]
+        
+    def _list_items(self, category: str, definition: dict) -> List[Tuple[str, str, int, int, int]]:
+        """
+        Return a list of tuples describing available items in the given category.
+        
+        Args:
+            category: The internal category key (e.g., "food").
+            definition: The item definition dictionary for the category.
+        
+        Returns : 
+            A list of tuples (name, emoji, price, qty, index) for each item.
+        """
+        inv = self.user.inventory[category]
         items: List[Tuple[str, str, int, int, int]] = []
-        for i, (name, data) in enumerate(FOOD_DEF.items(), start=1):
+        for i, (name, data) in enumerate(definition.items(), start=1):
             emoji = data["emoji"]
             price = int(data["price"])
             qty = inv.get(name, 0)
             items.append((name, emoji, price, qty, i))
         return items
-
-    def _list_soap_items(self) -> List[Tuple[str, str, int, int, int]]:
-        """Return a list of soap items (name, emoji, price, qty, index)."""
-        inv = self.user.inventory["soap"]
-        items: List[Tuple[str, str, int, int, int]] = []
-        for i, (name, data) in enumerate(SOAP_DEF.items(), start=1):
-            emoji = data["emoji"]
-            price = int(data["price"])
-            qty = inv.get(name, 0)
-            items.append((name, emoji, price, qty, i))
-        return items
-
-    def _list_potion_items(self) -> List[Tuple[str, str, int, int, int]]:
-        """Return a list of potion items (name, emoji, price, qty, index)."""
-        inv = self.user.inventory["potion"]
-        items: List[Tuple[str, str, int, int, int]] = []
-        for i, (name, data) in enumerate(POTION_DEF.items(), start=1):
-            emoji = data["emoji"]
-            price = int(data["price"])
-            qty = inv.get(name, 0)
-            items.append((name, emoji, price, qty, i))
-        return items
-
-    def catalog_food(self) -> None:
-        """Print the formatted food catalog to the console."""
+    
+    def catalog_items(self, title: str, category: str, item_def) -> None:
+        """
+        Print the formatted catalog for the given category to the console.
+        
+        Args:
+            title: The display title for the category (e.g., "FOOD").
+            category: The internal category key (e.g., "food").
+            item_def: The item definition dictionary for the category.
+        
+        Returns:
+            None
+        """
         print(LINE)
-        print("FOOD CATALOG")
+        print(f"{title} CATALOG")
         print(LINE)
-        for name, emoji, price, qty, i in self._list_food_items():
-            stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK_MSG})"
-            print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
-        print(LINE + "\n")
-
-    def catalog_soap(self) -> None:
-        """Print the formatted soap catalog to the console."""
-        print(LINE)
-        print("SOAP CATALOG")
-        print(LINE)
-        for name, emoji, price, qty, i in self._list_soap_items():
-            stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK_MSG})"
-            print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
-        print(LINE + "\n")
-
-    def catalog_potion(self) -> None:
-        """Print the formatted potion catalog to the console."""
-        print(LINE)
-        print("POTION CATALOG")
-        print(LINE)
-        for name, emoji, price, qty, i in self._list_potion_items():
+        for name, emoji, price, qty, i in self._list_items(category, item_def):
             stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK_MSG})"
             print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
         print(LINE + "\n")
@@ -136,7 +109,6 @@ class Shop:
         """
         print(LINE)
         print("🐼 : Hello, my lovely customer, welcome to our store!")
-        asyncio.run(loading_bar())
         print("\n🐼 : What do you want to buy?")
         print(LINE)
         print("1. Food")
@@ -151,15 +123,15 @@ class Shop:
         print()
 
         if cat == 1:
-            self.catalog_food()
+            self.catalog_items("FOOD", "food", FOOD_DEF)
             idx = self._input_int("🐼 : Choose food number: ")
             return "food", idx
         elif cat == 2:
-            self.catalog_soap()
+            self.catalog_items("SOAP", "soap", SOAP_DEF)
             idx = self._input_int("🐼 : Choose soap number: ")
             return "soap", idx
         else:
-            self.catalog_potion()
+            self.catalog_items("POTION", "potion", POTION_DEF)
             idx = self._input_int("🐼 : Choose potion number: ")
             return "potion", idx
 
@@ -173,12 +145,12 @@ class Shop:
             return None
 
         if category == "food":
-            items = self._list_food_items()
+            items = self._list_items("food", FOOD_DEF)
         elif category == "soap":
-            items = self._list_soap_items()
+            items = self._list_items("soap", SOAP_DEF)
         else:
-            items = self._list_potion_items()
-
+            items = self._list_items("potion", POTION_DEF)
+            
         if not (1 <= idx <= len(items)):
             print(red("\n🐼 : Invalid item number."))
             return None

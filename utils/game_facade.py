@@ -1,18 +1,18 @@
-"""Facade orchestrating game subsystems with a registry-based minigame factory.
-
+"""
+Facade orchestrating game subsystems with a registry-based minigame factory.
 """
 
 import datetime
 from importlib import import_module
 from typing import Callable, Dict, Type
-
 from features.shop import Shop
 from features.game import Game, ConsoleIO, OutputPort
 from features.save_manager import SaveManager
 from features.user import User
-from utils.colorize import green, yellow
-from constants.configs import GAME_LIST, MINIGAME_SPECS
-
+from utils.colorize import green, red, yellow
+from constants.configs import GAME_LIST, MINIGAME_SPECS, VALID_PASSWORD
+from repositories.user_repository import UserRepository
+import re
 
 class MinigameRegistry:
     """Registry/factory for minigames to decouple facade from concrete imports."""
@@ -52,10 +52,15 @@ class GameFacade:
     def __init__(self, io: OutputPort | None = None):
         self.io: OutputPort = io or ConsoleIO()
         self.game = None
-        self.current_user = User.current_user
-        self.save_manager = SaveManager.get_instance()
+        self.user_repo = UserRepository()
+        self.current_user = None
         self._minigame_registry = MinigameRegistry.from_specs(MINIGAME_SPECS)
+        self.save_manager = SaveManager.get_instance()
         self._load_all_users_from_saves()
+        
+    def get_user_count(self) -> int:
+        """Return the total number of registered users."""
+        return len(self.user_repo.get_all())
 
     def _connect_to_game(self):
         """Ensure game instance is initialized for the current user."""
@@ -64,38 +69,71 @@ class GameFacade:
 
     def register_user(self, username: str, password: str) -> bool:
         """Register and connect a new user."""
-        auth = User.register(username, password)
-        if auth is not None:
-            self.current_user = User.current_user
-            self._connect_to_game()
-            return True
-        return False
+        
+        if self.user_repo.exists(username):
+            print(red("This username has already existed!\n"))
+            return False
+
+        if username.strip().lower() in password.strip().lower():
+             print(red("Password cannot be the same as username!\n"))
+             return False
+        
+        if not re.match(VALID_PASSWORD, password):
+            print(red("Password is too weak!\n"))
+            print(yellow("Password must contain:"))
+            print(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
+            return False
+
+        new_user = User(username, password)
+        self.user_repo.add(new_user)
+        
+        initial_state = {
+            "user": new_user.create_memento(),
+            "game": { "day": 0, "spend": 0, "clock": 8 }
+        }
+        
+        self.save_manager.save_game(username, initial_state)
+        self.current_user = new_user
+        print(green(f"User {username} registered successfully!\n"))
+    
+        self._connect_to_game()
+        return True
 
     def login_user(self, username: str, password: str) -> bool:
         """Login flow with save loading."""
-        auth = User.login(username, password)
-        if auth is not None:
-            self.current_user = User.current_user
-            self._connect_to_game()
-            self.io.write("\n💾 Checking for saved game...")
-            if self._load_game(username):
-                self.io.write(green("🔃 Previous game loaded!\n"))
-            else:
-                self.io.write(yellow("ℹ️ Starting fresh game.\n"))
-            return True
-        return False
+        user = self.user_repo.get_by_username(username)
+        
+        if not user:
+            print(red("User not found!\n"))
+            return False
+
+        if not user.auth_service.verify(password, user.password):
+            print(red("Wrong password!\n"))
+            return False
+
+        self.current_user = user
+        print(green(f"Welcome back, {username}!\n"))
+        
+        self._connect_to_game()
+        
+        self.io.write("\n💾 Checking for saved game...")
+        if self._load_game(username):
+            self.io.write(green("🔃 Previous game loaded!\n"))
+        else:
+            self.io.write(yellow("ℹ️ Starting fresh game.\n"))
+        return True
 
     def logout_user(self) -> None:
         """Logout current user."""
-        User._logout()
-        self.current_user = User.current_user
+        self.current_user = None
+        print(green("Logged out successfully!\n"))
 
     def change_password(self, username: str, old_password: str, new_password: str) -> bool:
         """Change user password and persist game state."""
-        key = username.casefold()
-        if key not in User.users:
+        user = self.user_repo.get_by_username(username)
+        
+        if not user:
             return False
-        user = User.users[key]
         if not user.auth_service.verify(old_password, user.password):
             return False
         if new_password == old_password:
@@ -106,15 +144,14 @@ class GameFacade:
         game_state = {
             "user": user.create_memento(),
             "game": {
-                "day": self.game.day,
-                "spend": self.game.spend,
-                "clock": self.game.clock,
+                "day": self.game.day if self.game else 0,
+                "spend": self.game.spend if self.game else 0,
+                "clock": self.game.clock if self.game else 8,
             },
         }
         self.save_manager.save_game(user.username, game_state)
         return True
 
-    # === Pet Management ===
     def create_pet(self) -> bool:
         """Create a pet via Game and attach to current user."""
         self._connect_to_game()
@@ -217,21 +254,20 @@ class GameFacade:
             return True
         return False
 
-    # === Private Methods ===
     def _load_all_users_from_saves(self):
-        """Load all saved users into in-memory registry."""
+        """Populate the Repository from the SaveManager."""
         try:
             all_saves = self.save_manager._load_all_saves()
         except Exception:
             all_saves = {}
+            
         for username, save_data in all_saves.items():
-            key = username.casefold()
-            if key not in User.users:
+            if not self.user_repo.exists(username):
                 user_data = save_data.get("user", {})
                 password_hash = user_data.get("password", "")
                 user = User(username, password_hash)
                 user.restore_from_memento(user_data)
-                User.users[key] = user
+                self.user_repo.add(user)
 
     def _load_game(self, username) -> bool:
         """Load game state for a username."""

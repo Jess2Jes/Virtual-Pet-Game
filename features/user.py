@@ -1,17 +1,14 @@
-"""User domain model with injectable auth service and pet factory for restoration.
-
 """
-
+User domain model with injectable auth service and pet factory for restoration.
+"""
 import math
 import re
 import bcrypt
-from typing import Dict, Any, Optional, Protocol
+from typing import Dict, Any, Protocol
 from random import randrange
 from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF, VALID_PASSWORD
-from colorama import init
-from utils.colorize import red, yellow, green
+from utils.colorize import red, yellow
 
-init(autoreset=True)
 
 
 class AuthService(Protocol):
@@ -53,10 +50,11 @@ class DefaultPetFactory:
 
 
 class User:
-    """Represents a player/account with inventory, pets, and profile data."""
-    users: Dict[str, "User"] = {}
-    current_user: Optional["User"] = None
-
+    """
+    Represents a player/account.
+    PURE ENTITY: No static lists or database logic here.
+    """
+    
     def __init__(
         self,
         username: str,
@@ -127,53 +125,6 @@ class User:
         if self.has_item(category, name, amount):
             self.inventory[category][name] -= amount
             return True
-        return False
-
-    @classmethod
-    def register(cls, username: str, password: str) -> Optional[int]:
-        print()
-        key = username.casefold()
-
-        if key in cls.users:
-            print(red("This username has already existed!\n"))
-            return None
-        if username.strip().lower() in password.strip().lower():
-            print(red("Password cannot be the same as username!\n"))
-            return None
-
-        if not re.match(VALID_PASSWORD, password):
-            print(red("Password is too weak!\n"))
-            print(yellow("Password must contain:"))
-            print(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
-            return None
-
-        new_user = cls(username, password)
-        cls.users[key] = new_user
-        cls.current_user = new_user
-        print(green(f"User {username} registered successfully.\n"))
-        return 1
-
-    @classmethod
-    def login(cls, username: str, password: str) -> Optional[int]:
-        print()
-        key = username.casefold()
-        if key not in cls.users:
-            print(red("User not found!\n"))
-            return None
-
-        user = cls.users[key]
-        if not user.auth_service.verify(password, user.__password_hash):
-            print(red("Wrong password!\n"))
-            return None
-
-        cls.current_user = user
-        print(green(f"Welcome back, {username}!\n"))
-        return 1
-
-    @classmethod
-    def _logout(cls) -> bool:
-        cls.current_user = None
-        print()
         return False
 
     def create_memento(self) -> Dict[str, Any]:

@@ -2,14 +2,9 @@
 
 import time
 from random import shuffle, choice
-
-from colorama import init
-
 from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from constants.configs import LINE, GRID_LINE
 from utils.colorize import red, green, blue, yellow
-
-init(autoreset=True)
 
 
 class Sudoku(MinigameStrategy):

@@ -3,15 +3,10 @@
 import time
 from random import randint, choice
 from typing import Any
-
-from colorama import init
-
 from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from utils.colorize import red, green
 from constants.configs import LINE
 from features.user import User
-
-init(autoreset=True)
 
 
 class BattleContest(MinigameStrategy):

@@ -2,15 +2,10 @@
 
 import time
 from random import choice, randint, random
-
-from colorama import init
-
 from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from constants.configs import LINE
 from utils.formatter import clear
 from utils.colorize import green
-
-init(autoreset=True)
 
 
 class MemoryMatch(MinigameStrategy):

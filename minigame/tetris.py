@@ -5,15 +5,9 @@ import logging
 import time
 from random import choice
 from typing import Dict
-
-from colorama import init
-
 from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from utils.colorize import green, yellow
 from constants.configs import LINE
-
-init(autoreset=True)
-
 
 class Tetris(MinigameStrategy):
     """A simple tetris minigame where logic-based rewards are determined."""
