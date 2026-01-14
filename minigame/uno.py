@@ -2,16 +2,10 @@
 
 import time
 from random import choice, shuffle
-
-from colorama import init
-
 from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from constants.configs import LINE, UnoConstants as UC
 from features.user import User
 from utils.colorize import red, green, blue
-
-init(autoreset=True)
-
 
 class Uno(MinigameStrategy):
     """A simple UNO card minigame to play with your little pet."""

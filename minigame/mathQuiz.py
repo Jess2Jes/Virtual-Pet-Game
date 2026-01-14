@@ -3,14 +3,9 @@
 import time
 from random import randint, choice
 from typing import Any, Dict
-
-from colorama import init
-
 from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
 from utils.colorize import yellow
 from constants.configs import LINE, ARITHMETIC_OPERATIONS
-
-init(autoreset=True)
 
 
 class MathQuiz(MinigameStrategy):

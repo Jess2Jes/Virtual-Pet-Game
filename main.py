@@ -2,8 +2,7 @@ import sys
 import asyncio
 from colorama import init
 from constants.configs import LINE, USERNAME_INPUTTING, PASSWORD_INPUTTING
-from features.user import User
-from utils.gameFacade import GameFacade
+from utils.game_facade import GameFacade
 from utils.colorize import (
     cyan, yellow, red, magenta, green, reset_color
 )
@@ -316,7 +315,7 @@ class Main:
             print("Invalid choice.")
             return False
 
-        if int(idx) == 4 and len(User.users) < 2:
+        if int(idx) == 4 and self.facade.get_user_count() < 2:
             print(red("\nNo other players available right now!"))
             return True
 
@@ -336,7 +335,7 @@ class Main:
             3: lambda: self._create_pet(),
             4: lambda: self._interact_with_pet(),
             5: lambda: self._show_pet_stats(),
-            6: lambda: asyncio.run(self._show_pet_stage()),
+            6: lambda: self._show_pet_stage(),
             7: lambda: self._go_to_shop(),
             8: lambda: self._play_minigame_flow(),
             9: lambda: self.facade.save_game(),

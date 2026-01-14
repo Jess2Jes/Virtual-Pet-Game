@@ -6,16 +6,11 @@ import datetime
 import json
 from random import randrange, choice as ch
 from typing import Protocol, Iterable
-
-from colorama import init
-
 from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
 from .user import User
 from constants.configs import LINE, NO_STOCK_MSG, FOOD_DEF, SOAP_DEF, POTION_DEF
 from utils.formatter import Formatter
 from utils.colorize import red, green, yellow, cyan, reset_color
-
-init(autoreset=True)
 
 
 class InputPort(Protocol):
