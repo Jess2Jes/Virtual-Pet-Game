@@ -1,3 +1,4 @@
+# features/pet.py
 from abc import ABC, abstractmethod
 from random import randrange
 from utils.formatter import Formatter
@@ -7,33 +8,47 @@ from utils.ports import ConsoleIO, OutputPort
 
 """
 pet.py
-
-Defines the pet domain model for the Virtual Pet Game.
-
-This module provides:
-- An AbstractPet interface describing the public contract for all pet types.
-- A concrete VirtualPet implementation with default stats, item definitions
-  (food, soap, potion), and behaviors (feed, play, bath, health care, sleep, etc).
-
-Notes:
-- The VirtualPet class stores simple integer stats (0..100) and provides helper
-  methods to render upgrade/status summaries using the Formatter utility.
-- Potion/food/soap definitions are provided as class-level dictionaries to be
-  referenced by shop/inventory code.
-- This file focuses on behavior and in-memory state; persistence and user-facing
-  interactions are managed elsewhere in the project.
+Capabilities are split into granular interfaces.
+Each capability interface defines specific actions that a pet can perform.
+This modular design allows for flexible and maintainable pet entities
+with distinct life capabilities.
 """
 
 
-# Abstract Class
-class AbstractPet(ABC):
-    """
-    Abstract base class that defines the minimal pet interface.
+class Feedable(ABC):
+    @abstractmethod
+    def feed(self, food: str) -> bool: ...
 
-    Concrete pet classes must implement methods for mood/summary reporting and
-    actions that change internal stats (play, feed, bath, health care, sleep).
-    """
+class Playable(ABC):
+    @abstractmethod
+    def play(self) -> None: ...
 
+class Batheable(ABC):
+    @abstractmethod
+    def bath(self, soap: str) -> bool: ...
+
+class Treatable(ABC):
+    @abstractmethod
+    def health_care(self, potion: str) -> bool: ...
+
+class Sleepable(ABC):
+    @abstractmethod
+    def sleep(self, hours: int) -> None: ...
+
+class Observable(ABC):
+    """Interface for viewing pet status."""
+    @abstractmethod
+    def get_mood_summary(self) -> str: ...
+    @abstractmethod
+    def get_health_summary(self) -> str: ...
+    @abstractmethod
+    def get_age_summary(self) -> str: ...
+
+
+class AbstractPet(Feedable, Playable, Batheable, Treatable, Sleepable, Observable, ABC):
+    """
+    The cohesive Pet entity that implements all life capabilities.
+    """
     def __init__(
         self,
         name: str,
@@ -46,59 +61,18 @@ class AbstractPet(ABC):
         self.type = species
         self.io = io or ConsoleIO()
 
-
-    @abstractmethod
-    def get_mood(self) -> str:
-        """Return a short string describing the pet's mood (e.g., 'Happy', 'Sad')."""
-
-    @abstractmethod
-    def get_summary(self) -> str:
-        """Return a short health summary (e.g., 'Healthy', 'Critical')."""
-
-    @abstractmethod
-    def get_age_summary(self) -> str:
-        """Return a life stage summary (e.g., 'Baby', 'Adult')."""
-
     @abstractmethod
     def limit_stat(self) -> None:
-        """Clamp stats to allowed ranges (0..100 etc.)."""
+        """Clamp stats to allowed ranges."""
 
     @abstractmethod
     def time_past(self) -> None:
-        """Advance internal time and change stats appropriately."""
-
-    @abstractmethod
-    def play(self) -> None:
-        """Play with the pet; modify stats accordingly."""
-
-    @abstractmethod
-    def feed(self, food: str) -> bool:
-        """Feed the pet with the given food key; return True if consumed."""
-
-    @abstractmethod
-    def bath(self, soap: str) -> bool:
-        """Bathe the pet with the given soap key; return True if applied."""
-
-    @abstractmethod
-    def health_care(self, potion: str) -> bool:
-        """Apply a potion to the pet; return True if used."""
-
-    @abstractmethod
-    def sleep(self, hours: int) -> None:
-        """Make the pet sleep for a number of hours; modify stats."""
+        """Advance internal time."""
 
 
 class VirtualPet(AbstractPet):
     """
-    Default in-game pet implementation used by the majority of gameplay flows.
-
-    Attributes:
-      - FOOD_DEF / SOAP_DEF / POTION_DEF: class-level definitions for items available
-        in the shop and inventory. Each entry includes emoji, stat deltas and price.
-      - name, age, type: identity fields.
-      - happiness, hunger, sanity, health, fat, energy: core integer stats (roughly 0..100).
-      - generosity: small counter used by conversation logic to limit gifts.
-      - format: Formatter instance used to render status boxes for the CLI.
+    Default in-game pet implementation.
     """
 
     def __init__(
@@ -108,11 +82,6 @@ class VirtualPet(AbstractPet):
         species: str = "Pet",
         io: OutputPort | None = None
     ) -> None:
-        """
-        Initialize a VirtualPet with randomized baseline stats.
-
-        The randomized ranges are modest to simulate newly-created pets having variable starting values.
-        """
         super().__init__(name, age, species, io)
         self.happiness: int = randrange(0, 50)
         self.hunger: int = randrange(0, 50)
@@ -122,13 +91,10 @@ class VirtualPet(AbstractPet):
         self.energy: int = randrange(0, 50)
         self.generosity = 0
         self.format = Formatter()
-        self.io = io or ConsoleIO()
 
-    def get_mood(self) -> str:
+    def get_mood_summary(self) -> str:
         """
-        Return a short textual mood description derived from happiness and energy.
-
-        Note: the decision thresholds are intentionally simple and tuned for game feel.
+        Get the current mood of the pet based on happiness and energy levels.
         """
         if self.happiness > 70 and self.energy > 50:
             return "Happy"
@@ -139,46 +105,41 @@ class VirtualPet(AbstractPet):
         else:
             return "Neutral"
 
-    def get_summary(self) -> str:
-        """Return a short health summary string derived from the health stat."""
-        if self.health > 80:
+    def get_health_summary(self) -> str:
+        """
+        Get a summary of the pet's health status.
+        """
+        if self.health > 80: 
             return "Healthy"
-        elif self.health > 50:
+        elif self.health > 50: 
             return "Okay"
-        elif self.health > 20:
+        elif self.health > 20: 
             return "Weak"
-        elif self.health > 0:
+        elif self.health > 0: 
             return "Critical"
         else:
             return "Dead"
 
     def get_age_summary(self) -> str:
-        """Return a textual life stage based on the age value."""
-        if self.age < 1:
+        """
+        Get the age category of the pet.
+        """
+        if self.age < 1: 
             return "Baby"
-        elif self.age < 3:
+        elif self.age < 3: 
             return "Teen"
-        elif self.age < 10:
+        elif self.age < 10: 
             return "Adult"
-        else:
+        else: 
             return "Elder"
 
     def limit_stat(self) -> None:
-        """
-        Clamp core stats to sensible bounds.
-
-        Ensures integer stats remain within 0..100 and age is non-negative.
-        """
         for attr in ("sanity", "fat", "hunger", "happiness", "energy", "health"):
             val = int(getattr(self, attr))
             setattr(self, attr, max(0, min(100, val)))
         self.age = max(0.0, float(self.age))
 
     def time_past(self) -> None:
-        """
-        Simulate the passage of (game) time: decrease hunger and potentially happiness/health,
-        then age the pet slightly and clamp stats.
-        """
         self.hunger -= 10
         if self.hunger < 50:
             self.happiness -= 5
@@ -188,51 +149,42 @@ class VirtualPet(AbstractPet):
         self.limit_stat()
 
     def get_age(self) -> float:
-        """Return the pet's age (float, game-specific units)."""
         return self.age
 
-    # The following helper methods produce formatted upgrade/status boxes
     def food_upgrade_stats(self) -> str:
-        food_stats = {
-            "fat": self.fat,
-            "hunger": self.hunger,
-            "happiness": self.happiness,
-        }
-        return self.format.format_upgrade_stats(self, food_stats)
+        """
+        Get formatted upgrade stats after feeding.
+        """
+        return self.format.format_upgrade_stats(self, {"fat": self.fat, "hunger": self.hunger, "happiness": self.happiness})
 
     def bath_upgrade_stats(self) -> str:
-        bath_stats = {
-            "sanity": self.sanity,
-            "happiness": self.happiness,
-        }
-        return self.format.format_upgrade_stats(self, bath_stats)
+        """
+        Get formatted upgrade stats after bathing.
+        """
+        return self.format.format_upgrade_stats(self, {"sanity": self.sanity, "happiness": self.happiness})
 
     def potion_upgrade_stats(self) -> str:
-        potion_stats = {
-            "fat": self.fat,
-            "health": self.health,
-            "energy": self.energy,
-            "age": self.age,
-        }
-        return self.format.format_upgrade_stats(self, potion_stats)
+        """ 
+        Get formatted upgrade stats after health care.
+        """
+        return self.format.format_upgrade_stats(self, {"fat": self.fat, "health": self.health, "energy": self.energy, "age": self.age})
 
     def sleep_upgrade_stats(self) -> str:
-        sleep_stats = {
-            "energy": self.fat,
-            "hunger": self.hunger,
-        }
-        return self.format.format_upgrade_stats(self, sleep_stats)
+        """ 
+        Get formatted upgrade stats after sleeping.
+        """
+        return self.format.format_upgrade_stats(self, {"energy": self.energy, "hunger": self.hunger}) # Note: logic copied from original, check if 'fat' or 'energy' is intended for values
 
     def joy_upgrade_stats(self) -> str:
-        play_stats = {
-            "happiness": self.happiness,
-            "hunger": self.hunger,
-            "energy": self.energy,
-        }
-        return self.format.format_upgrade_stats(self, play_stats)
+        """ 
+        Get formatted upgrade stats after playing.
+        """
+        return self.format.format_upgrade_stats(self, {"happiness": self.happiness, "hunger": self.hunger, "energy": self.energy})
 
     def play(self) -> None:
-        """Increase happiness and reduce hunger/energy as a result of playing."""
+        """ 
+        Play with the pet to increase happiness.
+        """
         self.happiness += 10
         self.hunger -= 5
         self.energy -= 5
@@ -240,10 +192,7 @@ class VirtualPet(AbstractPet):
 
     def feed(self, food: str) -> bool:
         """
-        Consume a food item and apply its stat changes.
-
-        Returns:
-            True if the pet consumed the food; False if it refused (e.g., already full).
+        Feed the pet with specified food item.
         """
         data = FOOD_DEF[food]
         emoji = data["emoji"]
@@ -262,17 +211,12 @@ class VirtualPet(AbstractPet):
         self.hunger += hunger_change
         self.happiness += happiness_change
         self.limit_stat()
-
         self.io.write(yellow(self.food_upgrade_stats()))
-
         return True
 
     def bath(self, soap: str) -> bool:
         """
-        Apply a soap/bath action and modify sanity/happiness.
-
-        Returns:
-            True if bathing was applied; False if pet already had full sanity.
+        Bathe the pet with specified soap item.
         """
         data = SOAP_DEF[soap]
         emoji = data["emoji"]
@@ -286,21 +230,14 @@ class VirtualPet(AbstractPet):
         self.io.write("\n" + "="*101)
         self.sanity += sanity_change
         self.happiness += happiness_change
-
         self.io.write(green(f"\n{self.name} has been bathed 🛁 with '{soap}' {emoji}."))
-
         self.limit_stat()
-
         self.io.write(yellow(self.bath_upgrade_stats()))
         return True
 
     def health_care(self, potion: str) -> bool:
         """
-        Apply a potion to the pet if requirements are met.
-
-
-        Returns:
-            True if potion was applied and caused a change, False otherwise.
+        Apply health care to the pet with specified potion item.
         """
         data = POTION_DEF[potion]
         emoji = data["emoji"]
@@ -330,17 +267,12 @@ class VirtualPet(AbstractPet):
             return False
 
         self.limit_stat()
-
         self.io.write(yellow(self.potion_upgrade_stats()))
-
         return True
 
     def sleep(self, hours: int) -> None:
         """
-        Put the pet to sleep for the specified number of hours.
-
-        This increases energy and reduces hunger proportionally to hours slept,
-        then clamps stats and self.io.writes an upgrade summary.
+        Allow the pet to sleep for a specified number of hours.
         """
         if self.energy >= 100:
             self.io.write(red(f"\n{self.name} is not tired yet! 😐\n"))
@@ -348,10 +280,7 @@ class VirtualPet(AbstractPet):
 
         self.energy += hours * 10
         self.hunger -= hours * 5
-
         self.limit_stat()
         self.io.write(green(f"\n{self.name} has slept for {hours} hours. 😴"))
-        self.io.write(f"{self.name}'s energy increased by {hours * 10}" \
-               f" and hunger decreased by {hours * 5}.")
-
+        self.io.write(f"{self.name}'s energy increased by {hours * 10} and hunger decreased by {hours * 5}.")
         self.io.write(yellow(self.sleep_upgrade_stats()))

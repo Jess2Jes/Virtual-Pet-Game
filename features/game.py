@@ -1,7 +1,7 @@
 """
 Game module: business logic for pet interactions with decoupled I/O and content loading.
 """
-from utils.ports import InputPort, OutputPort, ConsoleIO, ContentLoader, FileContentLoader
+from utils.ports import InputPort, OutputPort, ConsoleIO, ContentLoader
 import datetime
 import json
 from random import randrange, choice as ch
@@ -19,8 +19,8 @@ class Game:
     def __init__(
         self,
         user,
-        io: InputPort | OutputPort | None = None,
-        content_loader: ContentLoader | None = None,
+        io: InputPort | OutputPort,
+        content_loader: ContentLoader,
     ):
         self.animal_list = []
         self.clock = datetime.datetime.now().hour
@@ -31,7 +31,7 @@ class Game:
         self.conversations = []
         self.topics_used = []
         self.io: InputPort | OutputPort = io or ConsoleIO()
-        self.content_loader = content_loader or FileContentLoader()
+        self.content_loader = content_loader or ContentLoader()
         self.user = user
         self.load_jokes()
         self.load_conversations()
@@ -100,7 +100,7 @@ class Game:
             flag, name, species = self.create_name()
 
             if species and flag:
-                if not any(animal.name == name for animal in User.current_user.pets):
+                if not any(animal.name == name for animal in self.user.pets):
                     self.animal_list.append(species)
                     self.io.write(green(
                         f"\nCongratulations! You have successfully give birth to {name}, the {species.type}!"
