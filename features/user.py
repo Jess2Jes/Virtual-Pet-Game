@@ -9,8 +9,6 @@ from random import randrange
 from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF, VALID_PASSWORD
 from utils.colorize import red, yellow
 
-
-
 class AuthService(Protocol):
     """Authentication service abstraction."""
     def hash(self, password: str) -> str: ...
@@ -86,7 +84,7 @@ class User:
     @currency.setter
     def currency(self, value) -> None:
         if value < 0:
-            print(red("\nCurrency cannot be below 0!"))
+            raise ValueError("Currency cannot be negative.")
         else:
             self._currency = value
 

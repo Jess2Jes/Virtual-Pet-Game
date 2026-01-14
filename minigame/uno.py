@@ -2,7 +2,8 @@
 
 import time
 from random import choice, shuffle
-from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
+from .base_class import MinigameStrategy
+from utils.ports import ConsoleIO, InputPort, OutputPort
 from constants.configs import LINE, UnoConstants as UC
 from features.user import User
 from utils.colorize import red, green, blue

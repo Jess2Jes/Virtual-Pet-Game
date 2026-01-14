@@ -5,8 +5,7 @@ from utils.loading import loading_bar
 from .user import User
 from constants.configs import LINE, SOAP_DEF, FOOD_DEF, POTION_DEF, NO_STOCK_MSG
 from utils.colorize import red, green
-
-
+from utils.ports import OutputPort, InputPort, ConsoleIO
 
 """
 shop.py
@@ -31,35 +30,35 @@ class Shop:
     The Shop instance is constructed with a User object and operates on that user's
     currency and inventory.
     """
-    def __init__(self, user: User):
+    def __init__(self, user: User, io: InputPort | OutputPort = None):
         """
         Args:
             user: the User instance who is shopping.
         """
         self.user = user
+        self.io = io or ConsoleIO()
 
-    @staticmethod
-    def _input_int(prompt: str):
+    def _input_int(self, prompt: str):
         """
         Read an integer from stdin and return it; return None on invalid input.
 
         This central helper keeps input parsing consistent across the shop UI.
         """
         try:
-            return int(input(prompt))
+            return int(self.io.read(prompt))
         except ValueError:
             return None
 
     def show_currency(self) -> None:
-        """Print the user's current currency with a small friendly message."""
-        print(LINE)
+        """self.io.write the user's current currency with a small friendly message."""
+        self.io.write(LINE)
         money = self.user.currency
         if money >= 1000:
-            print(f"🐼 : Your current currency: Rp. {'{:,}'.format(money)}")
+            self.io.write(f"🐼 : Your current currency: Rp. {'{:,}'.format(money)}")
         else:
-            print(f"🐼 : Your current currency: Rp. {money}")
-        print(red("🐼 : You are broke... 💸") if money < 5000 else green("🐼 : You still have lots... 💰"))
-        print(LINE + "\n")
+            self.io.write(f"🐼 : Your current currency: Rp. {money}")
+        self.io.write(red("🐼 : You are broke... 💸") if money < 5000 else green("🐼 : You still have lots... 💰"))
+        self.io.write(LINE + "\n")
         
     def _list_items(self, category: str, definition: dict) -> List[Tuple[str, str, int, int, int]]:
         """
@@ -83,7 +82,7 @@ class Shop:
     
     def catalog_items(self, title: str, category: str, item_def) -> None:
         """
-        Print the formatted catalog for the given category to the console.
+        self.io.write the formatted catalog for the given category to the console.
         
         Args:
             title: The display title for the category (e.g., "FOOD").
@@ -93,13 +92,13 @@ class Shop:
         Returns:
             None
         """
-        print(LINE)
-        print(f"{title} CATALOG")
-        print(LINE)
+        self.io.write(LINE)
+        self.io.write(f"{title} CATALOG")
+        self.io.write(LINE)
         for name, emoji, price, qty, i in self._list_items(category, item_def):
             stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK_MSG})"
-            print(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
-        print(LINE + "\n")
+            self.io.write(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
+        self.io.write(LINE + "\n")
 
     def _buy_category_and_index(self) -> tuple[str | None, int | None]:
         """
@@ -107,20 +106,20 @@ class Shop:
         the category key plus the selected item index (1-based). Returns (None, None)
         on invalid selection.
         """
-        print(LINE)
-        print("🐼 : Hello, my lovely customer, welcome to our store!")
-        print("\n🐼 : What do you want to buy?")
-        print(LINE)
-        print("1. Food")
-        print("2. Soap")
-        print("3. Potion")
-        print(LINE)
+        self.io.write(LINE)
+        self.io.write("🐼 : Hello, my lovely customer, welcome to our store!")
+        self.io.write("\n🐼 : What do you want to buy?")
+        self.io.write(LINE)
+        self.io.write("1. Food")
+        self.io.write("2. Soap")
+        self.io.write("3. Potion")
+        self.io.write(LINE)
         cat = self._input_int("🐼 : Choose category (1-3): ")
         if cat not in (1, 2, 3):
-            print(red("\n🐼 : Please choose between 1-3 please..."))
+            self.io.write(red("\n🐼 : Please choose between 1-3 please..."))
             return None, None
 
-        print()
+        self.io.write()
 
         if cat == 1:
             self.catalog_items("FOOD", "food", FOOD_DEF)
@@ -152,7 +151,7 @@ class Shop:
             items = self._list_items("potion", POTION_DEF)
             
         if not (1 <= idx <= len(items)):
-            print(red("\n🐼 : Invalid item number."))
+            self.io.write(red("\n🐼 : Invalid item number."))
             return None
 
         return items[idx - 1][0]
@@ -188,7 +187,7 @@ class Shop:
         while True:
             amount = self._input_int("🐼 : How many do you want to buy? ")
             if amount is None or amount <= 0:
-                print(red("\n🐼 : Please input a positive number!"))
+                self.io.write(red("\n🐼 : Please input a positive number!"))
                 continue
             break
 
@@ -196,8 +195,8 @@ class Shop:
         total = price_per * amount
 
         if total > self.user.currency:
-            print(red(f"\n🐼 : Not enough amount to buy {name}!"))
-            print(f"🐼 : Needed: Rp. {'{:,}'.format(total)}, You have: Rp. {'{:,}'.format(self.user.currency)}\n")
+            self.io.write(red(f"\n🐼 : Not enough amount to buy {name}!"))
+            self.io.write(f"🐼 : Needed: Rp. {'{:,}'.format(total)}, You have: Rp. {'{:,}'.format(self.user.currency)}\n")
             return
 
         # Deduct currency and add items to inventory
@@ -213,15 +212,15 @@ class Shop:
             emoji = POTION_DEF[name]["emoji"]
         emoji = str(emoji)
 
-        print(f"\n🐼 : You bought {amount} {name} {emoji}! Fantastic!")
+        self.io.write(f"\n🐼 : You bought {amount} {name} {emoji}! Fantastic!")
         new_qty = self.user.inventory[category][name]
-        print(f"\n🐼 : Your current {name} {emoji} : {new_qty}")
+        self.io.write(f"\n🐼 : Your current {name} {emoji} : {new_qty}")
 
         money_left = self.user.currency
         if money_left >= 1000:
-            print(f"🐼 : Total money left: Rp. {'{:,}'.format(money_left)}\n")
+            self.io.write(f"🐼 : Total money left: Rp. {'{:,}'.format(money_left)}\n")
         else:
-            print(f"🐼 : Total money left: Rp. {money_left}\n")
+            self.io.write(f"🐼 : Total money left: Rp. {money_left}\n")
 
     def interact(self) -> None:
         """
@@ -232,22 +231,22 @@ class Shop:
          2 - Show Current Currency
          3 - Exit
         """
-        print("\n🐼 : Hi, I'm Po Ping. I'll be your shopping assistant for today!")
+        self.io.write("\n🐼 : Hi, I'm Po Ping. I'll be your shopping assistant for today!")
         asyncio.run(loading_bar())
         clear()
         while True:
-            print("\n🐼 : Here's list of options you can do!")
+            self.io.write("\n🐼 : Here's list of options you can do!")
             # There will also be a sell item menu in here soon!
             # You can also try to bargain here in the future updates!
-            print('='*120)
-            print("1. Buy Item")
-            print("2. Show Current Currency")
-            print("3. Exit")
-            print('='*120)
+            self.io.write('='*120)
+            self.io.write("1. Buy Item")
+            self.io.write("2. Show Current Currency")
+            self.io.write("3. Exit")
+            self.io.write('='*120)
 
             choice = self._input_int("🐼 : Choose (1-3): ")
             if choice is None:
-                print(red("\n🐼 : Please insert digit in choice input!"))
+                self.io.write(red("\n🐼 : Please insert digit in choice input!"))
                 continue
 
             actions = {
@@ -256,12 +255,12 @@ class Shop:
             }
 
             if choice == 3:
-                print("\n🐼 : Thank you for shopping. Wish you well!\n")
+                self.io.write("\n🐼 : Thank you for shopping. Wish you well!\n")
                 break
 
             action = actions.get(choice)
             if action:
-                print()
+                self.io.write("")
                 action()
             else:
-                print(red("\n🐼 : Please choose between 1-3 please..."))
+                self.io.write(red("\n🐼 : Please choose between 1-3 please..."))

@@ -12,13 +12,13 @@ GAME_LIST = ["Math Quiz", "Tic Tac Toe", "Memory Match",
             "Battle Contest", "Sudoku", "Tetris", "Uno"]
 
 MINIGAME_SPECS = {
-    "Math Quiz": {"module": "features.minigame.mathQuiz", "class": "MathQuiz"},
-    "Tic Tac Toe": {"module": "features.minigame.ticTacToe", "class": "TicTacToe"},
-    "Memory Match": {"module": "features.minigame.memoryMatch", "class": "MemoryMatch"},
-    "Battle Contest": {"module": "features.minigame.battleContest", "class": "BattleContest"},
-    "Sudoku": {"module": "features.minigame.sudoku", "class": "Sudoku"},
-    "Tetris": {"module": "features.minigame.tetris", "class": "Tetris"},
-    "Uno": {"module": "features.minigame.uno", "class": "Uno"},
+    "Math Quiz": {"module": "minigame.math_quiz", "class": "MathQuiz"},
+    "Tic Tac Toe": {"module": "minigame.tic_tac_toe", "class": "TicTacToe"},
+    "Memory Match": {"module": "minigame.memory_match", "class": "MemoryMatch"},
+    "Battle Contest": {"module": "minigame.battle_contest", "class": "BattleContest"},
+    "Sudoku": {"module": "minigame.sudoku", "class": "Sudoku"},
+    "Tetris": {"module": "minigame.tetris", "class": "Tetris"},
+    "Uno": {"module": "minigame.uno", "class": "Uno"},
 }
 
 FAT_BURNER = "Fat Burner"

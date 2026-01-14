@@ -6,8 +6,9 @@ import datetime
 from importlib import import_module
 from typing import Callable, Dict, Type
 from features.shop import Shop
-from features.game import Game, ConsoleIO, OutputPort
-from features.save_manager import SaveManager
+from features.game import Game
+from utils.ports import OutputPort, ConsoleIO
+from repositories.save_manager import SaveManager
 from features.user import User
 from utils.colorize import green, red, yellow
 from constants.configs import GAME_LIST, MINIGAME_SPECS, VALID_PASSWORD
@@ -23,19 +24,19 @@ class MinigameRegistry:
     def register(self, name: str, module_path: str, class_name: str) -> None:
         """Register a minigame by name with its module and class."""
 
-        def factory():
+        def factory(io : OutputPort = None):
             module = import_module(module_path)
             cls: Type = getattr(module, class_name)
-            return cls()
+            return cls(io=io)
 
         self._factories[name] = factory
 
-    def create(self, name: str):
+    def create(self, name: str, io: OutputPort = None) -> object:
         """Create a minigame instance by name."""
         factory = self._factories.get(name)
         if not factory:
             raise ValueError(f"Unknown minigame: {name}")
-        return factory()
+        return factory(io=io)
 
     @classmethod
     def from_specs(cls, specs: Dict[str, Dict[str, str]]) -> "MinigameRegistry":
@@ -71,17 +72,17 @@ class GameFacade:
         """Register and connect a new user."""
         
         if self.user_repo.exists(username):
-            print(red("This username has already existed!\n"))
+            self.io.write(red("This username has already existed!\n"))
             return False
 
         if username.strip().lower() in password.strip().lower():
-             print(red("Password cannot be the same as username!\n"))
+             self.io.write(red("Password cannot be the same as username!\n"))
              return False
         
         if not re.match(VALID_PASSWORD, password):
-            print(red("Password is too weak!\n"))
-            print(yellow("Password must contain:"))
-            print(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
+            self.io.write(red("Password is too weak!\n"))
+            self.io.write(yellow("Password must contain:"))
+            self.io.write(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
             return False
 
         new_user = User(username, password)
@@ -94,7 +95,7 @@ class GameFacade:
         
         self.save_manager.save_game(username, initial_state)
         self.current_user = new_user
-        print(green(f"User {username} registered successfully!\n"))
+        self.io.write(green(f"User {username} registered successfully!\n"))
     
         self._connect_to_game()
         return True
@@ -104,20 +105,20 @@ class GameFacade:
         user = self.user_repo.get_by_username(username)
         
         if not user:
-            print(red("User not found!\n"))
+            self.io.write(red("User not found!\n"))
             return False
 
         if not user.auth_service.verify(password, user.password):
-            print(red("Wrong password!\n"))
+            self.io.write(red("Wrong password!\n"))
             return False
 
         self.current_user = user
-        print(green(f"Welcome back, {username}!\n"))
+        self.io.write(green(f"Welcome back, {user.username}!\n"))
         
         self._connect_to_game()
         
         self.io.write("\n💾 Checking for saved game...")
-        if self._load_game(username):
+        if self._load_game(user.username):
             self.io.write(green("🔃 Previous game loaded!\n"))
         else:
             self.io.write(yellow("ℹ️ Starting fresh game.\n"))
@@ -126,7 +127,7 @@ class GameFacade:
     def logout_user(self) -> None:
         """Logout current user."""
         self.current_user = None
-        print(green("Logged out successfully!\n"))
+        self.io.write(green("Logged out successfully!\n"))
 
     def change_password(self, username: str, old_password: str, new_password: str) -> bool:
         """Change user password and persist game state."""
@@ -231,7 +232,7 @@ class GameFacade:
     def enter_shop(self) -> None:
         """Enter shop interaction."""
         if self.current_user:
-            shop = Shop(self.current_user)
+            shop = Shop(self.current_user, io=self.io)
             shop.interact()
 
     def get_minigames(self) -> list:
@@ -240,7 +241,7 @@ class GameFacade:
 
     def play_minigame(self, game_name: str, pet) -> bool:
         """Play a registered minigame and apply rewards."""
-        game = self._minigame_registry.create(game_name)
+        game = self._minigame_registry.create(game_name, io=self.io)
         result = game.play(self.current_user, pet)
         if result:
             coins = int(result.get("currency", 0))

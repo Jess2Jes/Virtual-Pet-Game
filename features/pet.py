@@ -3,6 +3,7 @@ from random import randrange
 from utils.formatter import Formatter
 from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF
 from utils.colorize import red, green, yellow
+from utils.ports import ConsoleIO, OutputPort
 
 """
 pet.py
@@ -33,10 +34,18 @@ class AbstractPet(ABC):
     actions that change internal stats (play, feed, bath, health care, sleep).
     """
 
-    def __init__(self, name: str, age: float = 0.0, species: str = "Pet") -> None:
-        self.name: str = name
-        self.age: float = age
-        self.type: str = species
+    def __init__(
+        self,
+        name: str,
+        age: float = 0.0,
+        species: str = "Pet",
+        io: OutputPort | None = None
+    ) -> None:
+        self.name = name
+        self.age = age
+        self.type = species
+        self.io = io or ConsoleIO()
+
 
     @abstractmethod
     def get_mood(self) -> str:
@@ -92,15 +101,19 @@ class VirtualPet(AbstractPet):
       - format: Formatter instance used to render status boxes for the CLI.
     """
 
-    def __init__(self, name: str, age: float = 0.0, species: str = "Pet"):
+    def __init__(
+        self,
+        name: str,
+        age: float = 0.0,
+        species: str = "Pet",
+        io: OutputPort | None = None
+    ) -> None:
         """
         Initialize a VirtualPet with randomized baseline stats.
 
         The randomized ranges are modest to simulate newly-created pets having variable starting values.
         """
-        self.name: str = name
-        self.age: float = age
-        self.type: str = species
+        super().__init__(name, age, species, io)
         self.happiness: int = randrange(0, 50)
         self.hunger: int = randrange(0, 50)
         self.sanity: int = randrange(0, 50)
@@ -109,6 +122,7 @@ class VirtualPet(AbstractPet):
         self.energy: int = randrange(0, 50)
         self.generosity = 0
         self.format = Formatter()
+        self.io = io or ConsoleIO()
 
     def get_mood(self) -> str:
         """
@@ -237,19 +251,19 @@ class VirtualPet(AbstractPet):
         happiness_change = int(data["happiness"])
 
         if self.hunger >= 100:
-            print(red(f"\n{self.name} doesn't want to eat anymore 🤢!\n"))
+            self.io.write(red(f"\n{self.name} doesn't want to eat anymore 🤢!\n"))
             self.fat += 5
             self.limit_stat()
             return False
 
-        print("\n" + "="*120)
-        print(green(f"\n{self.name} has been fed with '{food}' {emoji} 🍽️."))
+        self.io.write("\n" + "="*120)
+        self.io.write(green(f"\n{self.name} has been fed with '{food}' {emoji} 🍽️."))
 
         self.hunger += hunger_change
         self.happiness += happiness_change
         self.limit_stat()
 
-        print(yellow(self.food_upgrade_stats()))
+        self.io.write(yellow(self.food_upgrade_stats()))
 
         return True
 
@@ -266,18 +280,18 @@ class VirtualPet(AbstractPet):
         happiness_change = int(data["happiness"])
 
         if self.sanity >= 100:
-            print(red(f"\n{self.name}'s sanity is still full!\n"))
+            self.io.write(red(f"\n{self.name}'s sanity is still full!\n"))
             return False
 
-        print("\n" + "="*101)
+        self.io.write("\n" + "="*101)
         self.sanity += sanity_change
         self.happiness += happiness_change
 
-        print(green(f"\n{self.name} has been bathed 🛁 with '{soap}' {emoji}."))
+        self.io.write(green(f"\n{self.name} has been bathed 🛁 with '{soap}' {emoji}."))
 
         self.limit_stat()
 
-        print(yellow(self.bath_upgrade_stats()))
+        self.io.write(yellow(self.bath_upgrade_stats()))
         return True
 
     def health_care(self, potion: str) -> bool:
@@ -296,28 +310,28 @@ class VirtualPet(AbstractPet):
         used = False
         if effect_type == "fat" and self.fat > 50:
             self.fat = max(0, self.fat + delta)
-            print(f"\n{emoji} --> {self.name}'s fat has been reduced!\n")
+            self.io.write(f"\n{emoji} --> {self.name}'s fat has been reduced!\n")
             used = True
         elif effect_type == "health" and self.health < 100:
             self.health += delta
-            print(f"\n{self.name} has been healed {emoji}!\n")
+            self.io.write(f"\n{self.name} has been healed {emoji}!\n")
             used = True
         elif effect_type == "energy" and self.energy < 100:
             self.energy += delta
-            print(f"\n{emoji} --> {self.name}'s energy has been recharged 😆!\n")
+            self.io.write(f"\n{emoji} --> {self.name}'s energy has been recharged 😆!\n")
             used = True
         elif effect_type == "age" and self.age < 20:
             self.age += delta
-            print(f"\n{emoji} --> {self.name} has leveled up to adult!\n")
+            self.io.write(f"\n{emoji} --> {self.name} has leveled up to adult!\n")
             used = True
 
         if not used:
-            print(red(f"\n{self.name} hasn't reached requirement to use {potion}!\n"))
+            self.io.write(red(f"\n{self.name} hasn't reached requirement to use {potion}!\n"))
             return False
 
         self.limit_stat()
 
-        print(yellow(self.potion_upgrade_stats()))
+        self.io.write(yellow(self.potion_upgrade_stats()))
 
         return True
 
@@ -326,18 +340,18 @@ class VirtualPet(AbstractPet):
         Put the pet to sleep for the specified number of hours.
 
         This increases energy and reduces hunger proportionally to hours slept,
-        then clamps stats and prints an upgrade summary.
+        then clamps stats and self.io.writes an upgrade summary.
         """
         if self.energy >= 100:
-            print(red(f"\n{self.name} is not tired yet! 😐\n"))
+            self.io.write(red(f"\n{self.name} is not tired yet! 😐\n"))
             return
 
         self.energy += hours * 10
         self.hunger -= hours * 5
 
         self.limit_stat()
-        print(green(f"\n{self.name} has slept for {hours} hours. 😴"))
-        print(f"{self.name}'s energy increased by {hours * 10}" \
+        self.io.write(green(f"\n{self.name} has slept for {hours} hours. 😴"))
+        self.io.write(f"{self.name}'s energy increased by {hours * 10}" \
                f" and hunger decreased by {hours * 5}.")
 
-        print(yellow(self.sleep_upgrade_stats()))
+        self.io.write(yellow(self.sleep_upgrade_stats()))

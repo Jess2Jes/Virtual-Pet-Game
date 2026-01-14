@@ -2,7 +2,8 @@
 
 from random import choice
 from typing import Any, Dict, List, Tuple
-from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
+from .base_class import MinigameStrategy
+from utils.ports import ConsoleIO, InputPort, OutputPort
 from utils.colorize import red, green, yellow
 from constants.configs import LINE
 

@@ -1,47 +1,16 @@
 """
 Game module: business logic for pet interactions with decoupled I/O and content loading.
 """
-
+from utils.ports import InputPort, OutputPort, ConsoleIO, ContentLoader, FileContentLoader
 import datetime
 import json
 from random import randrange, choice as ch
-from typing import Protocol, Iterable
+from typing import Iterable
 from .animal import Cat, Rabbit, Dino, Dragon, Pou, VirtualPet
 from .user import User
 from constants.configs import LINE, NO_STOCK_MSG, FOOD_DEF, SOAP_DEF, POTION_DEF
 from utils.formatter import Formatter
 from utils.colorize import red, green, yellow, cyan, reset_color
-
-
-class InputPort(Protocol):
-    """Abstract input port for reading user data."""
-    def read(self, prompt: str = "") -> str: ...
-
-
-class OutputPort(Protocol):
-    """Abstract output port for emitting messages."""
-    def write(self, message: str) -> None: ...
-
-
-class ConsoleIO(InputPort, OutputPort):
-    """Console-based I/O adapter used as default dependency."""
-    def read(self, prompt: str = "") -> str:
-        return input(prompt)
-
-    def write(self, message: str) -> None:
-        print(message)
-
-
-class ContentLoader(Protocol):
-    """Abstract loader for retrieving structured content."""
-    def load_json(self, path: str) -> list: ...
-
-
-class FileContentLoader:
-    """Filesystem-based JSON content loader."""
-    def load_json(self, path: str) -> list:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
 
 
 class Game:
@@ -121,7 +90,7 @@ class Game:
             species = self.io.read("Choose his/her species (1/2/3/4/5): ").strip()
             cls_type = species_map.get(species)
             if cls_type:
-                animal = cls_type(name, 0)
+                animal = cls_type(name, 0, io=self.io)
                 return True, animal
             self.io.write(red("\nUnknown species choice! Please try again.\n"))
 
