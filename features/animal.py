@@ -4,6 +4,7 @@
 
 from .pet import VirtualPet
 from constants.configs import LINE
+from utils.ports import OutputPort
 from constants.animalsArt import (
     CatsArt as CAT,
     RabbitsArt as RABBIT,
@@ -42,8 +43,8 @@ class PetRenderer:
 
 
 class Cat(IdentityMixin, VirtualPet):
-    def __init__(self, name, age):
-        super().__init__(name, age, "Cat")
+    def __init__(self, name, age, io: OutputPort = None):
+        super().__init__(name, age, "Cat", io=io)
         self._set_identity(PetIdentity(
             emoji="🐈",
             fav_food="Chicken",
@@ -70,8 +71,8 @@ class Cat(IdentityMixin, VirtualPet):
 
 
 class Rabbit(IdentityMixin, VirtualPet):
-    def __init__(self, name, age):
-        super().__init__(name, age, "Rabbit")
+    def __init__(self, name, age, io: OutputPort = None):
+        super().__init__(name, age, "Rabbit", io=io)
         self._set_identity(PetIdentity(
             emoji="🐇",
             fav_food="Ice Cream",
@@ -98,8 +99,8 @@ class Rabbit(IdentityMixin, VirtualPet):
 
 
 class Dino(IdentityMixin, VirtualPet):
-    def __init__(self, name, age):
-        super().__init__(name, age, "Dinosaur")
+    def __init__(self, name, age, io: OutputPort = None):
+        super().__init__(name, age, "Dinosaur", io=io)
         self._set_identity(PetIdentity(
             emoji="🦖",
             fav_food="French Fries",
@@ -126,8 +127,8 @@ class Dino(IdentityMixin, VirtualPet):
 
 
 class Dragon(IdentityMixin, VirtualPet):
-    def __init__(self, name, age):
-        super().__init__(name, age, "Dragon")
+    def __init__(self, name, age, io: OutputPort = None):
+        super().__init__(name, age, "Dragon", io=io)
         self._set_identity(PetIdentity(
             emoji="🐉",
             fav_food="Nugget",
@@ -154,8 +155,8 @@ class Dragon(IdentityMixin, VirtualPet):
 
 
 class Pou(IdentityMixin, VirtualPet):
-    def __init__(self, name, age):
-        super().__init__(name, age, "Pou")
+    def __init__(self, name, age, io: OutputPort = None):
+        super().__init__(name, age, "Pou", io=io)
         self._set_identity(PetIdentity(
             emoji="💩",
             fav_food="Chicken",

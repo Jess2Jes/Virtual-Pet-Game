@@ -7,7 +7,7 @@ from importlib import import_module
 from typing import Callable, Dict, Type
 from features.shop import Shop
 from features.game import Game
-from utils.ports import OutputPort, ConsoleIO
+from utils.ports import OutputPort, ConsoleIO, ContentLoader, FileContentLoader
 from features.user import User
 from utils.colorize import green, red, yellow
 from constants.configs import GAME_LIST, MINIGAME_SPECS
@@ -50,8 +50,9 @@ class MinigameRegistry:
 class GameFacade:
     """High-level interface coordinating user, game, saves, shop, and minigames."""
 
-    def __init__(self, io: OutputPort | None = None, save_repo: SaveRepository | None = None):
+    def __init__(self, io: OutputPort | None = None, save_repo: SaveRepository | None = None, content_loader: ContentLoader | None = None):
         self.io: OutputPort = io or ConsoleIO()
+        self.content_loader = content_loader or FileContentLoader()
         self.game = None
         self.user_repo = UserRepository()
         self.current_user = None
@@ -66,7 +67,7 @@ class GameFacade:
     def _connect_to_game(self):
         """Ensure game instance is initialized for the current user."""
         if self.current_user and (not self.game or self.game.user != self.current_user):
-            self.game = Game(self.current_user, io=self.io)
+            self.game = Game(self.current_user, io=self.io, content_loader=self.content_loader)
 
     def register_user(self, username: str, password: str) -> bool:
         """Register and connect a new user."""
