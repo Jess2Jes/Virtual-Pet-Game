@@ -7,7 +7,6 @@ import bcrypt
 from typing import Dict, Any, Protocol
 from random import randrange
 from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF, VALID_PASSWORD
-from utils.colorize import red, yellow
 
 class AuthService(Protocol):
     """Authentication service abstraction."""
@@ -56,16 +55,14 @@ class User:
     def __init__(
         self,
         username: str,
-        password: str,
+        password_hash: str = "",
         auth_service: AuthService | None = None,
         pet_factory: PetFactory | None = None,
     ):
         self.auth_service = auth_service or BcryptAuthService()
         self.pet_factory = pet_factory or DefaultPetFactory()
         self.username = username
-        self.__password_hash = (
-            self.auth_service.hash(password) if not password.startswith('$2b$') else password
-        )
+        self.__password_hash = password_hash
         self.pets: list = []
         self.music: Dict[str, Any] = {}
         self.food: Dict[str, Any] = {}
@@ -85,8 +82,7 @@ class User:
     def currency(self, value) -> None:
         if value < 0:
             raise ValueError("Currency cannot be negative.")
-        else:
-            self._currency = value
+        self._currency = value
 
     def limit_currency(self) -> None:
         val = int(getattr(self, "currency"))
@@ -99,10 +95,9 @@ class User:
     @password.setter
     def password(self, new_password: str):
         if not re.match(VALID_PASSWORD, new_password):
-            print(red("Change password operation unsuccessful!"))
-            print(yellow("Password must contain:"))
-            print(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
-            return
+            raise ValueError(
+                "Password is too weak! Must contain 8+ chars, 1 upper, 1 lower, 1 digit, 1 symbol."
+            )
         self.__password_hash = self.auth_service.hash(new_password)
 
     def add_pet(self, pet) -> None:
