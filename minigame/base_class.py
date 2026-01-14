@@ -1,27 +1,7 @@
 """Minigame strategy interfaces segregated for ISP compliance."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Protocol
-
-
-class InputPort(Protocol):
-    """Abstract input port for reading user data."""
-    def read(self, prompt: str = "") -> str: ...
-
-
-class OutputPort(Protocol):
-    """Abstract output port for emitting messages."""
-    def write(self, message: str) -> None: ...
-
-
-class ConsoleIO(InputPort, OutputPort):
-    """Console-based I/O adapter used as default dependency."""
-    def read(self, prompt: str = "") -> str:
-        return input(prompt)
-
-    def write(self, message: str) -> None:
-        print(message)
-
+from typing import Any, Dict
 
 class IGameLoop(ABC):
     """Interface for the core game loop construction."""

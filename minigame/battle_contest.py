@@ -3,7 +3,8 @@
 import time
 from random import randint, choice
 from typing import Any
-from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
+from .base_class import MinigameStrategy
+from utils.ports import ConsoleIO, InputPort, OutputPort
 from utils.colorize import red, green
 from constants.configs import LINE
 from features.user import User

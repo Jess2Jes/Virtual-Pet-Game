@@ -5,7 +5,8 @@ import logging
 import time
 from random import choice
 from typing import Dict
-from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
+from .base_class import MinigameStrategy
+from utils.ports import ConsoleIO, InputPort, OutputPort
 from utils.colorize import green, yellow
 from constants.configs import LINE
 
@@ -79,24 +80,23 @@ class Tetris(MinigameStrategy):
         self.board = new_board
         return lines_cleared
 
-    @staticmethod
-    def display_menu():
+    def display_menu(self):
         """Show a description and choices to the player."""
-        print("\n" + LINE)
-        print("🟨 Tetris ⬜")
-        print(LINE)
-        print("Play this classic block-stacking game with your pet!")
-        print("\nControls:")
-        print("← → : Move left/right")
-        print("↑   : Rotate piece")
-        print("↓   : Soft drop")
-        print("Q   : Quit game")
-        print("\nObjective:")
-        print("- Clear lines by filling horizontal rows")
-        print("- Each line cleared gives 100 points")
-        print("- Game gets faster as you clear more lines")
-        print("- Game ends when blocks stack to the top")
-        print(LINE)
+        self.io.write("\n" + LINE)
+        self.io.write("🟨 Tetris ⬜")
+        self.io.write(LINE)
+        self.io.write("Play this classic block-stacking game with your pet!")
+        self.io.write("\nControls:")
+        self.io.write("← → : Move left/right")
+        self.io.write("↑   : Rotate piece")
+        self.io.write("↓   : Soft drop")
+        self.io.write("Q   : Quit game")
+        self.io.write("\nObjective:")
+        self.io.write("- Clear lines by filling horizontal rows")
+        self.io.write("- Each line cleared gives 100 points")
+        self.io.write("- Game gets faster as you clear more lines")
+        self.io.write("- Game ends when blocks stack to the top")
+        self.io.write(LINE)
 
     def get_input(self):
         """Collect any initial input from the player."""

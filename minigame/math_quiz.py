@@ -3,7 +3,8 @@
 import time
 from random import randint, choice
 from typing import Any, Dict
-from .baseClass import MinigameStrategy, ConsoleIO, InputPort, OutputPort
+from .base_class import MinigameStrategy
+from utils.ports import ConsoleIO, InputPort, OutputPort
 from utils.colorize import yellow
 from constants.configs import LINE, ARITHMETIC_OPERATIONS
 
