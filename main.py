@@ -8,7 +8,7 @@ from utils.colorize import (
 )
 from utils.formatter import clear
 from utils.loading import loading_bar
-
+from repositories.save_manager import SaveManager
 
 init(autoreset=True)
 
@@ -45,6 +45,8 @@ class Main:
 
     def __init__(self):
         self.facade = GameFacade()
+        save_repo = SaveManager.get_instance()      
+        self.facade = GameFacade(save_repo=save_repo)
 
     def _auth_menu(self) -> int | None:
         """Render the authentication menu and collect a numeric choice from the user."""

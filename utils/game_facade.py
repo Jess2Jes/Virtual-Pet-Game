@@ -8,12 +8,12 @@ from typing import Callable, Dict, Type
 from features.shop import Shop
 from features.game import Game
 from utils.ports import OutputPort, ConsoleIO
-from repositories.save_manager import SaveManager
 from features.user import User
 from utils.colorize import green, red, yellow
-from constants.configs import GAME_LIST, MINIGAME_SPECS, VALID_PASSWORD
+from constants.configs import GAME_LIST, MINIGAME_SPECS
 from repositories.user_repository import UserRepository
-import re
+from repositories.save_repository import SaveRepository
+from repositories.save_manager import SaveManager
 
 class MinigameRegistry:
     """Registry/factory for minigames to decouple facade from concrete imports."""
@@ -50,13 +50,13 @@ class MinigameRegistry:
 class GameFacade:
     """High-level interface coordinating user, game, saves, shop, and minigames."""
 
-    def __init__(self, io: OutputPort | None = None):
+    def __init__(self, io: OutputPort | None = None, save_repo: SaveRepository | None = None):
         self.io: OutputPort = io or ConsoleIO()
         self.game = None
         self.user_repo = UserRepository()
         self.current_user = None
         self._minigame_registry = MinigameRegistry.from_specs(MINIGAME_SPECS)
-        self.save_manager = SaveManager.get_instance()
+        self.save_manager = save_repo or SaveManager.get_instance()
         self._load_all_users_from_saves()
         
     def get_user_count(self) -> int:
@@ -79,13 +79,15 @@ class GameFacade:
              self.io.write(red("Password cannot be the same as username!\n"))
              return False
         
-        if not re.match(VALID_PASSWORD, password):
-            self.io.write(red("Password is too weak!\n"))
-            self.io.write(yellow("Password must contain:"))
-            self.io.write(yellow("At least 8 characters, 1 uppercase, 1 lowercase, 1 digit, 1 special char\n"))
+        try:
+            new_user = User(username)
+            new_user.password = password
+        except ValueError as e:
+            self.io.write(red(f"Registration Failed: {e}"))
+            if "Password" in str(e):
+                self.io.write(yellow("Hint: 8+ chars, 1 Upper, 1 Lower, 1 Number, 1 Symbol.\n"))
             return False
 
-        new_user = User(username, password)
         self.user_repo.add(new_user)
         
         initial_state = {
@@ -141,6 +143,12 @@ class GameFacade:
             return False
         user.password = new_password
         if not user.auth_service.verify(new_password, user.password):
+            return False
+        
+        try:
+            user.password = new_password 
+        except ValueError as e:
+            self.io.write(red(f"Cannot change password: {e}"))
             return False
         game_state = {
             "user": user.create_memento(),

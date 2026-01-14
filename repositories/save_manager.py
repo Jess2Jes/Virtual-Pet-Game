@@ -1,8 +1,10 @@
 # features/save_manager.py
+from __future__ import annotations
 import json
 from typing import Dict, Any, Optional
 from datetime import datetime
 from pathlib import Path
+from repositories.save_repository import SaveRepository
 
 """
 save_manager.py
@@ -25,7 +27,7 @@ Changes:
 """
 
 
-class SaveManager:
+class SaveManager(SaveRepository):
     """Singleton class to manage game saves on disk."""
 
     _instance: Optional["SaveManager"] = None
@@ -68,16 +70,9 @@ class SaveManager:
             True on success, False on failure.
         """
         try:
-            # Load existing saves
             all_saves = self._load_all_saves()
-
-            # Add timestamp
             game_state["last_saved"] = datetime.now().isoformat()
-
-            # Update user's save
             all_saves[username] = game_state
-
-            # Write to file
             with open(self.save_file, "w", encoding="utf-8") as f:
                 json.dump(all_saves, f, indent=4, ensure_ascii=False)
 
