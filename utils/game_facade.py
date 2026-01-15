@@ -14,7 +14,7 @@ from importlib import import_module
 from typing import Callable, Dict, Type
 
 from constants.configs import GAME_LIST, MINIGAME_SPECS
-from features.game import Game
+from features.games.game import Game
 from features.shop import Shop
 from features.user import User
 from repositories.save_repository import SaveRepository
