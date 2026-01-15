@@ -7,6 +7,7 @@ Refactor scope (behavior preserved):
 - Game is a thin coordinator: delegates menu rendering and topic-type branching.
 - Species creation is handled by an injected registry.
 - Conversation topic handling is delegated to a TopicHandler registry.
+- Actions (Play, Walk, Feed, Bath, Potion) are delegated to specific Action commands.
 - Uses a unified IO port (`IOPort`) to avoid `InputPort | OutputPort` mismatch.
 - Content loader is injected correctly (no Protocol instantiation).
 - Legacy global `User.current_user` access is normalized through an injected UserContext.
@@ -19,15 +20,16 @@ from __future__ import annotations
 
 import datetime
 import json
-from random import randrange, choice as ch
+from random import choice as ch
 from typing import Iterable
 
 from constants.configs import LINE, NO_STOCK_MSG
-from utils.colorize import red, green, yellow, cyan, reset_color
+from utils.colorize import red, green, cyan, reset_color
 from utils.formatter import Formatter
 from utils.ports import ConsoleIO, ContentLoader, IOPort
 
 from features.pet import VirtualPet
+from features.actions import BathAction, FeedAction, PlayAction, WalkAction, PotionAction
 from .user_context import LegacyUserContext, UserContext
 from .species_registry import DefaultSpeciesRegistry, SpeciesRegistry
 from .inventory_catalog import DefaultInventoryCatalog, InventoryCatalog
@@ -212,141 +214,21 @@ class Game:
                 lines.append(f"{idx}. {key} {emoji} (Available: {stock_text}, Effect: {v['delta']})")
         self.io.write("\n".join(lines))
 
-    def _food_choice_from_number(self, food: str) -> str | None:
-        food_choice_map = {
-            "1": "kentucky fried chicken",
-            "2": "ice cream",
-            "3": "fried rice",
-            "4": "salad",
-            "5": "french fries",
-            "6": "mashed potato",
-            "7": "mozarella nugget",
-        }
-        try:
-            return food_choice_map[food].title()
-        except KeyError:
-            self.io.write(red("\nUnknown food choice! Please choose (1/2/3/4/5/6/7)!\n"))
-            return None
-
     def _feed(self, pet: VirtualPet) -> None:
-        food = self.io.read("\nWhich food (1/2/3/4/5/6/7)? ").strip()
-        choice = self._food_choice_from_number(food)
-        if not choice:
-            return
-
-        inv = self.user.inventory["food"]
-        if inv.get(choice, 0) <= 0:
-            self.io.write(red(f"\n{choice} is {NO_STOCK_MSG}. Buy more in the shop before feeding.\n"))
-            return
-
-        used = pet.feed(choice)
-        if used:
-            self.user.consume_item("food", choice, 1)
-            remaining = self.user.inventory["food"][choice]
-            emoji = str(self.inventory_catalog.food_defs()[choice]["emoji"])
-            self.io.write(f"Remaining {choice} ({emoji}): {remaining}\n")
+       action = FeedAction(self.inventory_catalog)
+       action.execute(pet, self.user, self.io)
 
     def _play(self, self_pet: VirtualPet) -> None:
-        pet = self_pet
-        if pet.energy < 10:
-            self.io.write(red(f"\n{pet.name} is too tired to play..\n"))
-            return
-        if pet.hunger < 30:
-            self.io.write(red(f"\n{pet.name} is too hungry to play..\n"))
-            return
-        if pet.health < 20:
-            self.io.write(red(f"\n{pet.name} is too sick to play..\n"))
-            return
-
-        act = {
-            "cat": "You play laser with",
-            "rabbit": "You play catch ball with",
-            "dinosaur": "You play hide and seek with",
-            "dragon": "You play fireball with",
-            "pou": "You brought to swimming pool",
-        }.get(pet.type.lower(), "You play with")
-
-        emoji = {
-            "cat": "💥",
-            "rabbit": "🤾",
-            "dinosaur": "🏃",
-            "dragon": "☄️",
-            "pou": "🏊‍♂️",
-        }.get(pet.type.lower(), "🎲")
-
-        self.io.write(green(f"\n{act} {pet.name} {emoji}!"))
-
-        pet.play()
-
-        self.io.write(f"\n{pet.name}'s happiness increased by 10.")
-        self.io.write(f"{pet.name}'s hunger decreased by 5.")
-        self.io.write(f"{pet.name}'s energy decreased by 5.")
-        self.io.write("You earned Rp. 25,000!")
-        self.user.currency = self.user.currency + 25000
-
-        self.io.write(yellow(pet.joy_upgrade_stats()))
-
-    def _soap_choice_from_number(self, soap: str) -> str | None:
-        soap_choice_map = {
-            "1": "rainbow bubble soap",
-            "2": "pink bubble soap",
-            "3": "white silk soap",
-            "4": "flower bubble soap",
-        }
-        try:
-            return soap_choice_map[soap].title()
-        except KeyError:
-            self.io.write(red("\nUnknown soap choice! Please choose (1/2/3/4)!\n"))
-            return None
-
+        action = PlayAction()
+        action.execute(self_pet, self.user, self.io)
+        
     def _bath(self, pet: VirtualPet) -> None:
-        soap = self.io.read("\nWhich soap (1/2/3/4)? ").strip()
-        choice = self._soap_choice_from_number(soap)
-        if not choice:
-            return
+        action = BathAction(self.inventory_catalog)
+        action.execute(pet, self.user, self.io)
 
-        inv = self.user.inventory["soap"]
-        if inv.get(choice, 0) <= 0:
-            self.io.write(red(f"\n{choice} is {NO_STOCK_MSG}. Buy more in the shop before bathing.\n"))
-            return
-
-        used = pet.bath(choice)
-        if used:
-            self.user.consume_item("soap", choice, 1)
-            remaining = self.user.inventory["soap"][choice]
-            emoji = str(self.inventory_catalog.soap_defs()[choice]["emoji"])
-            self.io.write(f"Remaining {choice} ({emoji}): {remaining}\n")
-
-    def _potion_choice_from_number(self, potion: str) -> str | None:
-        potion_choice_map = {
-            "1": "fat burner",
-            "2": "health potion",
-            "3": "energizer",
-            "4": "adult potion",
-        }
-        try:
-            return potion_choice_map[potion].title()
-        except KeyError:
-            self.io.write(red("\nUnknown potion choice! Please choose (1/2/3/4)!\n"))
-            return None
-
-    def _give_potion(self, pet: VirtualPet) -> None:
-        potion = self.io.read("\nWhich potion (1/2/3/4)? ").strip()
-        choice = self._potion_choice_from_number(potion)
-        if not choice:
-            return
-
-        inv = self.user.inventory["potion"]
-        if inv.get(choice, 0) <= 0:
-            self.io.write(red(f"\n{choice} is {NO_STOCK_MSG}. Buy more in the shop before using.\n"))
-            return
-
-        used = pet.health_care(choice)
-        if used:
-            self.user.consume_item("potion", choice, 1)
-            remaining = self.user.inventory["potion"][choice]
-            emoji = str(self.inventory_catalog.potion_defs()[choice]["emoji"])
-            self.io.write(f"Remaining {choice} ({emoji}): {remaining}\n")
+    def _action_potion(self, pet: VirtualPet) -> None:
+        action = PotionAction(self.inventory_catalog)
+        action.execute(pet, self.user, self.io)
 
     def _sleep(self, pet: VirtualPet) -> None:
         hours = self._input_int(f"\n{pet.name}'s sleep duration (1-12): ", self.io)
@@ -361,52 +243,8 @@ class Game:
         pet.sleep(hours)
 
     def _walk(self, self_pet: VirtualPet) -> None:
-        pet = self_pet
-        if pet.energy < 10:
-            self.io.write(red(f"\n{pet.name} is too tired to take a walk..\n"))
-            return
-        if pet.hunger < 30:
-            self.io.write(red(f"\n{pet.name} is too hungry to take a walk..\n"))
-            return
-        if pet.health < 20:
-            self.io.write(red(f"\n{pet.name} is too sick to take a walk..\n"))
-            return
-
-        random_event = randrange(0, 50)
-        self.io.write(green(f"\nYou take {pet.name} for a walk! 🐾"))
-        if random_event == 10:
-            self.io.write(green("\nYou found a wallet in your way home!"))
-            self.io.write(green("You brought back home Rp. 25,000..."))
-            self.user.currency = self.user.currency + 25000
-        elif random_event == 30:
-            self.io.write(red("\nYour pet stepped on mud!"))
-            self.io.write(yellow(f"{pet.name}'s sanity decreased (-10)..."))
-            pet.sanity -= 10
-        elif random_event == 20:
-            self.io.write(red("\nYour pet ate rotten apple!"))
-            self.io.write(yellow(f"{pet.name}'s health decreased (-15)..."))
-            pet.health -= 15
-        elif random_event == 4:
-            self.io.write(red("\nYour pet got run over by car!"))
-            self.io.write(red(f"{pet.name} deceased... 💀\n"))
-            pet.health -= 100
-            pet.limit_stat()
-            return
-        elif random_event == 50:
-            self.io.write(red("\nYou got robbed on your way home!"))
-            self.io.write(red("You lose Rp. 100,000!"))
-            self.user.currency = self.user.currency - 100000
-            self.user.limit_currency()
-
-        pet.happiness += 25
-        pet.hunger -= 5
-        pet.energy -= 15
-
-        self.io.write(f"{pet.name}'s hunger decreased by 5.")
-        self.io.write(f"{pet.name}'s energy decreased by 15.")
-
-        pet.limit_stat()
-        self.io.write(yellow(pet.joy_upgrade_stats()))
+        action = WalkAction()
+        action.execute(self_pet, self.user, self.io)
 
     def _topic_plan(self, pet: VirtualPet) -> bool:
         ans = [
@@ -567,10 +405,6 @@ class Game:
             6: self._walk,
             7: self._talk_menu,
         }
-
-    def _action_potion(self, pet: VirtualPet) -> None:
-        self.view.print_potion_requirement("Potion Usage Requirement")
-        self._give_potion(pet)
 
     @staticmethod
     def _is_valid_choice(choice: int) -> bool:
