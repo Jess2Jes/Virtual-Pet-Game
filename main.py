@@ -121,7 +121,7 @@ class Main:
             new_password = input("Your New Password: ").strip()
 
             if self.facade.change_password(username, password, new_password):
-                print(green("\nPassword has been changed!\n"))
+                print(green("\nPassword has2 been changed!\n"))
                 input(yellow("Press Enter to continue..."))
                 clear()
                 break
@@ -239,17 +239,22 @@ class Main:
 
         print(yellow(UIC.LINE))
 
-        try:
-            idx = int(input(green("\nSelect pet number: ")).strip())
-        except ValueError:
-            print(red("\nInvalid selection (Please input number).\n"))
-            return None
+        while True:
+            choice_val = input(green("\nSelect pet number (or 'q' to cancel): ")).strip()
 
-        if 1 <= idx <= len(pets):
-            return pets[idx - 1]
+            if choice_val.lower() in ["q", "quit"]:
+                return None
+            
+            try:
+                idx = int(choice_val)
+            except ValueError:
+                print(red("\nInvalid selection (Please input number)."))
+                continue
 
-        print(red("\nInvalid selection.\n"))
-        return None
+            if 1 <= idx <= len(pets):
+                return pets[idx - 1]
+
+            print(red("\nInvalid selection.\n"))
 
     def _interact_with_pet(self) -> bool:
         """Begin an interaction session with a selected pet if it is alive."""
@@ -300,7 +305,7 @@ class Main:
         games = self.facade.get_minigames()
         if not games:
             print("\nNo minigames available.\n")
-            return False
+            return True 
 
         print("\n" + UIC.LINE)
         print("Minigames: ")
@@ -309,25 +314,34 @@ class Main:
             print(f"{i}. --> {name}")
         print(UIC.LINE)
 
-        idx = input("Choose a minigame number (or type 'q' to quit): ").strip().lower()
-        
-        if idx == 'q':
-            print(green("\nExit from minigame!"))
-            return True
+        while True:
+            choice_val = input("Choose a minigame number (or type 'q' to quit): ").strip().lower()
+            
+            if choice_val == 'q':
+                print(green("\nExit from minigame!"))
+                return True
 
-        if not (1 <= int(idx) <= len(games)) and idx != 'q':
-            print("Invalid choice.")
-            return False
+            try:
+                idx = int(choice_val)
+            except ValueError:
+                print(red("\nInvalid input! Please enter a number or 'q' to quit.\n"))
+                continue  
 
-        if int(idx) == 4 and self.facade.get_user_count() < 2:
-            print(red("\nNo other players available right now!"))
-            return True
+            if not (1 <= idx <= len(games)):
+                print(red("\nInvalid choice. Please choose a number from the list.\n"))
+                continue
+
+            if idx == 4 and self.facade.get_user_count() < 2:
+                print(red("\nNo other players available right now!"))
+                continue
+
+            break
 
         pet = self._select_pet()
         if pet is None:
             return True
 
-        mg_name = games[int(idx) - 1]
+        mg_name = games[idx - 1]
         self.facade.play_minigame(mg_name, pet)
         return True
 

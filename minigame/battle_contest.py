@@ -2,12 +2,11 @@
 
 import time
 from random import randint, choice
-from typing import Any
+from typing import Any, List
 from .base_class import MinigameStrategy
 from utils.ports import ConsoleIO, InputPort, OutputPort
 from utils.colorize import red, green
 from constants.configs import UIConfig as UIC
-from features.user import User
 
 
 class BattleContest(MinigameStrategy):
@@ -17,6 +16,11 @@ class BattleContest(MinigameStrategy):
 
     def __init__(self, io: InputPort | OutputPort | None = None):
         self.io: InputPort | OutputPort = io or ConsoleIO()
+        self._opponents: List[Any] = []
+
+    def set_opponents(self, opponents: List[Any]) -> None:
+        """Dependency Injection: Provide the list of potential opponents."""
+        self._opponents = opponents
 
     def setup(self, player, pet):
         self.player = player
@@ -28,13 +32,18 @@ class BattleContest(MinigameStrategy):
         self.current_round = 1
         self.player_health = self.player_pet.health * 1000
         self.player_won = 0
-        other_players_with_pets = list(filter(lambda user: user != self.player and user.pets, User.users.values()))
+
+        # FIX: Use injected self._opponents instead of User.users.values()
+        candidates = self._opponents if self._opponents else []
+        other_players_with_pets = list(filter(lambda user: user != self.player and user.pets, candidates))
+        
         if other_players_with_pets:
             self.opponent = choice(other_players_with_pets)
             self.opponent_pet = choice(self.opponent.pets)
         else:
             self.io.write(red("\nOther players currently doesn't have any pets yet!\n"))
             return False
+            
         self.opponent_health = self.opponent_pet.health * 1000
         self.opponent_won = 0
         self.opponent_pet_stats = {
@@ -49,7 +58,7 @@ class BattleContest(MinigameStrategy):
 
     def display_menu(self):
         """Display battle status and available actions for the current round."""
-        self.io.write("\n" + UIC.UC.LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(UIC.LINE)))
         self.io.write(UIC.LINE)
         self.io.write("\n" + UIC.LINE)
