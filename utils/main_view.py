@@ -1,0 +1,353 @@
+import asyncio
+from colorama import init
+
+from constants.configs import AuthConfig as AC, UIConfig as UIC
+from utils.colorize import cyan, yellow, red, magenta, green, reset_color
+from utils.formatter import clear
+from utils.loading import loading_bar
+
+init(autoreset=True)
+
+
+class MainView:
+    """Console UI that renders menus and delegates actions to a GameFacade."""
+
+    def __init__(self, facade, exit_fn):
+        self.facade = facade
+        self._exit_fn = exit_fn
+
+    def _auth_menu(self) -> int | None:
+        """Render the authentication menu and return the selected option."""
+        print(cyan("─" * 51 + " " + "VIRTUAL PET GAME" + " " + "─" * 51))
+        print(yellow("1. Register"))
+        print(yellow("2. Login"))
+        print(yellow("3. Change Password"))
+        print(red("4. Exit"))
+        print(magenta(UIC.LINE))
+        try:
+            return int(input(green("Choose (1-4): ")).strip())
+        except ValueError:
+            print(red("\nPlease insert digit at choice input!\n"))
+            return None
+
+    def _register_flow(self) -> None:
+        """Run the interactive user registration flow."""
+        while True:
+            username = input(AC.USERNAME_INPUTTING).strip()
+            password = input(
+                "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
+            ).strip()
+
+            if self.facade.register_user(username, password):
+                break
+
+            retry = input(
+                "Would you like to register again? (Y/N)\n"
+                "(Note: input other than Y and N will be considered as N): "
+            ).capitalize().strip()
+            clear()
+            if retry != "Y":
+                print("\n")
+                break
+            print("\n")
+
+    def _login_flow(self) -> None:
+        """Run the interactive user login flow."""
+        while True:
+            username = input(AC.USERNAME_INPUTTING).strip()
+            password = input(AC.PASSWORD_INPUTTING).strip()
+
+            if self.facade.login_user(username, password):
+                break
+
+            print(UIC.LINE)
+            retry = input(
+                "Would you like to login again? (Y/N)\n"
+                "(Note: input other than Y and N will be considered as N): "
+            ).capitalize().strip()
+            clear()
+            if retry != "Y":
+                break
+
+    def _logout_flow(self) -> None:
+        """Save current game state and logout the current user."""
+        if self.facade.current_user:
+            print("\n💾 Saving your game...")
+            self.facade.save_game()
+
+        self.facade.logout_user()
+        asyncio.run(loading_bar())
+        clear()
+
+    def _change_password_flow(self) -> None:
+        """Run the interactive change-password flow."""
+        while True:
+            username = input(AC.USERNAME_INPUTTING).strip()
+            password = input(AC.PASSWORD_INPUTTING).strip()
+            new_password = input("Your New Password: ").strip()
+
+            if self.facade.change_password(username, password, new_password):
+                print(green("\nPassword has2 been changed!\n"))
+                input(yellow("Press Enter to continue..."))
+                clear()
+                break
+
+            print(red("\nInvalid credentials or password!\n"))
+            print(UIC.LINE)
+            retry = input(
+                "Would you like to change password again? (Y/N)\n"
+                "(Note: input other than Y and N will be considered as N): "
+            ).capitalize().strip()
+            clear()
+            if retry != "Y":
+                break
+
+    def _handle_auth_choice(self, choice: int) -> None:
+        """Dispatch authentication choice to its handler."""
+        actions = {
+            1: self._register_flow,
+            2: self._login_flow,
+            3: self._change_password_flow,
+            4: self._exit_fn,
+        }
+        action = actions.get(choice)
+        if action:
+            action()
+        else:
+            print(red("Please type again...\n"))
+
+    def _auth_flow(self) -> None:
+        """Loop until a user is authenticated or exits."""
+        while not self.facade.current_user:
+            choice = self._auth_menu()
+            if choice is None:
+                continue
+            print()
+            self._handle_auth_choice(choice)
+
+    def _pet_zone_menu(self) -> int | None:
+        """Render the pet-zone menu and return the selected option."""
+        print(cyan("─" * 55 + " " + "PET ZONE" + " " + "─" * 55))
+        print(yellow("1. Check time"))
+        print(yellow("2. Show account info"))
+        print(yellow("3. Create a new pet"))
+        print(yellow("4. Interact with pet"))
+        print(yellow("5. Pet stats"))
+        print(yellow("6. Show Pets"))
+        print(yellow("7. Go to shop"))
+        print(yellow("8. Play Minigames"))
+        print(green("9. 💾 Save Game"))
+        print(red("10. Logout"))
+        print(magenta(UIC.LINE))
+        try:
+            return int(input(green("Choose (1-10): ")).strip())
+        except ValueError:
+            print(red("\nPlease insert digit at choice input!\n"))
+            return None
+
+    def _show_time_and_days(self) -> None:
+        """Display the current in-game time and day."""
+        print(reset_color(self.facade.get_formatted_time_box()))
+
+    def _show_account_info(self) -> bool:
+        """Display account info for the current user."""
+        user = self.facade.current_user
+        if not user:
+            return False
+
+        while True:
+            print((f"\n{reset_color(UIC.LINE)}"))
+            print(yellow("ACCOUNT INFORMATION".center(len(UIC.LINE))))
+            print(reset_color(UIC.LINE))
+
+            print(self.facade.game.format.format_username_box(user.username, user.pets))
+
+            repeat = input("\nWould you like to view again? (Y/N): ").capitalize().strip()
+            if repeat != "Y":
+                print()
+                break
+
+        return True
+
+    def _create_pet(self) -> bool:
+        """Create and adopt a new pet for the current user."""
+        if not self.facade.current_user:
+            print(yellow("\nPlease login or register first.\n"))
+            return False
+
+        if self.facade.create_pet():
+            new_pet = self.facade.game.animal_list[-1]
+            print(green(f"\nYou adopted {new_pet.name} the {new_pet.type} {new_pet.emoji}!\n"))
+            return True
+
+        print(red("Pet creation failed.\n"))
+        return False
+
+    def _select_pet(self):
+        """Prompt the user to select a pet and return it, or None."""
+        pets = self.facade.get_pets()
+        if not pets:
+            print(red("\nYou have no pets yet. Create one first.\n"))
+            return None
+
+        print(yellow("\nYour pets:"))
+        for i, p in enumerate(pets, start=1):
+            age = self.facade.get_pet_age(p)
+            print(yellow(f"{i}. {p.name} ({p.type}) - Age: {age:.1f}"))
+
+        print(yellow(UIC.LINE))
+
+        while True:
+            choice_val = input(green("\nSelect pet number (or 'q' to cancel): ")).strip()
+
+            if choice_val.lower() in ["q", "quit"]:
+                return None
+
+            try:
+                idx = int(choice_val)
+            except ValueError:
+                print(red("\nInvalid selection (Please input number)."))
+                continue
+
+            if 1 <= idx <= len(pets):
+                return pets[idx - 1]
+
+            print(red("\nInvalid selection.\n"))
+
+    def _interact_with_pet(self) -> bool:
+        """Start an interaction session with a selected pet."""
+        pet = self._select_pet()
+        if pet is None:
+            return False
+
+        if getattr(pet, "health", 1) > 0:
+            self.facade.interact_pet(pet)
+            return True
+
+        print(red("\nYour pet has deceased... 🧦\n"))
+        return False
+
+    def _show_pet_stats(self) -> bool:
+        """Display status for a selected pet."""
+        pet = self._select_pet()
+        if pet is None:
+            return False
+
+        self.facade.view_pet_stats(pet)
+        return True
+
+    def _show_pet_stage(self) -> bool:
+        """Display the staged representation of the selected pet."""
+        pet = self._select_pet()
+        if pet is None:
+            return False
+
+        if getattr(pet, "health", 1) > 0:
+            stage = self.facade.get_pet_stage(pet)
+            for frame in stage:
+                print(frame)
+            return True
+
+        print(red("\nYour pet has deceased... 🧦\n"))
+        return False
+
+    def _go_to_shop(self) -> bool:
+        """Enter the shop UI."""
+        self.facade.enter_shop()
+        return True
+
+    def _play_minigame_flow(self) -> bool:
+        """Prompt for a minigame, then run it with a selected pet."""
+        games = self.facade.get_minigames()
+        if not games:
+            print("\nNo minigames available.\n")
+            return True
+
+        print("\n" + UIC.LINE)
+        print("Minigames: ")
+        print(UIC.LINE)
+        for i, name in enumerate(games, start=1):
+            print(f"{i}. --> {name}")
+        print(UIC.LINE)
+
+        while True:
+            choice_val = input("Choose a minigame number (or type 'q' to quit): ").strip().lower()
+
+            if choice_val == "q":
+                print(green("\nExit from minigame!"))
+                return True
+
+            try:
+                idx = int(choice_val)
+            except ValueError:
+                print(red("\nInvalid input! Please enter a number or 'q' to quit.\n"))
+                continue
+
+            if not (1 <= idx <= len(games)):
+                print(red("\nInvalid choice. Please choose a number from the list.\n"))
+                continue
+
+            if idx == 4 and self.facade.get_user_count() < 2:
+                print(red("\nNo other players available right now!"))
+                continue
+
+            break
+
+        pet = self._select_pet()
+        if pet is None:
+            return True
+
+        mg_name = games[idx - 1]
+        self.facade.play_minigame(mg_name, pet)
+        return True
+
+    def _handle_pet_zone_choice(self, choice: int):
+        """Dispatch pet-zone choice to its handler and return its result."""
+        handlers = {
+            1: lambda: self._show_time_and_days(),
+            2: lambda: self._show_account_info(),
+            3: lambda: self._create_pet(),
+            4: lambda: self._interact_with_pet(),
+            5: lambda: self._show_pet_stats(),
+            6: lambda: self._show_pet_stage(),
+            7: lambda: self._go_to_shop(),
+            8: lambda: self._play_minigame_flow(),
+            9: lambda: self.facade.save_game(),
+            10: lambda: self._logout_flow(),
+        }
+
+        handler = handlers.get(choice)
+        if handler:
+            result = handler()
+        else:
+            print(red("\nPlease type again...\n"))
+            return True
+
+        if result is not None:
+            return bool(result)
+        return result
+
+    def _pet_zone_flow(self) -> None:
+        """Run the pet-zone loop until the user logs out."""
+        asyncio.run(loading_bar())
+        clear()
+        while self.facade.current_user:
+            choice = self._pet_zone_menu()
+            if choice is None:
+                continue
+            result = self._handle_pet_zone_choice(choice)
+            if result is not None:
+                if not result:
+                    break
+                self.facade.spend_time()
+                asyncio.run(loading_bar())
+                clear()
+
+    def run(self) -> None:
+        """Run the full UI flow."""
+        print()
+        while True:
+            if not self.facade.current_user:
+                self._auth_flow()
+            else:
+                self._pet_zone_flow()

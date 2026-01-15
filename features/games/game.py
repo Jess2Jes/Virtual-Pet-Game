@@ -1,12 +1,8 @@
 """
-features/game.py
+features/games/game.py
 
-Game module: business logic coordinator.
-
-Refactor Status:
-- ✅ SRP: UI and Action logic removed.
-- ✅ OCP: Actions are injected via list; new actions can be added without changing this file.
-- ✅ DIP: Depends on abstractions (IOPort, PetAction).
+Orchestrates the main game loop, managing pet interaction lifecycles and
+delegating specific behaviors to injected Action handlers.
 """
 
 from __future__ import annotations
@@ -22,7 +18,7 @@ from utils.ports import ConsoleIO, ContentLoader, IOPort
 
 from features.pet import VirtualPet
 from features.actions import (
-    PetAction, FeedAction, PlayAction, BathAction, 
+    PetAction, FeedAction, PlayAction, BathAction,
     PotionAction, SleepAction, WalkAction, TalkAction
 )
 from .user_context import LegacyUserContext, UserContext
@@ -33,7 +29,12 @@ from .game_io_views import GameView
 
 
 class Game:
-    """Main interactive game coordinator."""
+    """
+    Main interactive game coordinator.
+
+    Acts as the composition root for the gameplay session, wiring together
+    actions, views, and state management.
+    """
 
     def __init__(
         self,
@@ -44,10 +45,11 @@ class Game:
         user_context: UserContext | None = None,
         inventory_catalog: InventoryCatalog | None = None,
     ):
+        """Initialize the game environment, dependencies, and action configurations."""
         self.animal_list = []
         self.clock = datetime.datetime.now().hour
         self.format = Formatter()
-        
+
         self.io: IOPort = io or ConsoleIO()
         self.user = user
         self.content_loader: ContentLoader = content_loader
@@ -78,9 +80,9 @@ class Game:
             WalkAction(),
             TalkAction(self._conversation_engine, self.view, self.jokes, self.conversations)
         ]
-        
 
     def _load_json_safe(self, path: str, name: str) -> list:
+        """Load JSON data safely, returning an empty list on failure."""
         try:
             return self.content_loader.load_json(path)
         except (FileNotFoundError, json.JSONDecodeError):
@@ -88,15 +90,23 @@ class Game:
             return []
 
     def get_currency(self) -> int:
+        """Retrieve the current user's currency balance."""
         return self.user.currency
 
     def create_name(self) -> tuple[bool, str, str]:
+        """Prompt user to name their pet and initiate species selection."""
         self.io.write(reset_color("\n" + UIC.LINE))
         name = self.io.read("Name your pet: ").title().strip()
         flag, species = self.create_species(name)
         return flag, name, species
 
     def create_species(self, name: str) -> tuple[bool, VirtualPet | None]:
+        """
+        Display species menu and instantiate the selected pet type.
+
+        Returns:
+            A tuple containing a success flag and the created VirtualPet instance (or None).
+        """
         self.io.write(UIC.LINE)
         self.io.write("Here's five types of species you can choose: ")
         self.io.write("1. Cat (🐈)")
@@ -114,6 +124,11 @@ class Game:
             self.io.write(red("\nUnknown species choice! Please try again.\n"))
 
     def create(self) -> bool:
+        """
+        Orchestrate the full pet creation flow including naming and species selection.
+
+        Ensures uniqueness of the pet name for the current user.
+        """
         while True:
             flag, name, species = self.create_name()
 
@@ -141,7 +156,8 @@ class Game:
                 self.io.write("")
                 return False
 
-    def view(self, pet) -> None:
+    def display_stats(self, pet: VirtualPet) -> None:
+        """Display the formatted status box for a given pet."""
         stats = {
             "name": pet.name,
             "type": pet.type,
@@ -157,43 +173,41 @@ class Game:
             "age_summary": pet.get_age_summary(),
         }
         self.io.write(self.format.format_status_box(stats))
-        
+
     @staticmethod
-    def get_health(pet) -> int:
+    def get_health(pet: VirtualPet) -> int:
+        """Return the current health of the pet."""
         return pet.health
 
     def interact(self, pet: VirtualPet) -> None:
         """
-        Main interaction loop. 
-        Dynamically renders menu based on self.actions list.
+        Run the main interaction loop for a specific pet.
+
+        Dynamically renders the action menu based on the injected `self.actions` list
+        and delegates execution to the selected `PetAction`.
         """
         self.io.write(reset_color("\n" + "=" * 120))
         self.io.write(f"Playing with {pet.name}, the {pet.type}:".center(len(UIC.LINE)))
-        
+
         while True:
-            # 1. Render Menu Dynamically
             self.io.write(UIC.LINE)
             for idx, action in enumerate(self.actions, start=1):
                 self.io.write(f"{idx}. {action.menu_name}")
-            
+
             exit_idx = len(self.actions) + 1
             self.io.write(f"{exit_idx}. Exit")
             self.io.write(UIC.LINE)
 
-            # 2. Get Input
             try:
                 choice = int(self.io.read(f"Choose (1-{exit_idx}): "))
             except ValueError:
                 self.io.write(red("\nPlease enter a digit!\n"))
                 continue
 
-            # 3. Handle Exit
             if choice == exit_idx or pet.health == 0:
                 self.io.write("")
                 break
 
-            # 4. Dispatch to Action
-            # Array index is choice - 1
             if 1 <= choice <= len(self.actions):
                 action = self.actions[choice - 1]
                 action.execute(pet, self.user, self.io)
