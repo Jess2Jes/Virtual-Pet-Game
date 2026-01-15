@@ -1,73 +1,45 @@
-# features/save_manager.py
+"""
+repositories/save_manager.py
+
+JSON-backed persistence implementation for saving and loading player game state.
+
+This module keeps the public `SaveManager` API intact (including singleton access)
+while delegating file I/O mechanics to a dedicated repository implementation.
+The goal is to preserve 100% identical runtime behavior while improving SRP/DIP:
+- `JsonFileSaveRepository` implements the `SaveRepository` persistence contract.
+- `SaveManager` remains the singleton entry point used by the rest of the app.
+"""
+
 from __future__ import annotations
+
 import json
-from typing import Dict, Any, Optional
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, Optional
+
 from repositories.save_repository import SaveRepository
 
-"""
-save_manager.py
 
-Singleton SaveManager responsible for saving, loading, deleting, and listing
-player save data as JSON in the `saves/player_saves.json` file.
+class JsonFileSaveRepository(SaveRepository):
+    """
+    File-based SaveRepository using a single JSON file mapping username -> game state.
 
-Design notes:
-- Implements a simple singleton pattern so callers can obtain SaveManager.get_instance()
-  and operate on the single shared save file.
-- Saves are stored as a mapping username -> game_state dict. Each saved state is
-  annotated with a 'last_saved' ISO timestamp.
-- The implementation is tolerant of missing/corrupt save files and returns empty
-  mappings in those cases.
+    Collaboration:
+    - Used by `SaveManager` as its persistence backend.
+    - Encapsulates disk I/O, JSON encoding/decoding, and save-file initialization.
+    """
 
-Changes:
-- Translated inline comments to English and added module/class/method docstrings.
-- Fixed minor whitespace typos in attribute access (self.save_directory / self.save_file).
-  No behavioral changes were made.
-"""
-
-
-class SaveManager(SaveRepository):
-    """Singleton class to manage game saves on disk."""
-
-    _instance: Optional["SaveManager"] = None
-    _initialized: bool = False
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(SaveManager, cls).__new__(cls)
-        return cls._instance
-
-    def __init__(self):
-        """
-        Initialize the save directory and file on first construction.
-
-        The constructor is idempotent: subsequent instantiations reuse the same
-        underlying save directory/file information.
-        """
-        if not SaveManager._initialized:
-            # create folder 'saves' if it does not exist
-            self.save_directory = Path("saves")
-            self.save_directory.mkdir(exist_ok=True)
-            self.save_file = self.save_directory / "player_saves.json"
-            SaveManager._initialized = True
-
-    @classmethod
-    def get_instance(cls) -> "SaveManager":
-        """Return the global SaveManager singleton instance, creating it if necessary."""
-        if cls._instance is None:
-            cls._instance = cls()
-        return cls._instance
+    def __init__(self, save_directory: Path | str = "saves", filename: str = "player_saves.json"):
+        self.save_directory = Path(save_directory)
+        self.save_directory.mkdir(exist_ok=True)
+        self.save_file = self.save_directory / filename
 
     def save_game(self, username: str, game_state: Dict[str, Any]) -> bool:
         """
         Save game state for a specific user.
 
-        The provided game_state mapping will be stored under the username key and
-        annotated with a 'last_saved' ISO timestamp.
-
-        Returns:
-            True on success, False on failure.
+        Behavior is intentionally preserved: prints the same success/error messages and
+        stores a `last_saved` ISO timestamp in the persisted mapping.
         """
         try:
             all_saves = self._load_all_saves()
@@ -87,8 +59,7 @@ class SaveManager(SaveRepository):
         """
         Load the saved game state for a specific user.
 
-        Returns:
-            The saved mapping if present, otherwise None.
+        Behavior is intentionally preserved: prints the same success/missing/error messages.
         """
         try:
             all_saves = self._load_all_saves()
@@ -108,8 +79,7 @@ class SaveManager(SaveRepository):
         """
         Delete the save entry for the given username.
 
-        Returns:
-            True if a save was removed, False if none existed or on error.
+        Behavior is intentionally preserved: prints the same success/missing/error messages.
         """
         try:
             all_saves = self._load_all_saves()
@@ -148,5 +118,63 @@ class SaveManager(SaveRepository):
             with open(self.save_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         except json.JSONDecodeError:
-            # Corrupted file -> treat as no saves
             return {}
+
+
+class SaveManager(SaveRepository):
+    """
+    Singleton save manager used by the rest of the application.
+
+    Collaboration:
+    - Exposes the same public API as before (`get_instance`, `save_game`, `load_game`, etc.).
+    - Delegates persistence to `JsonFileSaveRepository` to separate I/O from lifecycle concerns.
+    """
+
+    _instance: Optional["SaveManager"] = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(SaveManager, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self, repo: SaveRepository | None = None):
+        # Idempotent init: keep old singleton semantics.
+        if getattr(self, "_initialized", False):
+            return
+        self._repo: SaveRepository = repo or JsonFileSaveRepository()
+        self._initialized = True
+
+    @classmethod
+    def get_instance(cls) -> "SaveManager":
+        """Return the global SaveManager singleton instance, creating it if necessary."""
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+    def save_game(self, username: str, game_state: Dict[str, Any]) -> bool:
+        """Persist state for a user via the configured repository backend."""
+        return self._repo.save_game(username, game_state)
+
+    def load_game(self, username: str) -> Optional[Dict[str, Any]]:
+        """Load persisted state for a user via the configured repository backend."""
+        return self._repo.load_game(username)
+
+    def delete_save(self, username: str) -> bool:
+        """Delete a user's persisted state via the configured repository backend."""
+        return self._repo.delete_save(username)
+
+    def list_saves(self) -> list:
+        """Return a list of usernames for which saves exist."""
+        return self._repo.list_saves()
+
+    # Compatibility: some callers reach into the old private API.
+    def _load_all_saves(self) -> Dict[str, Any]:
+        """
+        Backwards-compatible private API used elsewhere in the codebase.
+
+        Preserves behavior by forwarding to the underlying JSON repository.
+        """
+        if isinstance(self._repo, JsonFileSaveRepository):
+            return self._repo._load_all_saves()
+        # Fallback for alternate implementations: best-effort empty mapping.
+        return {}

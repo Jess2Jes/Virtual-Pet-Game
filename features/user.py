@@ -1,15 +1,26 @@
 """
-User domain model with injectable auth service and pet factory for restoration.
+features/user.py
+
+User domain model with injectable authentication and pet restoration collaborators.
+
+This file preserves the original public API and behavior while improving SRP/DIP:
+- Authentication hashing/verification is delegated to an AuthService.
+- Pet restoration is delegated to a PetFactory that can use a builder to satisfy IO requirements.
 """
+
 import math
 import re
 import bcrypt
 from typing import Dict, Any, Protocol
 from random import randrange
+
 from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF, VALID_PASSWORD
+from utils.ports import OutputPort
+from features.pet_construction import DefaultPetBuilder, PetBuilder
+
 
 class AuthService(Protocol):
-    """Authentication service abstraction."""
+    """Authentication service abstraction used by the User entity."""
     def hash(self, password: str) -> str: ...
     def verify(self, plain: str, hashed: str) -> bool: ...
 
@@ -29,29 +40,32 @@ class PetFactory(Protocol):
 
 
 class DefaultPetFactory:
-    """Default pet factory mapping saved types to concrete pet classes."""
-    def __init__(self):
-        from .animal import Cat, Rabbit, Dino, Dragon, Pou
-        self._pet_class_map = {
-            "Cat": Cat,
-            "Rabbit": Rabbit,
-            "Dinosaur": Dino,
-            "Dragon": Dragon,
-            "Pou": Pou,
-        }
-        self._default_cls = Cat
+    """
+    Default pet factory mapping saved types to concrete pet classes.
+
+    Collaboration:
+    - Uses a `PetBuilder` to ensure restored pets always get an OutputPort.
+    - Preserves the existing create() API used by User.restore_from_memento().
+    """
+
+    def __init__(self, builder: PetBuilder | None = None, default_io: OutputPort | None = None):
+        self._builder = builder or DefaultPetBuilder(default_io=default_io)
 
     def create(self, pet_type: str, name: str, age: float):
-        cls = self._pet_class_map.get(pet_type, self._default_cls)
-        return cls(name, age)
+        # Preserve the old create() signature and behavior expectations.
+        return self._builder.create(pet_type, name, age)
 
 
 class User:
     """
     Represents a player/account.
-    PURE ENTITY: No static lists or database logic here.
+
+    Collaboration:
+    - Owns pets, inventory, currency, and preference capture (music/food dicts).
+    - Delegates password hashing/verification to an AuthService.
+    - Delegates pet restoration to a PetFactory.
     """
-    
+
     def __init__(
         self,
         username: str,
@@ -101,13 +115,16 @@ class User:
         self.__password_hash = self.auth_service.hash(new_password)
 
     def add_pet(self, pet) -> None:
+        """Attach a new pet to the user."""
         self.pets.append(pet)
 
     def add_item(self, category: str, name: str, amount: int) -> None:
+        """Add quantity of an inventory item."""
         if category in self.inventory and name in self.inventory[category]:
             self.inventory[category][name] += int(amount)
 
     def has_item(self, category: str, name: str, amount: int = 1) -> bool:
+        """Return True if the user has at least `amount` of the given item."""
         return (
             category in self.inventory
             and name in self.inventory[category]
@@ -115,12 +132,14 @@ class User:
         )
 
     def consume_item(self, category: str, name: str, amount: int = 1) -> bool:
+        """Consume an inventory item if available and return whether it succeeded."""
         if self.has_item(category, name, amount):
             self.inventory[category][name] -= amount
             return True
         return False
 
     def create_memento(self) -> Dict[str, Any]:
+        """Create a dict snapshot of user state suitable for JSON persistence."""
         pets_data = []
         for pet in self.pets:
             pet_data = {
@@ -150,6 +169,11 @@ class User:
         return user_data
 
     def restore_from_memento(self, memento: Dict[str, Any]) -> None:
+        """
+        Restore user state from a previously created memento.
+
+        Behavior is preserved: pet stats are restored exactly as before.
+        """
         self.username = memento.get("username", self.username)
         self.__password_hash = memento.get("password", self.__password_hash)
         self._currency = memento.get("currency", 0)

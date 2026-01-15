@@ -1,10 +1,20 @@
-"""Animal entities with separated identity data and rendering concerns.
+"""
+features/animal.py
 
+Concrete pet species implementations.
+
+Responsibilities:
+- Provide per-species identity attributes (emoji, favorite food, music preferences).
+- Provide lifecycle ASCII art rendering helpers.
+
+Collaboration:
+- Inherits core behavior from `features.pet.VirtualPet`.
+- Uses `utils.ports.OutputPort` for output and `constants.animalsArt` for ASCII art.
 """
 
-from .pet import VirtualPet
+from __future__ import annotations
+
 from constants.configs import LINE
-from utils.ports import OutputPort
 from constants.animalsArt import (
     CatsArt as CAT,
     RabbitsArt as RABBIT,
@@ -12,10 +22,14 @@ from constants.animalsArt import (
     DragonArt as DRAGON,
     PouArt as POU,
 )
+from utils.ports import OutputPort
+
+from .pet import VirtualPet
 
 
 class PetIdentity:
-    """Encapsulates identity attributes shared across pet behaviors."""
+    """Identity attributes shared across pet behaviors (pure data container)."""
+
     def __init__(self, emoji: str, fav_food: str, music_taste: str, dislike_music: str, songs: tuple[str, ...]):
         self.emoji = emoji
         self.fav_food = fav_food
@@ -25,8 +39,9 @@ class PetIdentity:
 
 
 class IdentityMixin:
-    """Shared identity assignment helper to avoid repetition."""
-    def _set_identity(self, identity: PetIdentity):
+    """Shared identity assignment helper to avoid repetition across species."""
+
+    def _set_identity(self, identity: PetIdentity) -> None:
         self.emoji = identity.emoji
         self.fav_food = identity.fav_food
         self.music_taste = identity.music_taste
@@ -35,7 +50,8 @@ class IdentityMixin:
 
 
 class PetRenderer:
-    """Responsible for rendering ASCII representations."""
+    """Rendering helper for producing lifecycle ASCII art blocks."""
+
     @staticmethod
     def render(art: str):
         yield LINE
@@ -43,15 +59,20 @@ class PetRenderer:
 
 
 class Cat(IdentityMixin, VirtualPet):
+    """Cat species implementation (identity + art)."""
+
     def __init__(self, name, age, io: OutputPort = None):
-        super().__init__(name, age, "Cat", io=io)
-        self._set_identity(PetIdentity(
-            emoji="🐈",
-            fav_food="Chicken",
-            music_taste="Pop",
-            dislike_music="Reggae",
-            songs=("Born Again by Doja Cat", "Golden by HUNTR/X", "Busy Woman by Sabrina Carpenter"),
-        ))
+        # Preserve call pattern used by the existing codebase.
+        super().__init__(name=name, io=io, age=age, species="Cat")
+        self._set_identity(
+            PetIdentity(
+                emoji="🐈",
+                fav_food="Chicken",
+                music_taste="Pop",
+                dislike_music="Reggae",
+                songs=("Born Again by Doja Cat", "Golden by HUNTR/X", "Busy Woman by Sabrina Carpenter"),
+            )
+        )
 
     @staticmethod
     def baby():
@@ -71,15 +92,19 @@ class Cat(IdentityMixin, VirtualPet):
 
 
 class Rabbit(IdentityMixin, VirtualPet):
+    """Rabbit species implementation (identity + art)."""
+
     def __init__(self, name, age, io: OutputPort = None):
-        super().__init__(name, age, "Rabbit", io=io)
-        self._set_identity(PetIdentity(
-            emoji="🐇",
-            fav_food="Ice Cream",
-            music_taste="J-Pop",
-            dislike_music="Rock",
-            songs=("Genic - It's Showtime", "Kis-My-Ft2 - Glory Days", "TWS - Hajimemashite"),
-        ))
+        super().__init__(name=name, io=io, age=age, species="Rabbit")
+        self._set_identity(
+            PetIdentity(
+                emoji="🐇",
+                fav_food="Ice Cream",
+                music_taste="J-Pop",
+                dislike_music="Rock",
+                songs=("Genic - It's Showtime", "Kis-My-Ft2 - Glory Days", "TWS - Hajimemashite"),
+            )
+        )
 
     @staticmethod
     def baby():
@@ -99,15 +124,19 @@ class Rabbit(IdentityMixin, VirtualPet):
 
 
 class Dino(IdentityMixin, VirtualPet):
+    """Dinosaur species implementation (identity + art)."""
+
     def __init__(self, name, age, io: OutputPort = None):
-        super().__init__(name, age, "Dinosaur", io=io)
-        self._set_identity(PetIdentity(
-            emoji="🦖",
-            fav_food="French Fries",
-            music_taste="K-Pop",
-            dislike_music="Country",
-            songs=("BTS - Spring Day", "Fifty Fifty - Cupid", "Twice - The Feels"),
-        ))
+        super().__init__(name=name, io=io, age=age, species="Dinosaur")
+        self._set_identity(
+            PetIdentity(
+                emoji="🦖",
+                fav_food="French Fries",
+                music_taste="K-Pop",
+                dislike_music="Country",
+                songs=("BTS - Spring Day", "Fifty Fifty - Cupid", "Twice - The Feels"),
+            )
+        )
 
     @staticmethod
     def baby():
@@ -127,15 +156,19 @@ class Dino(IdentityMixin, VirtualPet):
 
 
 class Dragon(IdentityMixin, VirtualPet):
+    """Dragon species implementation (identity + art)."""
+
     def __init__(self, name, age, io: OutputPort = None):
-        super().__init__(name, age, "Dragon", io=io)
-        self._set_identity(PetIdentity(
-            emoji="🐉",
-            fav_food="Nugget",
-            music_taste="Blues",
-            dislike_music="K-Pop",
-            songs=("The Thrill is Gone By BB King", "Mannish Boy By Muddy Waters", "Love in Vain By Robert Johnson"),
-        ))
+        super().__init__(name=name, io=io, age=age, species="Dragon")
+        self._set_identity(
+            PetIdentity(
+                emoji="🐉",
+                fav_food="Nugget",
+                music_taste="Blues",
+                dislike_music="K-Pop",
+                songs=("The Thrill is Gone By BB King", "Mannish Boy By Muddy Waters", "Love in Vain By Robert Johnson"),
+            )
+        )
 
     @staticmethod
     def baby():
@@ -155,15 +188,19 @@ class Dragon(IdentityMixin, VirtualPet):
 
 
 class Pou(IdentityMixin, VirtualPet):
+    """Pou species implementation (identity + art)."""
+
     def __init__(self, name, age, io: OutputPort = None):
-        super().__init__(name, age, "Pou", io=io)
-        self._set_identity(PetIdentity(
-            emoji="💩",
-            fav_food="Chicken",
-            music_taste="Jazz",
-            dislike_music="Rap",
-            songs=("Modern Jazz Quartet - Django", "Ahmad Jamal - Poinciana", "George Shearing - Lullaby of Birdland"),
-        ))
+        super().__init__(name=name, io=io, age=age, species="Pou")
+        self._set_identity(
+            PetIdentity(
+                emoji="💩",
+                fav_food="Chicken",
+                music_taste="Jazz",
+                dislike_music="Rap",
+                songs=("Modern Jazz Quartet - Django", "Ahmad Jamal - Poinciana", "George Shearing - Lullaby of Birdland"),
+            )
+        )
 
     @staticmethod
     def baby():
