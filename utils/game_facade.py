@@ -93,6 +93,12 @@ class GameFacade:
         """Return the total number of registered users."""
         return len(self.user_repo.get_all())
 
+    def get_formatted_time_box(self) -> str:
+        """Return the formatted time/day box for the current game state."""
+        hours = self.get_current_time()
+        days = str(self.get_current_day())
+        return self.game.format.format_time_box(hours, days)
+
     def _connect_to_game(self) -> None:
         """Ensure game instance is initialized for the current user."""
         if self.current_user and (not self.game or self.game.user != self.current_user):
@@ -211,7 +217,7 @@ class GameFacade:
 
     def view_pet_stats(self, pet) -> None:
         """Display pet stats."""
-        self.game.view(pet)
+        self.game.display_stats(pet)
 
     def interact_pet(self, pet) -> None:
         """Run interaction loop then advance pet time."""
