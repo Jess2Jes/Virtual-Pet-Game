@@ -27,6 +27,7 @@ class Sudoku(MinigameStrategy):
         self.coins = 50
         self.start_time = None
         self.end_time = None
+        self.aborted = False
 
     def display_menu(self):
         """Show rules and rewards for the Sudoku minigame."""
@@ -77,18 +78,21 @@ class Sudoku(MinigameStrategy):
         for i, row in enumerate(self.grid):
             if i > 0 and i % 3 == 0:
                 self.io.write(f"  {UIC.GRID_LINE}")
-            UIC.LINE = f"{i + 1} |"
+            
+            # FIX: Use a local variable 'row_str' instead of overwriting global UIC.LINE!
+            row_str = f"{i + 1} |"
             for j, num in enumerate(row):
                 if j > 0 and j % 3 == 0:
-                    UIC.LINE += " |"
+                    row_str += " |"
                 if self.pre_filled[i][j]:
-                    UIC.LINE += f" {num}"
+                    row_str += f" {num}"
                 elif self.grid[i][j] != 0:
-                    UIC.LINE += f" {num}"
+                    row_str += f" {num}"
                 else:
-                    UIC.LINE += "  "
-            UIC.LINE += " |"
-            self.io.write(UIC.LINE)
+                    row_str += "  "
+            row_str += " |"
+            self.io.write(row_str)
+            
         self.io.write(f"  {UIC.GRID_LINE}")
         self.io.write("")
 
@@ -261,7 +265,8 @@ class Sudoku(MinigameStrategy):
         return True
 
     def _handle_exit_action(self):
-        self.io.write(yellow("\nYou exited."))
+        self.aborted = True
+        self.io.write(yellow("\nLeaving Sudoku..."))
         return False
 
     def _handle_clear_action(self, data):
@@ -385,6 +390,10 @@ class Sudoku(MinigameStrategy):
         self.display_menu()
         self.build_question()
         summary = self.build_game()
+        
+        if self.aborted:
+            return {"currency": 0, "pet_happiness": 0}
+
         result = self.evaluate(summary)
         reward = self.reward(result)
         return reward

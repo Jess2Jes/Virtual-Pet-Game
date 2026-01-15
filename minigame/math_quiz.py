@@ -103,7 +103,7 @@ class MathQuiz(MinigameStrategy):
     def evaluate(self, user_answers):
         """Evaluate provided answers against expected results and compute accuracy/timing metrics."""
         for (a, op, b), u in zip(self.questions, user_answers):
-            func = MATHC.ARITHMETIC_OPERATIONS.get(op)
+            func = MATHC.OPERATIONS.get(op)
             expected = func(a, b) if func else None
             self.answers.append(expected)
             if expected and u == expected:

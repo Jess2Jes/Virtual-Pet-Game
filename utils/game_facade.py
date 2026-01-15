@@ -279,6 +279,14 @@ class GameFacade:
     def play_minigame(self, game_name: str, pet) -> bool:
         """Play a registered minigame and apply rewards."""
         game = self._minigame_registry.create(game_name, io=self.io)
+        
+        # FIX: Inject opponents for Battle Contest if the game supports it
+        if hasattr(game, "set_opponents"):
+            all_users = self.user_repo.get_all()
+            # Depending on repo implementation, get_all returns list or dict
+            user_list = list(all_users.values()) if isinstance(all_users, dict) else all_users
+            game.set_opponents(user_list)
+
         result = game.play(self.current_user, pet)
         if result:
             coins = int(result.get("currency", 0))
