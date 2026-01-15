@@ -1,14 +1,39 @@
-"""Tetris minigame implementation (conforms to MinigameStrategy interfaces)."""
+"""
+minigame/tetris.py
+
+Tetris minigame.
+
+Behavior is preserved. This refactor adds a minimal time abstraction to support DIP
+in environments that want to control sleeping/time without altering gameplay rules.
+"""
 
 import curses
 import logging
 import time
 from random import choice
-from typing import Dict
-from .base_class import MinigameStrategy
-from utils.ports import ConsoleIO, InputPort, OutputPort
-from utils.colorize import green, yellow
+from typing import Dict, Protocol
+
 from constants.configs import LINE
+from utils.colorize import green, yellow
+from utils.ports import ConsoleIO, InputPort, OutputPort
+
+from .base_class import MinigameStrategy
+
+
+class Clock(Protocol):
+    """Abstraction for time operations used by interactive minigames."""
+    def sleep(self, seconds: float) -> None: ...
+    def now(self) -> float: ...
+
+
+class SystemClock:
+    """Default Clock using the Python standard library (time module)."""
+    def sleep(self, seconds: float) -> None:
+        time.sleep(seconds)
+
+    def now(self) -> float:
+        return time.time()
+
 
 class Tetris(MinigameStrategy):
     """A simple tetris minigame where logic-based rewards are determined."""
@@ -22,14 +47,15 @@ class Tetris(MinigameStrategy):
         [[1, 1, 0], [0, 1, 1]],
         [[0, 1, 1], [1, 1, 0]],
         [[1, 0, 0], [1, 1, 1]],
-        [[0, 0, 1], [1, 1, 1]]
+        [[0, 0, 1], [1, 1, 1]],
     ]
 
     WIDTH = 10
     HEIGHT = 20
 
-    def __init__(self, io: InputPort | OutputPort | None = None):
+    def __init__(self, io: InputPort | OutputPort | None = None, clock: Clock | None = None):
         self.io: InputPort | OutputPort = io or ConsoleIO()
+        self._clock: Clock = clock or SystemClock()
 
     def setup(self, player, pet):
         self.player = player
@@ -40,7 +66,7 @@ class Tetris(MinigameStrategy):
         self.piece_offset = [0, Tetris.WIDTH // 2 - len(self.current_piece[0]) // 2]
         self.score = 0
         self.speed = 0.8
-        self.next_drop = time.time() + self.speed
+        self.next_drop = self._clock.now() + self.speed
         self.stdscr = None
         self.game_over = False
         self.lines_cleared = 0
@@ -58,7 +84,12 @@ class Tetris(MinigameStrategy):
             for x, cell in enumerate(row):
                 by = y + off_y
                 bx = x + off_x
-                if cell and (bx < 0 or bx >= Tetris.WIDTH or by >= Tetris.HEIGHT or (by >= 0 and self.board[by][bx])):
+                if cell and (
+                    bx < 0
+                    or bx >= Tetris.WIDTH
+                    or by >= Tetris.HEIGHT
+                    or (by >= 0 and self.board[by][bx])
+                ):
                     return True
         return False
 
@@ -134,7 +165,7 @@ class Tetris(MinigameStrategy):
         for y, row in enumerate(self.board):
             for x, cell in enumerate(row):
                 if cell:
-                    win.addstr(grid_y + 1 + y, grid_x + 1 + x * 2, '[]')
+                    win.addstr(grid_y + 1 + y, grid_x + 1 + x * 2, "[]")
 
     def _draw_piece(self, win, piece, offset, grid_x, grid_y):
         """Draw a piece at a given offset."""
@@ -143,7 +174,7 @@ class Tetris(MinigameStrategy):
                 by = y + offset[0]
                 bx = x + offset[1]
                 if cell and 0 <= by < Tetris.HEIGHT and 0 <= bx < Tetris.WIDTH:
-                    win.addstr(grid_y + 1 + by, grid_x + 1 + bx * 2, '[]')
+                    win.addstr(grid_y + 1 + by, grid_x + 1 + bx * 2, "[]")
 
     def _draw_ui(self, win, grid_x, grid_y):
         """Draw score and next piece preview."""
@@ -180,8 +211,8 @@ class Tetris(MinigameStrategy):
 
     def handle_input(self, key):
         """Handle keyboard input."""
-        if key in [ord('q'), ord('Q')]:
-            return 'quit'
+        if key in [ord("q"), ord("Q")]:
+            return "quit"
 
         if key == curses.KEY_LEFT:
             self._try_move(0, -1)
@@ -192,7 +223,7 @@ class Tetris(MinigameStrategy):
         elif key == curses.KEY_DOWN:
             self._try_drop()
 
-        return 'continue'
+        return "continue"
 
     def _try_move(self, d_row, d_col):
         """Attempt to move the piece by (d_row, d_col) if no collision."""
@@ -235,18 +266,18 @@ class Tetris(MinigameStrategy):
         stdscr.nodelay(True)
         stdscr.timeout(100)
 
-        next_drop = time.time() + self.speed
+        next_drop = self._clock.now() + self.speed
 
         while not self.game_over:
-            current_time = time.time()
+            current_time = self._clock.now()
             key = stdscr.getch()
 
             if key != -1:
-                if self._handle_key(key) == 'quit':
+                if self._handle_key(key) == "quit":
                     break
 
             if current_time > next_drop:
-                next_drop = time.time() + self.speed
+                next_drop = self._clock.now() + self.speed
                 self._handle_drop()
 
             self.draw_board(stdscr)
@@ -257,8 +288,8 @@ class Tetris(MinigameStrategy):
     def _handle_key(self, key):
         """Process a keyboard input key."""
         result = self.handle_input(key)
-        if result == 'quit':
-            return 'quit'
+        if result == "quit":
+            return "quit"
         return None
 
     def _handle_drop(self):
@@ -304,30 +335,22 @@ class Tetris(MinigameStrategy):
     def build_game(self):
         """Run the interactive portion where the user provides moves."""
         self.io.write("\nStarting Tetris...")
-        time.sleep(1)
+        self._clock.sleep(1)
         score = curses.wrapper(self.game_loop)
-        return {
-            "score": score,
-            "lines_cleared": self.lines_cleared,
-            "game_over": self.game_over
-        }
+        return {"score": score, "lines_cleared": self.lines_cleared, "game_over": self.game_over}
 
     def evaluate(self, answer: Dict):
         """Evaluate the raw moves and return a structured result."""
-        score = answer.get('score', 0)
-        lines_cleared = answer.get('lines_cleared', 0)
+        score = answer.get("score", 0)
+        lines_cleared = answer.get("lines_cleared", 0)
 
-        return {
-            "score": score,
-            "lines_cleared": lines_cleared,
-            "passed": score >= 200
-        }
+        return {"score": score, "lines_cleared": lines_cleared, "passed": score >= 200}
 
     def reward(self, result):
         """Convert evaluation results into currency/pet happiness rewards."""
-        score = result.get('score', 0)
-        lines_cleared = result.get('lines_cleared', 0)
-        passed = result.get('passed', False)
+        score = result.get("score", 0)
+        lines_cleared = result.get("lines_cleared", 0)
+        passed = result.get("passed", False)
 
         if passed:
             coins = 20 + (score // 100) * 5 + lines_cleared * 2
@@ -349,7 +372,7 @@ class Tetris(MinigameStrategy):
         self.display_menu()
         self.build_question()
         choice_val = self.get_input()
-        if choice_val.lower() == 'q':
+        if choice_val.lower() == "q":
             self.io.write("\nReturning to main menu...")
             return {"currency": 0, "pet_happiness": 0}
 

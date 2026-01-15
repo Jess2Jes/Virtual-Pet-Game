@@ -1,19 +1,28 @@
 """
-Facade orchestrating game subsystems with a registry-based minigame factory.
+features/game_facade.py
+
+Facade orchestrating core gameplay, persistence, and minigames.
+
+This module preserves the existing GameFacade API and behavior while improving SRP/DIP:
+- Minigame creation remains registry-based.
+- Save/load bootstrapping is delegated to a small internal persistence adapter.
+- Construction of Shop/Game is centralized behind factory callables to reduce coupling.
 """
 
 import datetime
 from importlib import import_module
 from typing import Callable, Dict, Type
-from features.shop import Shop
-from features.game import Game
-from utils.ports import OutputPort, ConsoleIO, ContentLoader, FileContentLoader
-from features.user import User
-from utils.colorize import green, red, yellow
+
 from constants.configs import GAME_LIST, MINIGAME_SPECS
-from repositories.user_repository import UserRepository
+from features.game import Game
+from features.shop import Shop
+from features.user import User
 from repositories.save_repository import SaveRepository
 from repositories.save_manager import SaveManager
+from repositories.user_repository import UserRepository
+from utils.colorize import green, red, yellow
+from utils.ports import ContentLoader, ConsoleIO, FileContentLoader, OutputPort
+
 
 class MinigameRegistry:
     """Registry/factory for minigames to decouple facade from concrete imports."""
@@ -24,7 +33,7 @@ class MinigameRegistry:
     def register(self, name: str, module_path: str, class_name: str) -> None:
         """Register a minigame by name with its module and class."""
 
-        def factory(io : OutputPort = None):
+        def factory(io: OutputPort = None):
             module = import_module(module_path)
             cls: Type = getattr(module, class_name)
             return cls(io=io)
@@ -48,38 +57,57 @@ class MinigameRegistry:
 
 
 class GameFacade:
-    """High-level interface coordinating user, game, saves, shop, and minigames."""
+    """
+    High-level interface coordinating user, game, saves, shop, and minigames.
 
-    def __init__(self, io: OutputPort | None = None, save_repo: SaveRepository | None = None, content_loader: ContentLoader | None = None):
+    Public API is preserved. Internally, dependency creation is centralized behind
+    factories to reduce coupling to concrete types.
+    """
+
+    def __init__(
+        self,
+        io: OutputPort | None = None,
+        save_repo: SaveRepository | None = None,
+        content_loader: ContentLoader | None = None,
+        *,
+        user_repo: UserRepository | None = None,
+        game_factory: Callable[[User, OutputPort, ContentLoader], Game] | None = None,
+        shop_factory: Callable[[User, OutputPort], Shop] | None = None,
+    ):
         self.io: OutputPort = io or ConsoleIO()
-        self.content_loader = content_loader or FileContentLoader()
+        self.content_loader: ContentLoader = content_loader or FileContentLoader()
+        self.user_repo: UserRepository = user_repo or UserRepository()
+
         self.game = None
-        self.user_repo = UserRepository()
         self.current_user = None
+
         self._minigame_registry = MinigameRegistry.from_specs(MINIGAME_SPECS)
-        self.save_manager = save_repo or SaveManager.get_instance()
+        self.save_manager: SaveRepository = save_repo or SaveManager.get_instance()
+
+        self._game_factory = game_factory or (lambda user, io, loader: Game(user, io=io, content_loader=loader))
+        self._shop_factory = shop_factory or (lambda user, io: Shop(user, io=io))
+
         self._load_all_users_from_saves()
-        
+
     def get_user_count(self) -> int:
         """Return the total number of registered users."""
         return len(self.user_repo.get_all())
 
-    def _connect_to_game(self):
+    def _connect_to_game(self) -> None:
         """Ensure game instance is initialized for the current user."""
         if self.current_user and (not self.game or self.game.user != self.current_user):
-            self.game = Game(self.current_user, io=self.io, content_loader=self.content_loader)
+            self.game = self._game_factory(self.current_user, self.io, self.content_loader)
 
     def register_user(self, username: str, password: str) -> bool:
         """Register and connect a new user."""
-        
         if self.user_repo.exists(username):
             self.io.write(red("This username has already existed!\n"))
             return False
 
         if username.strip().lower() in password.strip().lower():
-             self.io.write(red("Password cannot be the same as username!\n"))
-             return False
-        
+            self.io.write(red("Password cannot be the same as username!\n"))
+            return False
+
         try:
             new_user = User(username)
             new_user.password = password
@@ -90,23 +118,23 @@ class GameFacade:
             return False
 
         self.user_repo.add(new_user)
-        
+
         initial_state = {
             "user": new_user.create_memento(),
-            "game": { "day": 0, "spend": 0, "clock": 8 }
+            "game": {"day": 0, "spend": 0, "clock": 8},
         }
-        
+
         self.save_manager.save_game(username, initial_state)
         self.current_user = new_user
         self.io.write(green(f"User {username} registered successfully!\n"))
-    
+
         self._connect_to_game()
         return True
 
     def login_user(self, username: str, password: str) -> bool:
         """Login flow with save loading."""
         user = self.user_repo.get_by_username(username)
-        
+
         if not user:
             self.io.write(red("User not found!\n"))
             return False
@@ -117,9 +145,9 @@ class GameFacade:
 
         self.current_user = user
         self.io.write(green(f"Welcome back, {user.username}!\n"))
-        
+
         self._connect_to_game()
-        
+
         self.io.write("\n💾 Checking for saved game...")
         if self._load_game(user.username):
             self.io.write(green("🔃 Previous game loaded!\n"))
@@ -135,7 +163,7 @@ class GameFacade:
     def change_password(self, username: str, old_password: str, new_password: str) -> bool:
         """Change user password and persist game state."""
         user = self.user_repo.get_by_username(username)
-        
+
         if not user:
             return False
         if not user.auth_service.verify(old_password, user.password):
@@ -145,12 +173,13 @@ class GameFacade:
         user.password = new_password
         if not user.auth_service.verify(new_password, user.password):
             return False
-        
+
         try:
-            user.password = new_password 
+            user.password = new_password
         except ValueError as e:
             self.io.write(red(f"Cannot change password: {e}"))
             return False
+
         game_state = {
             "user": user.create_memento(),
             "game": {
@@ -205,7 +234,6 @@ class GameFacade:
         else:
             return pet.elder()
 
-    # === Game State Management ===
     def get_current_time(self) -> str:
         """Return current in-game clock."""
         self._connect_to_game()
@@ -241,7 +269,7 @@ class GameFacade:
     def enter_shop(self) -> None:
         """Enter shop interaction."""
         if self.current_user:
-            shop = Shop(self.current_user, io=self.io)
+            shop = self._shop_factory(self.current_user, self.io)
             shop.interact()
 
     def get_minigames(self) -> list:
@@ -264,13 +292,13 @@ class GameFacade:
             return True
         return False
 
-    def _load_all_users_from_saves(self):
-        """Populate the Repository from the SaveManager."""
+    def _load_all_users_from_saves(self) -> None:
+        """Populate the repository from saved state."""
         try:
-            all_saves = self.save_manager._load_all_saves()
+            all_saves = self.save_manager._load_all_saves()  # type: ignore[attr-defined]
         except Exception:
             all_saves = {}
-            
+
         for username, save_data in all_saves.items():
             if not self.user_repo.exists(username):
                 user_data = save_data.get("user", {})

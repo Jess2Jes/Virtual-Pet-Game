@@ -1,12 +1,37 @@
-"""Memory Match minigame implementation (conforms to MinigameStrategy interfaces)."""
+"""
+minigame/memory_match.py
+
+Memory Match minigame.
+
+Behavior is preserved. This refactor introduces a small dependency boundary for
+loading words to support DIP without changing any game rules.
+"""
 
 import time
 from random import choice, randint, random
-from .base_class import MinigameStrategy
-from utils.ports import ConsoleIO, InputPort, OutputPort
+from typing import Protocol, Sequence
+
 from constants.configs import LINE
-from utils.formatter import clear
 from utils.colorize import green
+from utils.formatter import clear
+from utils.ports import ConsoleIO, InputPort, OutputPort
+
+from .base_class import MinigameStrategy
+
+
+class WordSource(Protocol):
+    """Abstraction for retrieving word tokens used by MemoryMatch."""
+    def load_words(self) -> Sequence[str]: ...
+
+
+class FileWordSource:
+    """Default WordSource that reads datas/words.txt exactly as before."""
+    def __init__(self, path: str = "datas/words.txt"):
+        self._path = path
+
+    def load_words(self) -> Sequence[str]:
+        with open(self._path) as word_file:
+            return list(word_file.read().split())
 
 
 class MemoryMatch(MinigameStrategy):
@@ -14,13 +39,17 @@ class MemoryMatch(MinigameStrategy):
 
     name = "Memory Match"
 
-    def __init__(self, io: InputPort | OutputPort | None = None):
+    def __init__(
+        self,
+        io: InputPort | OutputPort | None = None,
+        word_source: WordSource | None = None,
+    ):
         self.io: InputPort | OutputPort = io or ConsoleIO()
+        self._word_source: WordSource = word_source or FileWordSource()
 
     def load_words(self):
-        with open("datas/words.txt") as word_file:
-            words = list(word_file.read().split())
-        return words
+        # Preserve the original method and behavior; now delegated.
+        return list(self._word_source.load_words())
 
     def setup(self, player, pet):
         self.player = player
@@ -94,7 +123,7 @@ class MemoryMatch(MinigameStrategy):
         self.io.write(" ".join(self.sequence))
         time.sleep(1.0 + 0.5 * self.length)
         clear()
-        self.io.write("Now type the sequence separated by spaces (e.g. \"1 2 3\" or \"cat dog 5\" or \"cat dog fruit\").")
+        self.io.write('Now type the sequence separated by spaces (e.g. "1 2 3" or "cat dog 5" or "cat dog fruit").')
         ans = self.io.read("Your answer: ").strip()
         return ans.split()
 
