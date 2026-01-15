@@ -4,7 +4,7 @@ features/inventory_catalog.py
 Inventory definition access boundary.
 
 Responsibilities:
-- Provide access to FOOD_DEF / SOAP_DEF / POTION_DEF via an injectable abstraction.
+- Provide access to FC.DEFINITIONS / SC.DEFINITIONS / PC.DEFINITIONS via an injectable abstraction.
 - Preserve existing dict shapes and keys (no gameplay changes).
 
 Collaboration:
@@ -15,7 +15,11 @@ from __future__ import annotations
 
 from typing import Dict, Protocol
 
-from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF
+from constants.configs import (
+    FoodConfig as FC,
+    SoapConfig as SC,
+    PotionConfig as PC,
+)
 
 
 class InventoryCatalog(Protocol):
@@ -28,10 +32,10 @@ class InventoryCatalog(Protocol):
 class DefaultInventoryCatalog:
     """Default catalog that returns the existing constant dicts unchanged."""
     def food_defs(self) -> Dict:
-        return FOOD_DEF
+        return FC.DEFINITIONS
 
     def soap_defs(self) -> Dict:
-        return SOAP_DEF
+        return SC.DEFINITIONS
 
     def potion_defs(self) -> Dict:
-        return POTION_DEF
+        return PC.DEFINITIONS

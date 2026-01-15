@@ -13,7 +13,7 @@ import datetime
 from importlib import import_module
 from typing import Callable, Dict, Type
 
-from constants.configs import GAME_LIST, MINIGAME_SPECS
+from constants.configs import MinigameConfig as MC
 from features.games.game import Game
 from features.shop import Shop
 from features.user import User
@@ -81,7 +81,7 @@ class GameFacade:
         self.game = None
         self.current_user = None
 
-        self._minigame_registry = MinigameRegistry.from_specs(MINIGAME_SPECS)
+        self._minigame_registry = MinigameRegistry.from_specs(MC.SPECS)
         self.save_manager: SaveRepository = save_repo or SaveManager.get_instance()
 
         self._game_factory = game_factory or (lambda user, io, loader: Game(user, io=io, content_loader=loader))
@@ -274,7 +274,7 @@ class GameFacade:
 
     def get_minigames(self) -> list:
         """List available minigame names."""
-        return GAME_LIST
+        return MC.GAME_LIST
 
     def play_minigame(self, game_name: str, pet) -> bool:
         """Play a registered minigame and apply rewards."""

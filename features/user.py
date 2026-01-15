@@ -14,7 +14,12 @@ import bcrypt
 from typing import Dict, Any, Protocol
 from random import randrange
 
-from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF, VALID_PASSWORD
+from constants.configs import (
+    AuthConfig as AC,
+    PotionConfig as PC,
+    FoodConfig as FC,
+    SoapConfig as SC
+    )
 from utils.ports import OutputPort
 from features.pet_construction import DefaultPetBuilder, PetBuilder
 
@@ -83,9 +88,9 @@ class User:
         self._currency: int = randrange(0, 25000)
 
         self.inventory: Dict[str, Dict[str, int]] = {
-            "food": dict.fromkeys(FOOD_DEF.keys(), 3),
-            "soap": dict.fromkeys(SOAP_DEF.keys(), 3),
-            "potion": dict.fromkeys(POTION_DEF.keys(), 3),
+            "food": dict.fromkeys(FC.DEFINITIONS.keys(), 3),
+            "soap": dict.fromkeys(SC.DEFINITIONS.keys(), 3),
+            "potion": dict.fromkeys(PC.DEFINITIONS.keys(), 3),
         }
 
     @property
@@ -108,7 +113,7 @@ class User:
 
     @password.setter
     def password(self, new_password: str):
-        if not re.match(VALID_PASSWORD, new_password):
+        if not re.match(AC.VALID_PASSWORD, new_password):
             raise ValueError(
                 "Password is too weak! Must contain 8+ chars, 1 upper, 1 lower, 1 digit, 1 symbol."
             )

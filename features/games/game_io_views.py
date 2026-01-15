@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from constants.configs import LINE
+from constants.configs import UIConfig as UIC
 from utils.ports import IOPort
 
 
@@ -40,45 +40,45 @@ class GameView:
             "6. Take a walk",
             "7. Talk to pet",
             "8. Exit",
-            LINE,
+            UIC.LINE,
         ]
         self._io.write(self._render_lines(menu))
 
     def print_talk_menu(self) -> None:
         lines = [
-            "\n" + LINE,
+            "\n" + UIC.LINE,
             "Topics of Conversation: ",
-            LINE,
+            UIC.LINE,
             "1. What do you want to do today?",
             "2. What is your favourite food?",
             "3. Ask me anything",
             "4. Can you give me money?",
             "5. Tell a joke",
             "6. Goodbye",
-            LINE,
+            UIC.LINE,
         ]
         self._io.write("\n".join(lines))
 
     def print_conversation_menu(self) -> None:
         lines = [
-            "\n" + LINE,
+            "\n" + UIC.LINE,
             "1. Music Taste",
             "2. Favourite Food",
             "3. That's enough about me",
-            LINE,
+            UIC.LINE,
         ]
         self._io.write("\n".join(lines))
 
     def print_potion_requirement(self, title: str) -> None:
         lines = [
             "",
-            LINE,
+            UIC.LINE,
             title,
-            LINE,
+            UIC.LINE,
             "1. Fat Burner can be used if your energy is below 50.",
             "2. Health Potion can be used if your health is below 100.",
             "3. Energizer can be used if your energy is below 100.",
             "4. Adult Potion can be used if your age is below 20.",
-            LINE + "\n",
+            UIC.LINE + "\n",
         ]
         self._io.write("\n".join(lines))

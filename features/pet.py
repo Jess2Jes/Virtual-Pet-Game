@@ -12,7 +12,7 @@ This module preserves the original behavior while providing:
 from abc import ABC, abstractmethod
 from random import randrange
 
-from constants.configs import FOOD_DEF, SOAP_DEF, POTION_DEF
+from constants.configs import FoodConfig as FC, SoapConfig as SC, PotionConfig as PC
 from utils.colorize import red, green, yellow
 from utils.formatter import Formatter
 from utils.ports import OutputPort
@@ -203,7 +203,7 @@ class VirtualPet(
 
     def feed(self, food: str) -> bool:
         """Consume the provided food type and update hunger/fat/happiness."""
-        data = FOOD_DEF[food]
+        data = FC.DEFINITIONS[food]
         emoji = data["emoji"]
         hunger_change = int(data["hunger"])
         happiness_change = int(data["happiness"])
@@ -224,7 +224,7 @@ class VirtualPet(
 
     def bath(self, soap: str) -> bool:
         """Apply a bath with the given soap, improving sanity and happiness."""
-        data = SOAP_DEF[soap]
+        data = SC.DEFINITIONS[soap]
         emoji = data["emoji"]
         sanity_change = int(data["sanity"])
         happiness_change = int(data["happiness"])
@@ -243,7 +243,7 @@ class VirtualPet(
 
     def health_care(self, potion: str) -> bool:
         """Apply a potion effect when requirements are met."""
-        data = POTION_DEF[potion]
+        data = PC.DEFINITIONS[potion]
         emoji = data["emoji"]
         effect_type = data["type"]
         delta = int(data["delta"])

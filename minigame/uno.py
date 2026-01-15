@@ -4,7 +4,7 @@ import time
 from random import choice, shuffle
 from .base_class import MinigameStrategy
 from utils.ports import ConsoleIO, InputPort, OutputPort
-from constants.configs import LINE, UnoConstants as UC
+from constants.configs import UIConfig as UIC, UnoConstants as UC
 from features.user import User
 from utils.colorize import red, green, blue
 
@@ -63,12 +63,12 @@ class Uno(MinigameStrategy):
 
     def display_menu(self):
         """Show a description and choices to the player."""
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("🃏 UNO Card Minigame 🃏")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Play this classic UNO card minigame with your pet!")
         self.io.write("\nRules:")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("- Each player will be given cards depending on game choices.")
         self.io.write("- Play one card matching the discard in color, number or symbol.")
         self.io.write("- Skip: Next player misses turn")
@@ -76,7 +76,7 @@ class Uno(MinigameStrategy):
         self.io.write("- DrawTwo: Next player draws 2 cards")
         self.io.write("- Wild: Choose any color")
         self.io.write("- Wild DrawFour: Choose color and next player draws 4")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
     @staticmethod
     def can_play(card, top_card):
@@ -120,13 +120,13 @@ class Uno(MinigameStrategy):
     def get_input(self, player):
         """Get and validate user input for their turn."""
         self.io.write(f"\n{player['name']}'s Turn:")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write(f"Top Card: {self.top_card}")
 
         self.io.write("\nYour Hand:")
         for i, c in enumerate(player['hand']):
             self.io.write(f" {i + 1}. {c}")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
         valid_moves = self.get_valid_moves(player['hand'])
 
@@ -134,7 +134,7 @@ class Uno(MinigameStrategy):
             self.io.write("\nValid moves:")
             for i, c in enumerate(valid_moves):
                 self.io.write(f"{i + 1}. {c}")
-            self.io.write(LINE)
+            self.io.write(UIC.LINE)
             choice_val = self.io.read("Play (h) or draw (p)? ").strip().lower()
             return choice_val, valid_moves
         self.io.write(red("\nThere is no more valid moves for player!"))
@@ -147,11 +147,11 @@ class Uno(MinigameStrategy):
             self._setup_player(total_players)
 
         self.io.write("\nUNO Games:")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("1. Standard UNO (7 cards each)")
         self.io.write("2. Quick UNO (5 cards each)")
         self.io.write("3. Challenge UNO (10 cards each)")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
         try:
             choice_val = int(self.io.read("Choose your game modes (1/2/3/4): ").strip())
@@ -183,12 +183,12 @@ class Uno(MinigameStrategy):
     def _multiplayer_choice(self):
         """Choose number of players."""
         self.io.write("\nUNO Multiplayer Games:")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("1. 2 Players")
         self.io.write("2. 3 Players")
         self.io.write("3. 4 Players")
         self.io.write("4. 5 Players")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         try:
             player_count = int(self.io.read("Choose your game modes (1/2/3/4): ").strip())
         except ValueError:
@@ -314,7 +314,7 @@ class Uno(MinigameStrategy):
     def opponent_turn(self, player):
         """Handle pet(s) move."""
         self.io.write(f"\n{player['name']}'s Turn...")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         time.sleep(1)
         valid_moves = self.get_valid_moves(player['hand'])
 
@@ -327,7 +327,7 @@ class Uno(MinigameStrategy):
     def build_game(self):
         """Run the interactive game loop."""
         self.io.write("\nList of UNO Participants: ")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         for i, p in enumerate(self.players):
             self.io.write(f" {i + 1}. {p['name']}")
 

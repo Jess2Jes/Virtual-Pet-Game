@@ -3,7 +3,12 @@ import asyncio
 from utils.formatter import clear
 from utils.loading import loading_bar
 from .user import User
-from constants.configs import LINE, SOAP_DEF, FOOD_DEF, POTION_DEF, NO_STOCK_MSG
+from constants.configs import (
+    UIConfig as UIC, 
+    FoodConfig as FC, 
+    SoapConfig as SC, 
+    PotionConfig as PC
+    )
 from utils.colorize import red, green
 from utils.ports import OutputPort, InputPort, ConsoleIO
 
@@ -51,14 +56,14 @@ class Shop:
 
     def show_currency(self) -> None:
         """self.io.write the user's current currency with a small friendly message."""
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         money = self.user.currency
         if money >= 1000:
             self.io.write(f"🐼 : Your current currency: Rp. {'{:,}'.format(money)}")
         else:
             self.io.write(f"🐼 : Your current currency: Rp. {money}")
         self.io.write(red("🐼 : You are broke... 💸") if money < 5000 else green("🐼 : You still have lots... 💰"))
-        self.io.write(LINE + "\n")
+        self.io.write(UIC.LINE + "\n")
         
     def _list_items(self, category: str, definition: dict) -> List[Tuple[str, str, int, int, int]]:
         """
@@ -92,13 +97,13 @@ class Shop:
         Returns:
             None
         """
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write(f"{title} CATALOG")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         for name, emoji, price, qty, i in self._list_items(category, item_def):
-            stock_text = f"{qty}" if qty > 0 else f"0 ({NO_STOCK_MSG})"
+            stock_text = f"{qty}" if qty > 0 else f"0 ({UIC.NO_STOCK_MSG})"
             self.io.write(f"{i}. {name} {emoji} - Rp. {'{:,}'.format(price)} | Stock: {stock_text}")
-        self.io.write(LINE + "\n")
+        self.io.write(UIC.LINE + "\n")
 
     def _buy_category_and_index(self) -> tuple[str | None, int | None]:
         """
@@ -106,14 +111,14 @@ class Shop:
         the category key plus the selected item index (1-based). Returns (None, None)
         on invalid selection.
         """
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("🐼 : Hello, my lovely customer, welcome to our store!")
         self.io.write("\n🐼 : What do you want to buy?")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("1. Food")
         self.io.write("2. Soap")
         self.io.write("3. Potion")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         cat = self._input_int("🐼 : Choose category (1-3): ")
         if cat not in (1, 2, 3):
             self.io.write(red("\n🐼 : Please choose between 1-3 please..."))
@@ -122,15 +127,15 @@ class Shop:
         self.io.write()
 
         if cat == 1:
-            self.catalog_items("FOOD", "food", FOOD_DEF)
+            self.catalog_items("FOOD", "food", FC.DEFINITIONS)
             idx = self._input_int("🐼 : Choose food number: ")
             return "food", idx
         elif cat == 2:
-            self.catalog_items("SOAP", "soap", SOAP_DEF)
+            self.catalog_items("SOAP", "soap", SC.DEFINITIONS)
             idx = self._input_int("🐼 : Choose soap number: ")
             return "soap", idx
         else:
-            self.catalog_items("POTION", "potion", POTION_DEF)
+            self.catalog_items("POTION", "potion", PC.DEFINITIONS)
             idx = self._input_int("🐼 : Choose potion number: ")
             return "potion", idx
 
@@ -144,11 +149,11 @@ class Shop:
             return None
 
         if category == "food":
-            items = self._list_items("food", FOOD_DEF)
+            items = self._list_items("food", FC.DEFINITIONS)
         elif category == "soap":
-            items = self._list_items("soap", SOAP_DEF)
+            items = self._list_items("soap", SC.DEFINITIONS)
         else:
-            items = self._list_items("potion", POTION_DEF)
+            items = self._list_items("potion", PC.DEFINITIONS)
             
         if not (1 <= idx <= len(items)):
             self.io.write(red("\n🐼 : Invalid item number."))
@@ -159,11 +164,11 @@ class Shop:
     def _price_for_category(self, category: str, name: str) -> int:
         """Return the price of a named item for the given category."""
         if category == "food":
-            return int(FOOD_DEF[name]["price"])
+            return int(FC.DEFINITIONS[name]["price"])
         elif category == "soap":
-            return int(SOAP_DEF[name]["price"])
+            return int(SC.DEFINITIONS[name]["price"])
         else:
-            return int(POTION_DEF[name]["price"])
+            return int(PC.DEFINITIONS[name]["price"])
 
     def _add_stock(self, category: str, name: str, amount: int) -> None:
         """Add amount of item to the user's inventory via the User API."""
@@ -205,11 +210,11 @@ class Shop:
         self._add_stock(category, name, amount)
 
         if category == "food":
-            emoji = FOOD_DEF[name]["emoji"]
+            emoji = FC.DEFINITIONS[name]["emoji"]
         elif category == "soap":
-            emoji = SOAP_DEF[name]["emoji"]
+            emoji = SC.DEFINITIONS[name]["emoji"]
         else:
-            emoji = POTION_DEF[name]["emoji"]
+            emoji = PC.DEFINITIONS[name]["emoji"]
         emoji = str(emoji)
 
         self.io.write(f"\n🐼 : You bought {amount} {name} {emoji}! Fantastic!")

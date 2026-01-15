@@ -6,7 +6,7 @@ from typing import Any
 from .base_class import MinigameStrategy
 from utils.ports import ConsoleIO, InputPort, OutputPort
 from utils.colorize import red, green
-from constants.configs import LINE
+from constants.configs import UIConfig as UIC
 from features.user import User
 
 
@@ -49,15 +49,15 @@ class BattleContest(MinigameStrategy):
 
     def display_menu(self):
         """Display battle status and available actions for the current round."""
-        self.io.write("\n" + LINE)
-        self.io.write(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(LINE)))
-        self.io.write(LINE)
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.UC.LINE)
+        self.io.write(f"PET BATTLE TOURNAMENT -> ROUND - {self.current_round}".center(len(UIC.LINE)))
+        self.io.write(UIC.LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write(f"Your Pet: {self.player_pet.name} {self.player_pet.emoji}")
         self.io.write(f"Health: {self.player_health}")
         self.io.write(f"Strength: {self.player_pet_stats['strength']}")
         self.io.write(f"Agility: {self.player_pet_stats['agility']}")
-        self.io.write('-' * len(LINE))
+        self.io.write('-' * len(UIC.LINE))
 
         if self.opponent_pet:
             self.io.write(f"Opponent: {self.opponent_pet.name} {self.opponent_pet.emoji}")
@@ -65,14 +65,14 @@ class BattleContest(MinigameStrategy):
             self.io.write(f"Strength: {self.player_pet_stats['strength']}")
             self.io.write(f"Agility: {self.player_pet_stats['agility']}")
 
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("\nBattle Options:")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("1. Attack 🗡️")
         self.io.write("2. Defend 🛡️")
         self.io.write("3. Special Move ✨")
         self.io.write("4. Heal ❤️‍🩹")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
     def get_input(self):
         """Prompt and validate a numeric choice for the battle action."""
@@ -87,9 +87,9 @@ class BattleContest(MinigameStrategy):
 
     def build_question(self) -> Any:
         """Prepare the battle sequence and announce start."""
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("Battle Starting!")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write(f"{self.player_pet.name} {self.player_pet.emoji} VS {self.opponent_pet.name} {self.opponent_pet.emoji}")
         self.io.write("Prepare for battle!")
         time.sleep(2)
@@ -251,14 +251,14 @@ class BattleContest(MinigameStrategy):
             coins = 5 + (performance_score // 20)
             pet_happiness = 5 + ((player_health_remaining - 1000) // 10)
             self.io.write(red(f"💔 Defeat... {self.player_pet.name} was defeated."))
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("BATTLE RESULTS")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write(f"Performance Score: {performance_score}/100")
         self.io.write(f"Health Remaining: {player_health_remaining}")
         self.io.write(f"Coins Earned: {'{:,}'.format(coins * 1000)}")
         self.io.write(f"Pet Happiness: (+{pet_happiness})")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
         return {"currency": coins, "pet_happiness": pet_happiness}
 

@@ -6,7 +6,7 @@ from typing import Any, Dict
 from .base_class import MinigameStrategy
 from utils.ports import ConsoleIO, InputPort, OutputPort
 from utils.colorize import yellow
-from constants.configs import LINE, ARITHMETIC_OPERATIONS
+from constants.configs import UIConfig as UIC , MathConfig as MATHC
 
 
 class MathQuiz(MinigameStrategy):
@@ -28,22 +28,22 @@ class MathQuiz(MinigameStrategy):
 
     def display_menu(self):
         """Explain rules and difficulty options to the player."""
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("➕ Math Quiz ➗")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("🔍 This game is created to test your logical thinking skill! 🔍")
         self.io.write("🧠 Answer the given arithmetic questions as fast and accurately as you can... 🤓")
         self.io.write("You will get your coin rewards and boost your pet's happiness! 😸")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Before we start, please choose your difficulty: ")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("1. Easy")
         self.io.write("2. Medium")
         self.io.write("3. Hard")
         self.io.write("4. Master")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("NOTE: Any user's input other than 1-4 will be considered 1 (Default: Difficulty Easy)")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
     def get_input(self):
         """Collect difficulty choice (1-4)."""
@@ -88,7 +88,7 @@ class MathQuiz(MinigameStrategy):
     def build_game(self):
         """Prompt the user with all questions and collect integer answers (None for invalid)."""
         self.io.write(yellow(f"\nYou will be asked {len(self.questions)} questions. Type your answer (must be an int): "))
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.start_time = time.time()
         user_answers = []
         for i, (a, op, b) in enumerate(self.questions, start=1):
@@ -103,7 +103,7 @@ class MathQuiz(MinigameStrategy):
     def evaluate(self, user_answers):
         """Evaluate provided answers against expected results and compute accuracy/timing metrics."""
         for (a, op, b), u in zip(self.questions, user_answers):
-            func = ARITHMETIC_OPERATIONS.get(op)
+            func = MATHC.ARITHMETIC_OPERATIONS.get(op)
             expected = func(a, b) if func else None
             self.answers.append(expected)
             if expected and u == expected:
