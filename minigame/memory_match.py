@@ -11,7 +11,7 @@ import time
 from random import choice, randint, random
 from typing import Protocol, Sequence
 
-from constants.configs import LINE
+from constants.configs import UIConfig as UIC
 from utils.colorize import green
 from utils.formatter import clear
 from utils.ports import ConsoleIO, InputPort, OutputPort
@@ -65,18 +65,18 @@ class MemoryMatch(MinigameStrategy):
 
     def display_menu(self):
         """Explain Memory Match rules and difficulty levels."""
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("🧩 Memory Match 🧩")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Memorize a short sequence, then reproduce it.")
         self.io.write("Faster and more accurate answers give better rewards.")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Choose difficulty:")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("1. Easy   (sequence length 5-6, digits)")
         self.io.write("2. Medium (sequence length 3-4, words)")
         self.io.write("3. Hard   (sequence length 6-8, mixed digits/words)")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
     def get_input(self):
         """Collect difficulty choice."""
@@ -116,9 +116,9 @@ class MemoryMatch(MinigameStrategy):
 
     def build_game(self):
         """Show the sequence briefly and then prompt the player to reproduce it."""
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("Game started!")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Memorize this sequence:")
         self.io.write(" ".join(self.sequence))
         time.sleep(1.0 + 0.5 * self.length)
@@ -157,9 +157,9 @@ class MemoryMatch(MinigameStrategy):
 
         pet_happiness = correct // int(self.difficulty) if self.difficulty else correct
 
-        self.io.write("\n" + LINE)
-        self.io.write("RESULT".center(len(LINE)))
-        self.io.write(LINE)
+        self.io.write("\n" + UIC.LINE)
+        self.io.write("RESULT".center(len(UIC.LINE)))
+        self.io.write(UIC.LINE)
         self.io.write(f"Sequence was: {' '.join(result['sequence'])}")
         self.io.write(f"Your response: {' '.join(result['response']) if result['response'] else '(none)'}")
         self.io.write(f"\nCorrect: {correct}/{total}")

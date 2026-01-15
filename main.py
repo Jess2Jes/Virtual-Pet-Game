@@ -1,7 +1,7 @@
 import sys
 import asyncio
 from colorama import init
-from constants.configs import LINE, USERNAME_INPUTTING, PASSWORD_INPUTTING
+from constants.configs import AuthConfig as AC, UIConfig as UIC
 from utils.game_facade import GameFacade
 from utils.colorize import (
     cyan, yellow, red, magenta, green, reset_color
@@ -57,7 +57,7 @@ class Main:
         print(yellow("2. Login"))
         print(yellow("3. Change Password"))
         print(red("4. Exit"))
-        print(magenta(LINE))
+        print(magenta(UIC.LINE))
         try:
             return int(input(green("Choose (1-4): ")).strip())
         except ValueError:
@@ -67,7 +67,7 @@ class Main:
     def _register_flow(self) -> None:
         """Interactive registration flow: ask for username/password and attempt registration."""
         while True:
-            username = input(USERNAME_INPUTTING).strip()
+            username = input(AC.USERNAME_INPUTTING).strip()
             password = input(
                 "Password (Must contain at least 8 letters, 1 digit, and 2 symbols): "
             ).strip()
@@ -88,13 +88,13 @@ class Main:
     def _login_flow(self) -> None:
         """Interactive login flow: prompt for credentials and attempt login."""
         while True:
-            username = input(USERNAME_INPUTTING).strip()
-            password = input(PASSWORD_INPUTTING).strip()
+            username = input(AC.USERNAME_INPUTTING).strip()
+            password = input(AC.PASSWORD_INPUTTING).strip()
 
             if self.facade.login_user(username, password):
                 break
 
-            print(LINE)
+            print(UIC.LINE)
             retry = input(
                 "Would you like to login again? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "
@@ -116,8 +116,8 @@ class Main:
     def _change_password_flow(self) -> None:
         """Prompt for credentials and new password, then attempt to change it."""
         while True:
-            username = input(USERNAME_INPUTTING).strip()
-            password = input(PASSWORD_INPUTTING).strip()
+            username = input(AC.USERNAME_INPUTTING).strip()
+            password = input(AC.PASSWORD_INPUTTING).strip()
             new_password = input("Your New Password: ").strip()
 
             if self.facade.change_password(username, password, new_password):
@@ -127,7 +127,7 @@ class Main:
                 break
 
             print(red("\nInvalid credentials or password!\n"))
-            print(LINE)
+            print(UIC.LINE)
             retry = input(
                 "Would you like to change password again? (Y/N)\n"
                 "(Note: input other than Y and N will be considered as N): "
@@ -173,7 +173,7 @@ class Main:
         print(yellow("8. Play Minigames"))
         print(green("9. 💾 Save Game"))
         print(red("10. Logout"))
-        print(magenta(LINE))
+        print(magenta(UIC.LINE))
         try:
             return int(input(green("Choose (1-10): ")).strip())
         except ValueError:
@@ -198,9 +198,9 @@ class Main:
                 "pets": len(user.pets),
             }
 
-            print((f'\n{reset_color(LINE)}'))
-            print(yellow("ACCOUNT INFORMATION".center(len(LINE))))
-            print(reset_color(LINE))
+            print((f'\n{reset_color(UIC.LINE)}'))
+            print(yellow("ACCOUNT INFORMATION".center(len(UIC.LINE))))
+            print(reset_color(UIC.LINE))
 
             print(self.facade.game.format.format_username_box(stats["username"], user.pets))
 
@@ -237,7 +237,7 @@ class Main:
             age = self.facade.get_pet_age(p)
             print(yellow(f"{i}. {p.name} ({p.type}) - Age: {age:.1f}"))
 
-        print(yellow(LINE))
+        print(yellow(UIC.LINE))
 
         try:
             idx = int(input(green("\nSelect pet number: ")).strip())
@@ -302,12 +302,12 @@ class Main:
             print("\nNo minigames available.\n")
             return False
 
-        print("\n" + LINE)
+        print("\n" + UIC.LINE)
         print("Minigames: ")
-        print(LINE)
+        print(UIC.LINE)
         for i, name in enumerate(games, start=1):
             print(f"{i}. --> {name}")
-        print(LINE)
+        print(UIC.LINE)
 
         idx = input("Choose a minigame number (or type 'q' to quit): ").strip().lower()
         
@@ -377,8 +377,8 @@ class Main:
 
     def _exit_game(self) -> None:
         """Exit the application politely."""
-        print(LINE)
-        sys.exit("Thank you for playing!".upper().center(len(LINE)) + "\n")
+        print(UIC.LINE)
+        sys.exit("Thank you for playing!".upper().center(len(UIC.LINE)) + "\n")
 
     def run(self) -> None:
         """Run the main application loop: authenticate then enter pet zone."""

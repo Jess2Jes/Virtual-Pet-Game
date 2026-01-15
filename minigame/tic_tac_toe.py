@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Tuple
 from .base_class import MinigameStrategy
 from utils.ports import ConsoleIO, InputPort, OutputPort
 from utils.colorize import red, green, yellow
-from constants.configs import LINE
+from constants.configs import UIConfig as UIC
 
 class TicTacToe(MinigameStrategy):
     """n x n Tic-Tac-Toe with your pet and configurable board sizes."""
@@ -30,16 +30,16 @@ class TicTacToe(MinigameStrategy):
 
     def display_menu(self):
         """Show rules and rewards for the Tic Tac Toe minigame."""
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("⭕ Tic Tac Toe ✖️")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Let's play classic Tic-Tac-Toe with your pet!")
         self.io.write("You are X, your pet is O.")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Win ---> more currency")
         self.io.write("Draw ---> small currency")
         self.io.write("Loss ---> no currency")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
     def get_input(self):
         """Ask if the player wants to play first (Y/N)."""
@@ -56,11 +56,11 @@ class TicTacToe(MinigameStrategy):
     def build_question(self):
         """Collect board-size choice and prepare an empty board."""
         self.io.write(yellow("Choose the size of your Tic Tac Toe board!"))
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("1. 3 x 3 board")
         self.io.write("2. 4 x 4 board")
         self.io.write("3. 5 x 5 board")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         try:
             diff = int(self.io.read("Choose your size of board (1/2/3): ").strip())
         except ValueError:
@@ -328,9 +328,9 @@ class TicTacToe(MinigameStrategy):
 
     def player_move(self):
         """Prompt the player for a row/column move and validate it."""
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("It's your turn! Pick your cell now!")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         try:
             row, col = map(int, self.io.read(f"\nEnter row (1-{self.row_length}) and column (1-{self.col_length}) --> ex: 2 3: ").strip().split())
             row -= 1

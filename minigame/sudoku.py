@@ -4,7 +4,7 @@ import time
 from random import shuffle, choice
 from .base_class import MinigameStrategy
 from utils.ports import ConsoleIO, InputPort, OutputPort
-from constants.configs import LINE, GRID_LINE
+from constants.configs import UIConfig as UIC
 from utils.colorize import red, green, blue, yellow
 
 
@@ -30,30 +30,30 @@ class Sudoku(MinigameStrategy):
 
     def display_menu(self):
         """Show rules and rewards for the Sudoku minigame."""
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("🔢 Sudoku 🔢")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Let's play classic Sudoku with your pet!")
         self.io.write("You must complete following sudoku in order to win the game!")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Rules on Sudoku: ")
         self.io.write("1. Use number in range 1-9 (Do not exceed this range!)")
         self.io.write("2. Do not repeat any numbers (no repeating in rows, columns and grid 3 x 3)")
         self.io.write("3. You only have 3 tries to solve the sudoku")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Win ---> more currency")
         self.io.write("Loss ---> better luck next time")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
     def build_question(self):
         """Collect difficulty choice and prepare an incomplete Sudoku."""
         self.io.write(yellow("Level of Difficulty: "))
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("1. Easy")
         self.io.write("2. Medium")
         self.io.write("3. Hard")
         self.io.write("4. Expert")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         try:
             diff = int(self.io.read("Choose your difficulty (1/2/3/4): ").strip())
         except ValueError:
@@ -73,23 +73,23 @@ class Sudoku(MinigameStrategy):
     def print_grid(self):
         """Display the Sudoku grid with coordinates"""
         self.io.write("\n    1 2 3   4 5 6   7 8 9")
-        self.io.write(f"  {GRID_LINE}")
+        self.io.write(f"  {UIC.GRID_LINE}")
         for i, row in enumerate(self.grid):
             if i > 0 and i % 3 == 0:
-                self.io.write(f"  {GRID_LINE}")
-            line = f"{i + 1} |"
+                self.io.write(f"  {UIC.GRID_LINE}")
+            UIC.LINE = f"{i + 1} |"
             for j, num in enumerate(row):
                 if j > 0 and j % 3 == 0:
-                    line += " |"
+                    UIC.LINE += " |"
                 if self.pre_filled[i][j]:
-                    line += f" {num}"
+                    UIC.LINE += f" {num}"
                 elif self.grid[i][j] != 0:
-                    line += f" {num}"
+                    UIC.LINE += f" {num}"
                 else:
-                    line += "  "
-            line += " |"
-            self.io.write(line)
-        self.io.write(f"  {GRID_LINE}")
+                    UIC.LINE += "  "
+            UIC.LINE += " |"
+            self.io.write(UIC.LINE)
+        self.io.write(f"  {UIC.GRID_LINE}")
         self.io.write("")
 
     @staticmethod

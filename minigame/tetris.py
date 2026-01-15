@@ -13,7 +13,7 @@ import time
 from random import choice
 from typing import Dict, Protocol
 
-from constants.configs import LINE
+from constants.configs import UIConfig as UIC
 from utils.colorize import green, yellow
 from utils.ports import ConsoleIO, InputPort, OutputPort
 
@@ -113,9 +113,9 @@ class Tetris(MinigameStrategy):
 
     def display_menu(self):
         """Show a description and choices to the player."""
-        self.io.write("\n" + LINE)
+        self.io.write("\n" + UIC.LINE)
         self.io.write("🟨 Tetris ⬜")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Play this classic block-stacking game with your pet!")
         self.io.write("\nControls:")
         self.io.write("← → : Move left/right")
@@ -124,10 +124,10 @@ class Tetris(MinigameStrategy):
         self.io.write("Q   : Quit game")
         self.io.write("\nObjective:")
         self.io.write("- Clear lines by filling horizontal rows")
-        self.io.write("- Each line cleared gives 100 points")
+        self.io.write("- Each UC.LINE cleared gives 100 points")
         self.io.write("- Game gets faster as you clear more lines")
         self.io.write("- Game ends when blocks stack to the top")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
     def get_input(self):
         """Collect any initial input from the player."""
@@ -192,7 +192,7 @@ class Tetris(MinigameStrategy):
         self.io.write("2. Medium (Normal speed)")
         self.io.write("3. Hard (Fast speed)")
         self.io.write("4. Expert (Very fast)")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         try:
             diff = int(self.io.read("Choose your difficulty (1/2/3/4): ").strip())
         except ValueError:

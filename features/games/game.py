@@ -23,7 +23,7 @@ import json
 from random import choice as ch
 from typing import Iterable
 
-from constants.configs import LINE, NO_STOCK_MSG
+from constants.configs import UIConfig as UIC
 from utils.colorize import red, green, cyan, reset_color
 from utils.formatter import Formatter
 from utils.ports import ConsoleIO, ContentLoader, IOPort
@@ -107,21 +107,21 @@ class Game:
         return self.user.currency
 
     def create_name(self) -> tuple[bool, str, str]:
-        self.io.write(reset_color("\n" + LINE))
+        self.io.write(reset_color("\n" + UIC.LINE))
         name = self.io.read("Name your pet: ").title().strip()
         flag, species = self.create_species(name)
         return flag, name, species
 
     def create_species(self, name: str) -> tuple[bool, VirtualPet | None]:
         """Prompt species selection and create the chosen pet via the injected registry."""
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
         self.io.write("Here's five types of species you can choose: ")
         self.io.write("1. Cat (🐈)")
         self.io.write("2. Rabbit (🐇)")
         self.io.write("3. Dinosaur (🦖)")
         self.io.write("4. Dragon (🐉)")
         self.io.write("5. Pou (💩)")
-        self.io.write(LINE)
+        self.io.write(UIC.LINE)
 
         while True:
             species = self.io.read("Choose his/her species (1/2/3/4/5): ").strip()
@@ -193,7 +193,7 @@ class Game:
             return None
 
     def _print_stock(self, title: str, defs: dict, category: str) -> None:
-        lines = ["", LINE, title, LINE + "\n"]
+        lines = ["", UIC.LINE, title, UIC.LINE + "\n"]
         inv = self.user.inventory[category]
         is_food = category == "food"
         is_soap = category == "soap"
@@ -201,7 +201,7 @@ class Game:
         for idx, (key, v) in enumerate(defs.items(), start=1):
             emoji = str(v["emoji"])
             qty = inv.get(key, 0)
-            stock_text = f"{qty}" if qty > 0 else f"{red(NO_STOCK_MSG)}"
+            stock_text = f"{qty}" if qty > 0 else f"{red(UIC.NO_STOCK_MSG)}"
             if is_food:
                 lines.append(
                     f"{idx}. {key} {emoji} (Hunger: {v['hunger']}, Happiness: {v['happiness']}, Available: {stock_text})"
@@ -415,7 +415,7 @@ class Game:
 
     def interact(self, pet) -> None:
         self.io.write(reset_color("\n" + "=" * 120))
-        self.io.write(f"Playing with {pet.name}, the {pet.type}:".center(len(LINE)))
+        self.io.write(f"Playing with {pet.name}, the {pet.type}:".center(len(UIC.LINE)))
         while True:
             self.view.print_main_interact_menu()
             choice = self._input_int("Choose (1-8): ", self.io)

@@ -14,7 +14,7 @@ Collaboration:
 
 from __future__ import annotations
 
-from constants.configs import LINE
+from constants.configs import UIConfig as UIC
 from constants.animalsArt import (
     CatsArt as CAT,
     RabbitsArt as RABBIT,
@@ -54,7 +54,7 @@ class PetRenderer:
 
     @staticmethod
     def render(art: str):
-        yield LINE
+        yield UIC.LINE
         yield art
 
 
