@@ -8,7 +8,6 @@ This file preserves the original public API and behavior while improving SRP/DIP
 - Pet restoration is delegated to a PetFactory that can use a builder to satisfy IO requirements.
 """
 
-import math
 import re
 import bcrypt
 from typing import Dict, Any, Protocol
@@ -105,7 +104,7 @@ class User:
 
     def limit_currency(self) -> None:
         val = int(getattr(self, "currency"))
-        setattr(self, "currency", max(0, min(math.inf, val)))
+        setattr(self, "currency", max(0, min(2_147_483_647, val)))
 
     @property
     def password(self) -> str:
