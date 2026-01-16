@@ -87,7 +87,7 @@ class MainView:
             new_password = input("Your New Password: ").strip()
 
             if self.facade.change_password(username, password, new_password):
-                print(green("\nPassword has2 been changed!\n"))
+                print(green("\nPassword has been changed!\n"))
                 input(yellow("Press Enter to continue..."))
                 clear()
                 break

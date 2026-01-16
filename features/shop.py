@@ -124,7 +124,7 @@ class Shop:
             self.io.write(red("\n🐼 : Please choose between 1-3 please..."))
             return None, None
 
-        self.io.write()
+        self.io.write(UIC.LINE)
 
         if cat == 1:
             self.catalog_items("FOOD", "food", FC.DEFINITIONS)

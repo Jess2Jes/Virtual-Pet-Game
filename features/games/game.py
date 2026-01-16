@@ -48,6 +48,7 @@ class Game:
         """Initialize the game environment, dependencies, and action configurations."""
         self.animal_list = []
         self.clock = datetime.datetime.now().hour
+        self.spend = 0
         self.format = Formatter()
 
         self.io: IOPort = io or ConsoleIO()

@@ -3,9 +3,9 @@
 import time
 from random import choice, shuffle
 from .base_class import MinigameStrategy
+from typing import Any, List
 from utils.ports import ConsoleIO, InputPort, OutputPort
 from constants.configs import UIConfig as UIC, UnoConstants as UC
-from features.user import User
 from utils.colorize import red, green, blue
 
 class Uno(MinigameStrategy):
@@ -15,6 +15,10 @@ class Uno(MinigameStrategy):
 
     def __init__(self, io: InputPort | OutputPort | None = None):
         self.io: InputPort | OutputPort = io or ConsoleIO()
+    
+    def set_opponents(self, opponents: List[Any]) -> None:
+        """Dependency Injection: Provide the list of potential opponents."""
+        self._opponents = opponents
 
     def setup(self, player, pet):
         self.player = player
@@ -32,7 +36,9 @@ class Uno(MinigameStrategy):
             {'name': 'You', 'hand': [], 'emoji': '👤'},
             {'name': self.pet.name, 'hand': [], 'emoji': self.pet.emoji},
         ]
-        other_players_with_pets = list(filter(lambda user: user != self.player and user.pets, User.users.values()))
+        candidates = self._opponents if self._opponents else []
+        other_players_with_pets = list(filter(lambda user: user != self.player and user.pets, candidates))
+
         if other_players_with_pets:
             self.opponent = choice(other_players_with_pets)
         else:
