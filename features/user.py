@@ -40,7 +40,7 @@ class BcryptAuthService:
 
 class PetFactory(Protocol):
     """Factory abstraction for restoring pets from saved mementos."""
-    def create(self, pet_type: str, name: str, age: float): ...
+    def create(self, pet_type: str, name: str, age: float, io: OutputPort | None = None): ...
 
 
 class DefaultPetFactory:
@@ -55,9 +55,9 @@ class DefaultPetFactory:
     def __init__(self, builder: PetBuilder | None = None, default_io: OutputPort | None = None):
         self._builder = builder or DefaultPetBuilder(default_io=default_io)
 
-    def create(self, pet_type: str, name: str, age: float):
+    def create(self, pet_type: str, name: str, age: float, io: OutputPort | None = None):
         # Preserve the old create() signature and behavior expectations.
-        return self._builder.create(pet_type, name, age)
+        return self._builder.create(pet_type, name, age, io)
 
 
 class User:
@@ -172,7 +172,7 @@ class User:
 
         return user_data
 
-    def restore_from_memento(self, memento: Dict[str, Any]) -> None:
+    def restore_from_memento(self, memento: Dict[str, Any], io: OutputPort = None) -> None:
         """
         Restore user state from a previously created memento.
 
@@ -188,7 +188,7 @@ class User:
         self.pets = []
         for pet_data in memento.get("pets", []):
             pet_type = pet_data.get("type", "Cat")
-            pet = self.pet_factory.create(pet_type, pet_data["name"], pet_data.get("age", 0.0))
+            pet = self.pet_factory.create(pet_type, pet_data["name"], pet_data.get("age", 0.0), io=io)
 
             pet.happiness = pet_data.get("happiness", 50)
             pet.hunger = pet_data.get("hunger", 50)

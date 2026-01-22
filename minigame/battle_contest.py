@@ -47,9 +47,13 @@ class BattleContest(MinigameStrategy):
         self.opponent_health = self.opponent_pet.health * 1000
         self.opponent_won = 0
         self.opponent_pet_stats = {
-            "strength": 25,
-            "agility": 15
+            "strength": randint(5, 25),
+            "agility": randint(5, 25)
         }
+
+        self.player_defense = False, 0
+        self.opponent_defense = False, 0
+
         self.player_heal_count = 0
         self.player_heal_limit = 3
         self.opponent_heal_count = 0
@@ -71,8 +75,8 @@ class BattleContest(MinigameStrategy):
         if self.opponent_pet:
             self.io.write(f"Opponent: {self.opponent_pet.name} {self.opponent_pet.emoji}")
             self.io.write(f"Health: {self.opponent_health}")
-            self.io.write(f"Strength: {self.player_pet_stats['strength']}")
-            self.io.write(f"Agility: {self.player_pet_stats['agility']}")
+            self.io.write(f"Strength: {self.opponent_pet_stats['strength']}")
+            self.io.write(f"Agility: {self.opponent_pet_stats['agility']}")
 
         self.io.write(UIC.LINE)
         self.io.write("\nBattle Options:")
@@ -99,7 +103,7 @@ class BattleContest(MinigameStrategy):
         self.io.write("\n" + UIC.LINE)
         self.io.write("Battle Starting!")
         self.io.write(UIC.LINE)
-        self.io.write(f"{self.player_pet.name} {self.player_pet.emoji} VS {self.opponent_pet.name} {self.opponent_pet.emoji}")
+        self.io.write(f"{self.player_pet.name} {self.player_pet.emoji}  VS  {self.opponent_pet.name} {self.opponent_pet.emoji}")
         self.io.write("Prepare for battle!")
         time.sleep(2)
 
@@ -152,21 +156,24 @@ class BattleContest(MinigameStrategy):
 
     def _player_attack(self) -> None:
         """Player attacks the opponent."""
-        damage = (randint(5, 10) + self.player_pet_stats["strength"] // 3) * 300
-        self.opponent_health -= damage
+        damage = (randint(5, 10) + self.player_pet_stats["agility"] // 3) * 300
+        damage_deal = damage - self.opponent_defense[1] if self.opponent_defense else damage
+        self.opponent_health -= damage_deal
         self.io.write(f"\n{self.player_pet.name} attacks for {damage} damage ⚔️!")
 
     def _player_defend(self) -> None:
-        """Player defends, temporarily reducing incoming damage (display only)."""
-        defense_bonus = randint(2, 5) * 3000
+        """Player defends, temporarily reducing incoming damage."""
+        defense_bonus = randint(2, 5) * 300
         self.io.write(f"\n{self.player_pet.name} defends 🛡️!")
         self.io.write(f"Damage reduction: {defense_bonus}")
+        self.player_defense = True, defense_bonus
 
     def _player_special_move(self) -> None:
         """Player uses special move (only on even rounds)."""
         if self.current_round % 2 == 0:
             special_damage = (randint(10, 15) + self.player_pet_stats["strength"] // 2) * 600
-            self.opponent_health -= special_damage
+            special_damage_deal = special_damage - self.opponent_defense[1] if self.opponent_defense else special_damage
+            self.opponent_health -= special_damage_deal
             self.io.write(f"\n{self.player_pet.name} uses special move for {special_damage} damage ✨!")
         else:
             self.io.write(red("\nSpecial moves are locked in odd rounds!"))
@@ -183,21 +190,24 @@ class BattleContest(MinigameStrategy):
 
     def _opponent_attack(self) -> None:
         """Opponent attacks the player."""
-        damage = (randint(4, 8) + self.opponent_pet_stats["strength"] // 3) * 300
-        self.player_health -= damage
+        damage = (randint(4, 8) + self.opponent_pet_stats["agility"] // 3) * 300
+        damage_deal = damage - self.player_defense[1] if self.player_defense else damage
+        self.player_health -= damage_deal
         self.io.write(f"{self.opponent_pet.name} attacks for {damage} damage ⚔️!")
 
     def _opponent_defend(self) -> None:
-        """Opponent defends (display only)."""
-        defense_bonus = randint(1, 4) * 3000
+        """Opponent defends."""
+        defense_bonus = randint(1, 4) * 300
         self.io.write(f"{self.opponent_pet.name} defends 🛡️!")
         self.io.write(f"Damage reduction: {defense_bonus}")
+        self.opponent_defense = True, defense_bonus
 
     def _opponent_special_move(self) -> None:
         """Opponent special move (only on odd rounds)."""
         if self.current_round % 2 != 0:
             special_damage = (randint(8, 12) + self.opponent_pet_stats["strength"] // 2) * 600
-            self.player_health -= special_damage
+            special_damage_deal = special_damage - self.player_defense[1] if self.player_defense else special_damage
+            self.player_health -= special_damage_deal
             self.io.write(f"{self.opponent_pet.name} uses special move for {special_damage} damage ✨!")
         else:
             self.io.write(red("\nOpponent's special moves are restricted on even rounds!"))
@@ -254,11 +264,11 @@ class BattleContest(MinigameStrategy):
 
         if victory:
             coins = 20 + (performance_score // 10)
-            pet_happiness = 15 + ((player_health_remaining - 1000) // 5)
+            pet_happiness = 15 + ((player_health_remaining - 1000 if player_health_remaining > 0 else 0) // 5)
             self.io.write(green(f"🎉 VICTORY! {self.player_pet.name} won the battle!"))
         else:
             coins = 5 + (performance_score // 20)
-            pet_happiness = 5 + ((player_health_remaining - 1000) // 10)
+            pet_happiness = 5 + ((player_health_remaining - 1000 if player_health_remaining > 0 else 0) // 10)
             self.io.write(red(f"💔 Defeat... {self.player_pet.name} was defeated."))
         self.io.write("\n" + UIC.LINE)
         self.io.write("BATTLE RESULTS")

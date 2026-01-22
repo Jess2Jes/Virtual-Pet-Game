@@ -184,13 +184,14 @@ class Sudoku(MinigameStrategy):
             if command:
                 return command
 
-            command = self._parse_clear(choice_val)
-            if command:
-                return command
-
-            command = self._parse_move(choice_val)
-            if command:
-                return command
+            if choice_val.startswith('clear '):
+                command = self._parse_clear(choice_val)
+                if command:
+                    return command
+            else:
+                command = self._parse_move(choice_val)
+                if command:
+                    return command
 
             self.io.write(red("Invalid input. Please try again.\n"))
 
@@ -204,8 +205,6 @@ class Sudoku(MinigameStrategy):
 
     def _parse_clear(self, choice_val):
         """Parse 'clear' command and validate position."""
-        if not choice_val.startswith('clear '):
-            return None
 
         parts = choice_val.split()
         if len(parts) != 2:
@@ -253,7 +252,7 @@ class Sudoku(MinigameStrategy):
         empty_cells = [(r, c) for r in range(9) for c in range(9) if self.grid[r][c] == 0]
         if empty_cells:
             row, col = choice(empty_cells)
-            temp_grid = [row[:] for row in self.grid]
+            temp_grid = [grid_row[:] for grid_row in self.grid]
             self.solve_sudoku(temp_grid)
             self.coins -= 15
             return f"Try placing {temp_grid[row][col]} at col-{row + 1} row-{col + 1}."

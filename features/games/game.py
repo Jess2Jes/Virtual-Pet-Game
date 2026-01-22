@@ -6,7 +6,6 @@ delegating specific behaviors to injected Action handlers.
 """
 
 from __future__ import annotations
-
 import datetime
 import json
 from typing import List

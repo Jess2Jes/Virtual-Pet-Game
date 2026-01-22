@@ -318,7 +318,7 @@ class GameFacade:
                 user_data = save_data.get("user", {})
                 password_hash = user_data.get("password", "")
                 user = User(username, password_hash)
-                user.restore_from_memento(user_data)
+                user.restore_from_memento(user_data, io=self.io)
                 self.user_repo.add(user)
 
     def _load_game(self, username) -> bool:
@@ -327,7 +327,7 @@ class GameFacade:
         if not game_state:
             return False
         user_data = game_state.get("user", {})
-        self.current_user.restore_from_memento(user_data)
+        self.current_user.restore_from_memento(user_data, io=self.io)
         game_data = game_state.get("game", {})
         self.game.day = game_data.get("day", 0)
         self.game.spend = game_data.get("spend", 0)
