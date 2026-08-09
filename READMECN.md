@@ -169,11 +169,11 @@ Virtual-Pet-Game/
       <a href="https://github.com/Jess2Jes">Jessica Gunawan</a>
     </td>
     <td align="center" style="border: 1px solid #555; padding: 10px;">
-      <a href="https://github.com/Dendroculus">
-        <img src="https://github.com/Dendroculus.png" width="100" height="100" alt="Hans" style="border-radius: 50%;"/>
+      <a href="https://github.com/Yoruxyv">
+        <img src="https://github.com/Yoruxyv.png" width="100" height="100" alt="Hans" style="border-radius: 50%;"/>
       </a>
       <br/>
-      <a href="https://github.com/Dendroculus">Hans Valerie</a>
+      <a href="https://github.com/Yoruxyv">Hans Valerie</a>
     </td>
     <td align="center" style="border: 1px solid #555; padding: 10px;">
       <a href="https://github.com/StevNard">
